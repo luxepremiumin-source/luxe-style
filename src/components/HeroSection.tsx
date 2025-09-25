@@ -4,7 +4,7 @@ import { ArrowRight } from "lucide-react";
 
 export default function HeroSection() {
   const bg =
-    "https://harmless-tapir-303.convex.cloud/api/storage/4f76948d-58fd-42fa-954f-f273f9e04683";
+    "https://harmless-tapir-303.convex.cloud/api/storage/6915b338-b492-4de8-84e3-0f78fb0674fd";
 
   return (
     <section className="relative min-h-[88vh] w-full overflow-hidden bg-black">
