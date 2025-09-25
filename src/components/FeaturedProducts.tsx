@@ -80,16 +80,19 @@ export default function FeaturedProducts() {
             >
               <Card className="group cursor-pointer overflow-hidden border border-gray-200 hover:border-gray-300 transition-all duration-300 bg-white">
                 <div className="relative aspect-square overflow-hidden">
-                  <div className="absolute inset-0 bg-gray-200 flex items-center justify-center">
-                    <span className="text-gray-500 font-medium">{product.category}</span>
-                  </div>
-                  
+                  <img
+                    src={product.image}
+                    alt={product.name}
+                    className="absolute inset-0 w-full h-full object-cover"
+                    loading="lazy"
+                  />
+
                   {product.badge && (
                     <Badge className="absolute top-3 left-3 z-10 bg-gray-900 text-white">
                       {product.badge}
                     </Badge>
                   )}
-                  
+
                   <Button
                     variant="ghost"
                     size="icon"

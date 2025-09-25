@@ -50,9 +50,20 @@ export default function CategoryPage() {
                   >
                     <Card className="group overflow-hidden border border-gray-200 hover:border-gray-300 transition-all duration-300 bg-white">
                       <div className="relative aspect-square overflow-hidden">
-                        <div className="absolute inset-0 bg-gray-200 flex items-center justify-center">
-                          <span className="text-gray-500 font-medium">{prettyName[product.category] ?? product.category}</span>
-                        </div>
+                        {product.images && product.images.length > 0 ? (
+                          <img
+                            src={product.images[0]}
+                            alt={product.name}
+                            className="absolute inset-0 w-full h-full object-cover"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <div className="absolute inset-0 bg-gray-200 flex items-center justify-center">
+                            <span className="text-gray-500 font-medium">
+                              {prettyName[product.category] ?? product.category}
+                            </span>
+                          </div>
+                        )}
                         {product.featured && (
                           <Badge className="absolute top-3 left-3 z-10 bg-gray-900 text-white">Featured</Badge>
                         )}
