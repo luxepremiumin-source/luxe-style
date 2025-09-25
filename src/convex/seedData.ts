@@ -188,3 +188,38 @@ export const addGuessWatch = mutation({
     return { message: "Inserted Guess watch", id };
   },
 });
+
+export const addTomfordGoggles = mutation({
+  args: {},
+  handler: async (ctx) => {
+    // Avoid duplicates by checking existing goggles for same name
+    const existing = await ctx.db
+      .query("products")
+      .withIndex("by_category", (q) => q.eq("category", "goggles"))
+      .collect();
+
+    const already = existing.find(
+      (p) => p.name.toLowerCase() === "tomford premium"
+    );
+    if (already) {
+      return { message: "Tomford premium already exists", id: already._id };
+    }
+
+    const id = await ctx.db.insert("products", {
+      name: "Tomford premium",
+      description:
+        "Tomford premium eyewear with elegant acetate frame. Includes case and accessories.",
+      price: 999,
+      originalPrice: 2250,
+      category: "goggles",
+      images: [
+        "https://harmless-tapir-303.convex.cloud/api/storage/06af60a0-4842-4cdf-92a6-e9b8f4a02b0f",
+        "https://harmless-tapir-303.convex.cloud/api/storage/047d93a6-0a3f-491e-ac18-0c233580ab8c",
+      ],
+      featured: true,
+      inStock: true,
+    });
+
+    return { message: "Inserted Tomford premium", id };
+  },
+});
