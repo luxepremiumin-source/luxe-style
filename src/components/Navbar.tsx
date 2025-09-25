@@ -7,16 +7,21 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { api } from "@/convex/_generated/api";
 import { useQuery } from "convex/react";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerClose } from "@/components/ui/drawer";
 
 export default function Navbar() {
   const { isAuthenticated, user, signOut } = useAuth();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   // Add live cart count
   const cartCount = useQuery(api.cart.getCartCount, {
     userId: user?._id ?? null,
   });
+
+  // Cart items for drawer
+  const cartItems = useQuery(api.cart.getCartItems, { userId: user?._id ?? null });
 
   const categories = [
     { name: "Home page", href: "/" },
@@ -73,7 +78,7 @@ export default function Navbar() {
               <Search className="h-5 w-5 text-white" />
             </Button>
 
-            <Button variant="ghost" size="icon" className="relative hover:bg-white/10">
+            <Button variant="ghost" size="icon" className="relative hover:bg-white/10" onClick={() => setIsCartOpen(true)} aria-label="Open cart">
               <ShoppingBag className="h-5 w-5 text-white" />
               <Badge className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs bg-transparent border border-white/60 text-white">
                 {cartCount ?? 0}
@@ -138,6 +143,58 @@ export default function Navbar() {
           </motion.div>
         )}
       </div>
+
+      {/* Cart Drawer */}
+      <Drawer open={isCartOpen} onOpenChange={setIsCartOpen}>
+        <DrawerContent className="ml-auto w-full sm:max-w-md border-l border-white/10 bg-white">
+          <DrawerHeader className="flex items-center justify-between">
+            <DrawerTitle className="text-lg font-semibold">Your Cart</DrawerTitle>
+            <DrawerClose asChild>
+              <button aria-label="Close cart" className="p-2 rounded-md hover:bg-black/5">✕</button>
+            </DrawerClose>
+          </DrawerHeader>
+
+          <div className="px-6 pb-6">
+            {!cartItems || cartItems.length === 0 ? (
+              <div className="min-h-[60vh] flex flex-col items-center justify-center text-center">
+                <h3 className="text-2xl font-bold mb-4">Your cart is empty</h3>
+                <Button className="rounded-full px-6" onClick={() => setIsCartOpen(false)}>
+                  Continue shopping
+                </Button>
+                <p className="text-sm text-gray-600 mt-6">
+                  Have an account?{" "}
+                  <a href="/auth" className="underline">Log in</a> to check out faster.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <ul className="space-y-3">
+                  {cartItems.map((item) => (
+                    <li key={item._id} className="flex gap-3 border border-gray-200 rounded-md p-3">
+                      <div className="h-16 w-16 rounded-md overflow-hidden bg-gray-100 flex-shrink-0">
+                        {item.product.images?.[0] ? (
+                          <img src={item.product.images[0]} alt={item.product.name} className="h-full w-full object-cover" />
+                        ) : null}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium truncate">{item.product.name}</p>
+                        <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
+                        <p className="text-sm font-semibold">₹{(item.product.price * item.quantity).toLocaleString()}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="pt-2 border-t">
+                  <Button className="w-full rounded-full bg-black text-white hover:bg-black/90">
+                    Checkout
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </DrawerContent>
+      </Drawer>
     </motion.nav>
   );
 }

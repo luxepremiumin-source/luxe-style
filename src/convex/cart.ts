@@ -41,3 +41,27 @@ export const getCartCount = query({
     return items.reduce((sum, item) => sum + (item.quantity ?? 0), 0);
   },
 });
+
+export const getCartItems = query({
+  args: { userId: v.union(v.id("users"), v.null()) },
+  handler: async (ctx, args) => {
+    if (args.userId === null) return [];
+    const items = await ctx.db
+      .query("cart")
+      .withIndex("by_user", (q) => q.eq("userId", args.userId!))
+      .collect();
+
+    const result = [];
+    for (const item of items) {
+      const product = await ctx.db.get(item.productId);
+      if (!product) continue;
+      result.push({
+        _id: item._id,
+        quantity: item.quantity ?? 1,
+        productId: item.productId,
+        product, // includes name, price, images, etc.
+      });
+    }
+    return result;
+  },
+});
