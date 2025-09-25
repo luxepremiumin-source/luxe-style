@@ -183,8 +183,7 @@ export default function ProductPage() {
                 Add to cart
               </Button>
               <Button
-                variant="outline"
-                className="w-full h-12 rounded-full border-green-500 text-white hover:bg-green-600/20"
+                className="w-full h-12 rounded-full bg-[#25D366] text-white hover:bg-[#20bd5b]"
                 onClick={() => {
                   const message = `Hi! I'm interested in "${product.name}" (${prettyName[product.category] ?? product.category}). Price: ₹${product.price.toLocaleString()}${product.originalPrice ? ` (MRP ₹${product.originalPrice.toLocaleString()})` : ""}.${supportsColors ? ` Color: ${color[0].toUpperCase() + color.slice(1)}.` : ""}`;
                   const url = `https://wa.me/9871629699?text=${encodeURIComponent(message)}`;
