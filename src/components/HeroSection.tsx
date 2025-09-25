@@ -32,10 +32,6 @@ export default function HeroSection() {
             </span>
           </div>
 
-          <h1 className="text-5xl md:text-7xl font-extrabold tracking-[0.15em] text-white">
-            LUXE
-          </h1>
-
           <p className="mt-4 text-base md:text-lg text-white/80 max-w-xl mx-auto">
             Curated goggles, watches, and belts. Minimal design. Maximum impact.
           </p>
