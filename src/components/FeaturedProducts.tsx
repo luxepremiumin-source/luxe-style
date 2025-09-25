@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
-import { Heart, ShoppingBag, Star } from "lucide-react";
+import { Heart, ShoppingBag, Star, MessageCircle } from "lucide-react";
 
 const featuredProducts = [
   {
@@ -136,6 +136,22 @@ export default function FeaturedProducts() {
                       className="opacity-0 group-hover:opacity-100 transition-opacity"
                     >
                       <ShoppingBag className="h-4 w-4" />
+                    </Button>
+                  </div>
+
+                  <div className="mt-3">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full gap-2"
+                      onClick={() => {
+                        const message = `Hi! I'm interested in "${product.name}" (${product.category}). Price: ₹${product.price.toLocaleString()}. Please share more details.`;
+                        const url = `https://wa.me/9871629699?text=${encodeURIComponent(message)}`;
+                        window.open(url, "_blank");
+                      }}
+                    >
+                      <MessageCircle className="h-4 w-4" />
+                      Order on WhatsApp
                     </Button>
                   </div>
                 </div>
