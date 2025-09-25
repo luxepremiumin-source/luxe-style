@@ -109,3 +109,22 @@ export const cleanupGogglesKeepTomford = mutation({
     return { removed };
   },
 });
+
+export const cleanupBeltsKeepCoach = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const belts = await ctx.db
+      .query("products")
+      .withIndex("by_category", (q) => q.eq("category", "belts"))
+      .collect();
+
+    let removed = 0;
+    for (const p of belts) {
+      if (p.name.toLowerCase() !== "coach belt") {
+        await ctx.db.delete(p._id);
+        removed++;
+      }
+    }
+    return { removed };
+  },
+});
