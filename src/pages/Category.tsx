@@ -47,20 +47,20 @@ export default function CategoryPage() {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="min-h-screen">
       <Navbar />
       <main className="pt-20">
-        <section className="bg-white">
+        <section className="bg-black">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
             <div className="mb-8">
-              <h1 className="text-3xl lg:text-4xl font-bold tracking-tight text-gray-900">
+              <h1 className="text-3xl lg:text-4xl font-bold tracking-tight text-white">
                 {prettyName[category] ?? "Collection"}
               </h1>
-              <p className="text-gray-600 mt-2">Explore our premium {prettyName[category] ?? "products"}.</p>
+              <p className="text-gray-300 mt-2">Explore our premium {prettyName[category] ?? "products"}.</p>
             </div>
 
             {!products ? (
-              <p className="text-sm text-gray-500">Loading...</p>
+              <p className="text-sm text-gray-400">Loading...</p>
             ) : products.length === 0 ? (
               <div className="text-center py-20">
-                <p className="text-gray-600">No products found in this category.</p>
+                <p className="text-gray-300">No products found in this category.</p>
               </div>
             ) : (
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -73,7 +73,7 @@ export default function CategoryPage() {
                     transition={{ delay: index * 0.05 }}
                   >
                     <Card
-                      className="group overflow-hidden border border-gray-200 hover:border-gray-300 transition-all duration-300 bg-white cursor-pointer"
+                      className="group overflow-hidden rounded-2xl border border-white/10 hover:border-white/20 transition-all duration-300 bg-white cursor-pointer"
                       onClick={() => navigate(`/product/${product._id}`)}
                     >
                       <div
@@ -89,14 +89,16 @@ export default function CategoryPage() {
                           />
                         ) : (
                           <div className="absolute inset-0 bg-gray-200 flex items-center justify-center">
-                            <span className="text-gray-500 font-medium">
+                            <span className="text-gray-700 font-medium">
                               {prettyName[product.category] ?? product.category}
                             </span>
                           </div>
                         )}
-                        {product.featured && (
+                        {product.originalPrice && product.originalPrice > product.price ? (
+                          <Badge className="absolute top-3 left-3 z-10 bg-gray-900 text-white">Sale</Badge>
+                        ) : product.featured ? (
                           <Badge className="absolute top-3 left-3 z-10 bg-gray-900 text-white">Featured</Badge>
-                        )}
+                        ) : null}
                       </div>
 
                       <div className="p-4" onClick={(e) => e.stopPropagation()}>
