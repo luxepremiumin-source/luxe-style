@@ -7,14 +7,14 @@ import { Heart, ShoppingBag, Star, MessageCircle } from "lucide-react";
 const featuredProducts = [
   {
     id: 1,
-    name: "Aviator Pro Goggles",
-    price: 2999,
-    originalPrice: 4999,
-    rating: 4.8,
-    reviews: 124,
-    image: "/api/placeholder/300/300",
+    name: "Louis Vuitton Sunglasses",
+    price: 999,
+    originalPrice: 1999,
+    rating: 4.9,
+    reviews: 210,
+    image: "https://harmless-tapir-303.convex.cloud/api/storage/03009c66-ad0b-49ae-9ee0-8cf1c3b14a9f",
     category: "Goggles",
-    badge: "Bestseller"
+    badge: "50% OFF"
   },
   {
     id: 2,
