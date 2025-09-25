@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/use-auth";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Minus, Plus, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -28,6 +28,21 @@ export default function ProductPage() {
   // Add color state only for the Coach belt
   const supportsColors = (product?.name ?? "").toLowerCase() === "coach premium belt";
   const [color, setColor] = useState<"black" | "grey">("black");
+
+  // Add: active image index for gallery
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  // When product loads or color changes (Coach belt), sync the active image
+  useEffect(() => {
+    if (!product?.images?.length) return;
+    if (supportsColors) {
+      // Assume index 0 => black, index 1 => grey if exists
+      setActiveIndex(color === "black" ? 0 : Math.min(1, product.images.length - 1));
+    } else {
+      // Default to first image
+      setActiveIndex(0);
+    }
+  }, [product?._id, product?.images?.length, supportsColors, color]);
 
   const handleAddToCart = async () => {
     try {
@@ -73,18 +88,16 @@ export default function ProductPage() {
     );
   }
 
-  // Choose image based on color for Coach belt
-  const image =
-    supportsColors
-      ? (color === "black" ? product.images?.[0] : product.images?.[1] ?? product.images?.[0])
-      : product.images?.[0];
+  // Choose image from active index; fallback to first if out of range
+  const images = product.images ?? [];
+  const image = images[activeIndex] ?? images[0];
 
   return (
     <div className="min-h-screen bg-black text-white">
       <Navbar />
       <main className="pt-20">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 grid lg:grid-cols-2 gap-10">
-          {/* Left: Big Image */}
+          {/* Left: Big Image + Thumbnails */}
           <Card className="bg-black border-white/10 overflow-hidden rounded-2xl">
             <div className="relative aspect-square">
               {image ? (
@@ -102,6 +115,33 @@ export default function ProductPage() {
                 </div>
               )}
             </div>
+
+            {/* Thumbnails */}
+            {images.length > 1 && (
+              <div className="p-4">
+                <div className="flex gap-3 overflow-x-auto">
+                  {images.map((src, idx) => (
+                    <button
+                      key={src + idx}
+                      onClick={() => setActiveIndex(idx)}
+                      className={`relative h-18 w-18 sm:h-20 sm:w-20 rounded-xl overflow-hidden flex-shrink-0 ring-1 transition-all ${
+                        activeIndex === idx
+                          ? "ring-white"
+                          : "ring-white/20 hover:ring-white/40"
+                      }`}
+                      aria-label={`View image ${idx + 1}`}
+                    >
+                      <img
+                        src={src}
+                        alt={`${product.name} ${idx + 1}`}
+                        className="h-full w-full object-cover"
+                        loading="lazy"
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </Card>
 
           {/* Right: Details */}
