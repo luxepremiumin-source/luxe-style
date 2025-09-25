@@ -39,8 +39,23 @@ export default function Navbar() {
             whileHover={{ scale: 1.05 }}
             className="absolute left-1/2 -translate-x-1/2 cursor-pointer select-none"
             onClick={() => navigate("/")}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                navigate("/");
+              }
+            }}
           >
-            <span className="text-xl font-extrabold tracking-widest">LUXE</span>
+            <span
+              className="text-xl font-extrabold tracking-widest"
+              onClick={() => navigate("/")}
+              role="button"
+              tabIndex={-1}
+            >
+              LUXE
+            </span>
           </motion.div>
 
           <div className="flex items-center space-x-4">
