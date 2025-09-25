@@ -73,3 +73,20 @@ export const cleanupWatchesKeepGuess = mutation({
     return { removed };
   },
 });
+
+export const cleanupGoggles = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const goggles = await ctx.db
+      .query("products")
+      .withIndex("by_category", (q) => q.eq("category", "goggles"))
+      .collect();
+
+    let removed = 0;
+    for (const p of goggles) {
+      await ctx.db.delete(p._id);
+      removed++;
+    }
+    return { removed };
+  },
+});
