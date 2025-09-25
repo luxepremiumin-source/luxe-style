@@ -12,10 +12,10 @@ export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const categories = [
+    { name: "Home page", href: "/" },
     { name: "Goggles", href: "/category/goggles" },
     { name: "Watches", href: "/category/watches" },
     { name: "Belts", href: "/category/belts" },
-    { name: "Accessories", href: "/category/accessories" },
   ];
 
   return (
@@ -104,10 +104,6 @@ export default function Navbar() {
                   {category.name}
                 </a>
               ))}
-              <Button variant="ghost" className="justify-start text-white hover:bg-white/10">
-                <Search className="h-4 w-4 mr-2" />
-                Search
-              </Button>
             </div>
           </motion.div>
         )}
