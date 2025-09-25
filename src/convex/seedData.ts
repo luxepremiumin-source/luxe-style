@@ -114,3 +114,77 @@ export const seedProducts = mutation({
     return { message: `Successfully seeded ${products.length} products` };
   },
 });
+
+export const addCoachBelt = mutation({
+  args: {},
+  handler: async (ctx) => {
+    // Avoid duplicates by name+category
+    const existing = await ctx.db
+      .query("products")
+      .withIndex("by_category", (q) => q.eq("category", "belts"))
+      .collect();
+
+    const already = existing.find(
+      (p) => p.name.toLowerCase() === "coach premium belt"
+    );
+    if (already) {
+      return { message: "Coach premium belt already exists", id: already._id };
+    }
+
+    const id = await ctx.db.insert("products", {
+      name: "Coach premium belt",
+      description:
+        "Coach premium belt available in Black and Grey. Premium finish with elegant hardware.",
+      price: 899, // discounted price
+      originalPrice: 1699,
+      category: "belts",
+      images: [
+        "https://harmless-tapir-303.convex.cloud/api/storage/5588437d-4ac9-493d-a17e-ae4fa4a86af8",
+        "https://harmless-tapir-303.convex.cloud/api/storage/d48c4a6e-a9f3-4aff-98d5-df3a78ebcda1",
+      ],
+      featured: true,
+      inStock: true,
+    });
+
+    return { message: "Inserted Coach premium belt", id };
+  },
+});
+
+/**
+ * Add "Guess watch" under watches with two images.
+ * MRP: 4999, Discounted price: 2249
+ */
+export const addGuessWatch = mutation({
+  args: {},
+  handler: async (ctx) => {
+    // Avoid duplicates by checking existing watches for same name
+    const existing = await ctx.db
+      .query("products")
+      .withIndex("by_category", (q) => q.eq("category", "watches"))
+      .collect();
+
+    const already = existing.find(
+      (p) => p.name.toLowerCase() === "guess watch"
+    );
+    if (already) {
+      return { message: "Guess watch already exists", id: already._id };
+    }
+
+    const id = await ctx.db.insert("products", {
+      name: "Guess watch",
+      description:
+        "Stylish Guess watch with a premium steel bracelet and minimalist dial.",
+      price: 2249,
+      originalPrice: 4999,
+      category: "watches",
+      images: [
+        "https://harmless-tapir-303.convex.cloud/api/storage/27df4fcc-81c4-4045-854f-89b4b0fb4ef6",
+        "https://harmless-tapir-303.convex.cloud/api/storage/23d6c9e9-0300-4eef-801b-154bbabbc228",
+      ],
+      featured: true,
+      inStock: true,
+    });
+
+    return { message: "Inserted Guess watch", id };
+  },
+});

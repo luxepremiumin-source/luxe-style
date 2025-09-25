@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useState } from "react";
 import { Minus, Plus, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const prettyName: Record<string, string> = {
   goggles: "Goggles",
@@ -24,6 +25,9 @@ export default function ProductPage() {
   const { isAuthenticated, user, signIn } = useAuth();
   const addToCart = useMutation(api.cart.addToCart);
   const [qty, setQty] = useState(1);
+  // Add color state only for the Coach belt
+  const supportsColors = (product?.name ?? "").toLowerCase() === "coach premium belt";
+  const [color, setColor] = useState<"black" | "grey">("black");
 
   const handleAddToCart = async () => {
     try {
@@ -69,7 +73,11 @@ export default function ProductPage() {
     );
   }
 
-  const image = product.images?.[0];
+  // Choose image based on color for Coach belt
+  const image =
+    supportsColors
+      ? (color === "black" ? product.images?.[0] : product.images?.[1] ?? product.images?.[0])
+      : product.images?.[0];
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -117,7 +125,30 @@ export default function ProductPage() {
               )}
             </div>
 
-            <p className="text-white/70 mt-4">{product.description}</p>
+            {/* Color (Coach premium belt only) */}
+            {supportsColors && (
+              <div className="mt-6">
+                <p className="text-sm text-white/70 mb-2">Color</p>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant={color === "black" ? "default" : "ghost"}
+                    size="sm"
+                    className={`rounded-full px-4 ${color === "black" ? "bg-white text-black hover:bg-white/90" : "hover:bg-white/10"}`}
+                    onClick={() => setColor("black")}
+                  >
+                    Black
+                  </Button>
+                  <Button
+                    variant={color === "grey" ? "default" : "ghost"}
+                    size="sm"
+                    className={`rounded-full px-4 ${color === "grey" ? "bg-white text-black hover:bg-white/90" : "hover:bg-white/10"}`}
+                    onClick={() => setColor("grey")}
+                  >
+                    Grey
+                  </Button>
+                </div>
+              </div>
+            )}
 
             {/* Quantity */}
             <div className="mt-6">
@@ -155,7 +186,7 @@ export default function ProductPage() {
                 variant="outline"
                 className="w-full h-12 rounded-full border-green-500 text-white hover:bg-green-600/20"
                 onClick={() => {
-                  const message = `Hi! I'm interested in "${product.name}" (${prettyName[product.category] ?? product.category}). Price: ₹${product.price.toLocaleString()}${product.originalPrice ? ` (MRP ₹${product.originalPrice.toLocaleString()})` : ""}.`;
+                  const message = `Hi! I'm interested in "${product.name}" (${prettyName[product.category] ?? product.category}). Price: ₹${product.price.toLocaleString()}${product.originalPrice ? ` (MRP ₹${product.originalPrice.toLocaleString()})` : ""}.${supportsColors ? ` Color: ${color[0].toUpperCase() + color.slice(1)}.` : ""}`;
                   const url = `https://wa.me/9871629699?text=${encodeURIComponent(message)}`;
                   window.open(url, "_blank");
                 }}
