@@ -154,6 +154,9 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                         className="pl-9"
                         disabled={isLoading}
                         required
+                        onChange={() => {
+                          if (error) setError(null);
+                        }}
                       />
                     </div>
                     <Button
@@ -227,12 +230,14 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                   <div className="flex justify-center">
                     <InputOTP
                       value={otp}
-                      onChange={setOtp}
+                      onChange={(val) => {
+                        setOtp(val);
+                        if (error) setError(null);
+                      }}
                       maxLength={6}
                       disabled={isLoading}
                       onKeyDown={(e) => {
                         if (e.key === "Enter" && otp.length === 6 && !isLoading) {
-                          // Find the closest form and submit it
                           const form = (e.target as HTMLElement).closest("form");
                           if (form) {
                             form.requestSubmit();
@@ -257,7 +262,11 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                     <Button
                       variant="link"
                       className="p-0 h-auto"
-                      onClick={() => setStep("signIn")}
+                      onClick={() => {
+                        setStep("signIn");
+                        setOtp("");
+                        setError(null);
+                      }}
                     >
                       Try again
                     </Button>
@@ -284,7 +293,11 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                   <Button
                     type="button"
                     variant="ghost"
-                    onClick={() => setStep("signIn")}
+                    onClick={() => {
+                      setStep("signIn");
+                      setOtp("");
+                      setError(null);
+                    }}
                     disabled={isLoading}
                     className="w-full"
                   >
