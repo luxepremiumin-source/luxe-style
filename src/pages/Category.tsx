@@ -44,7 +44,7 @@ export default function CategoryPage() {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-black text-white">
       <Navbar />
       <main className="pt-20">
         <section className="bg-black">
