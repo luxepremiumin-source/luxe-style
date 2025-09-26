@@ -32,6 +32,8 @@ export default function Navbar() {
     firstName: "",
     lastName: "",
     address1: "",
+    // Add optional address2 (Apartment / suite)
+    address2: "", // NEW: optional second address line
     city: "",
     state: "",
     pin: "",
@@ -342,6 +344,16 @@ export default function Navbar() {
                           className="bg-white"
                         />
                       </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="address2">Apartment, suite, etc. (optional)</Label>
+                        <Input
+                          id="address2"
+                          placeholder="Apartment, suite, etc. (optional)"
+                          value={details.address2}
+                          onChange={(e) => setDetails((d) => ({ ...d, address2: e.target.value }))}
+                          className="bg-white"
+                        />
+                      </div>
                       <div className="grid grid-cols-3 gap-3">
                         <div className="space-y-1.5">
                           <Label htmlFor="city">City</Label>
@@ -485,6 +497,10 @@ export default function Navbar() {
                         lines.push(`${details.firstName} ${details.lastName}`);
                         lines.push(`Contact number: ${details.phone}`);
                         lines.push(`${details.address1}`);
+                        // Include address2 only if provided
+                        if (String(details.address2 || "").trim().length > 0) {
+                          lines.push(`${details.address2}`);
+                        }
                         lines.push(`${details.city}, ${details.state} - ${details.pin}`);
 
                         lines.push("");
