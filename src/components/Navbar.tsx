@@ -195,8 +195,46 @@ export default function Navbar() {
                   <Button
                     className="w-full rounded-full bg-black text-white hover:bg-black/90"
                     onClick={() => {
-                      // Redirect in same tab using proper international format (without '+')
-                      window.location.href = "https://wa.me/919871629699";
+                      // If no items, just open WhatsApp chat
+                      if (!cartItems || cartItems.length === 0) {
+                        window.location.href = "https://wa.me/9871629699";
+                        return;
+                      }
+
+                      // Build a clean, tabular-style message for WhatsApp
+                      const lines: Array<string> = [];
+                      lines.push("I want to order:");
+                      lines.push("");
+                      lines.push("Item | MRP | Price | Qty | Subtotal");
+                      lines.push("--- | --- | --- | --- | ---");
+
+                      let grandTotal = 0;
+                      for (const item of cartItems) {
+                        const name = item.product.name;
+                        const mrp = item.product.originalPrice
+                          ? `₹${item.product.originalPrice.toLocaleString()}`
+                          : "-";
+                        const price = `₹${item.product.price.toLocaleString()}`;
+                        const qty = item.quantity ?? 1;
+                        const subtotalNum = (item.product.price ?? 0) * qty;
+                        const subtotal = `₹${subtotalNum.toLocaleString()}`;
+                        grandTotal += subtotalNum;
+
+                        lines.push(`${name} | ${mrp} | ${price} | ${qty} | ${subtotal}`);
+
+                        // Attach first image URL line if present
+                        const img = item.product.images?.[0];
+                        if (img) {
+                          lines.push(`Image: ${img}`);
+                        }
+                      }
+
+                      lines.push("");
+                      lines.push(`Grand Total: ₹${grandTotal.toLocaleString()}`);
+
+                      const message = lines.join("\n");
+                      const url = `https://wa.me/9871629699?text=${encodeURIComponent(message)}`;
+                      window.location.href = url;
                     }}
                   >
                     Checkout
