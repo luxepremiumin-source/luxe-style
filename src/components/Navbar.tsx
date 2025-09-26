@@ -12,6 +12,13 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 export default function Navbar() {
   const { isAuthenticated, user, signOut } = useAuth();
   const navigate = useNavigate();
+  // Add: admin visibility check
+  const allowedEmails = new Set<string>(["vidhigadgets@gmail.com"]);
+  const isAuthorizedAdmin =
+    !!isAuthenticated &&
+    !!user &&
+    (((user.role as string | undefined) === "admin") ||
+      (user.email ? allowedEmails.has(user.email) : false));
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   // Add: mounted flag to avoid portal DOM errors during route transitions
@@ -101,6 +108,17 @@ export default function Navbar() {
 
             {isAuthenticated ? (
               <div className="flex items-center space-x-2">
+                {/* Add: Admin link visible only to authorized admin */}
+                {isAuthorizedAdmin && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate("/admin")}
+                    className="hidden sm:flex border-white/40 text-white bg-transparent hover:bg-white/10"
+                  >
+                    Admin
+                  </Button>
+                )}
                 <Button
                   variant="ghost"
                   size="icon"
