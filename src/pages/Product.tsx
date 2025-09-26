@@ -225,8 +225,8 @@ export default function ProductPage() {
               <Button
                 className="w-full h-12 rounded-full bg-[#25D366] text-white hover:bg-[#20bd5b]"
                 onClick={() => {
-                  const message = `Hi! I'm interested in "${product.name}" (${prettyName[product.category] ?? product.category}). Price: ₹${product.price.toLocaleString()}${product.originalPrice ? ` (MRP ₹${product.originalPrice.toLocaleString()})` : ""}.${supportsColors ? ` Color: ${color[0].toUpperCase() + color.slice(1)}.` : ""}`;
-                  // Redirect to WhatsApp with specified number and pre-filled message
+                  const link = `${window.location.origin}/product/${product._id}`;
+                  const message = `Hi! I'm interested in "${product.name}" (${prettyName[product.category] ?? product.category}). Price: ₹${product.price.toLocaleString()}${product.originalPrice ? ` (MRP ₹${product.originalPrice.toLocaleString()})` : ""}.${supportsColors ? ` Color: ${color[0].toUpperCase() + color.slice(1)}.` : ""} Link: ${link}`;
                   const url = `https://wa.me/9871629699?text=${encodeURIComponent(message)}`;
                   window.location.href = url;
                 }}

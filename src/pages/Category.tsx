@@ -126,7 +126,8 @@ export default function CategoryPage() {
                             className="rounded-full border-white/30 text-white hover:bg-white/10"
                             onClick={(e) => {
                               e.stopPropagation();
-                              const message = `Hi! I'm interested in "${product.name}" (${prettyName[product.category] ?? product.category}). Price: ₹${product.price.toLocaleString()}${product.originalPrice ? ` (MRP ₹${product.originalPrice.toLocaleString()})` : ""}. Please share more details.`;
+                              const link = `${window.location.origin}/product/${product._id}`;
+                              const message = `Hi! I'm interested in "${product.name}" (${prettyName[product.category] ?? product.category}). Price: ₹${product.price.toLocaleString()}${product.originalPrice ? ` (MRP ₹${product.originalPrice.toLocaleString()})` : ""}. Link: ${link}`;
                               const url = `https://wa.me/9871629699?text=${encodeURIComponent(message)}`;
                               window.location.href = url;
                             }}

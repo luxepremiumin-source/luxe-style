@@ -220,6 +220,8 @@ export default function Navbar() {
                         lines.push(
                           `- ${name} | Qty: ${qty} | Price: ${price}${mrpPart}`
                         );
+                        const productLink = `${window.location.origin}/product/${item.product._id}`;
+                        lines.push(`  Link: ${productLink}`);
                       }
 
                       lines.push("");
