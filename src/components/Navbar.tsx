@@ -8,6 +8,8 @@ import { useNavigate } from "react-router";
 import { api } from "@/convex/_generated/api";
 import { useQuery, useMutation } from "convex/react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export default function Navbar() {
   const { isAuthenticated, user, signOut } = useAuth();
@@ -23,12 +25,25 @@ export default function Navbar() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   // Add: mounted flag to avoid portal DOM errors during route transitions
   const [mounted, setMounted] = useState(false);
+  const [checkoutStep, setCheckoutStep] = useState<"review" | "details">("review");
+  const [details, setDetails] = useState({
+    email: "",
+    firstName: "",
+    lastName: "",
+    address1: "",
+    city: "",
+    state: "",
+    pin: "",
+    phone: "",
+  });
+
   useEffect(() => {
     setMounted(true);
     return () => {
-      // Ensure drawer is closed on unmount to avoid portal reconciliation issues
       setIsCartOpen(false);
       setIsMenuOpen(false);
+      // Reset step on unmount
+      setCheckoutStep("review");
     };
   }, []);
 
@@ -181,14 +196,22 @@ export default function Navbar() {
 
       {/* Cart Slide-over (Sheet) */}
       {mounted && (
-        <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
+        <Sheet
+          open={isCartOpen}
+          onOpenChange={(open) => {
+            setIsCartOpen(open);
+            if (!open) setCheckoutStep("review"); // Reset step when closing
+          }}
+        >
           <SheetContent
             side="right"
             className="w-full sm:max-w-md p-0 h-full bg-gray-100 text-gray-900 border-l border-black/10"
           >
             <SheetHeader className="px-6 pt-5">
               <div className="flex items-center justify-between">
-                <SheetTitle className="text-2xl font-extrabold">Your cart</SheetTitle>
+                <SheetTitle className="text-2xl font-extrabold">
+                  {checkoutStep === "review" ? "Your cart" : "Checkout details"}
+                </SheetTitle>
               </div>
             </SheetHeader>
             <div className="px-6">
@@ -212,7 +235,7 @@ export default function Navbar() {
                     to check out faster.
                   </p>
                 </div>
-              ) : (
+              ) : checkoutStep === "review" ? (
                 <div className="space-y-4">
                   <ul className="space-y-3">
                     {cartItems.map((item) => (
@@ -264,10 +287,8 @@ export default function Navbar() {
                     ))}
                   </ul>
 
-                  {/* Divider */}
                   <div className="pt-2 border-t border-gray-300/60" />
 
-                  {/* Estimated total + note */}
                   <div className="flex items-center justify-between text-gray-900">
                     <p className="font-extrabold">Estimated total</p>
                     <p className="font-extrabold">₹{estimatedTotal.toLocaleString()}</p>
@@ -279,25 +300,167 @@ export default function Navbar() {
                   <div className="pt-2">
                     <Button
                       className="w-full h-12 rounded-full bg-black text-white hover:bg-black/90"
+                      onClick={() => setCheckoutStep("details")}
+                    >
+                      Checkout
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-5">
+                  <div>
+                    <p className="text-sm font-semibold mb-2">Contact</p>
+                    <div className="space-y-3">
+                      <div className="space-y-1.5">
+                        <Label htmlFor="email">Email</Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          placeholder="name@example.com"
+                          value={details.email}
+                          onChange={(e) => setDetails((d) => ({ ...d, email: e.target.value }))}
+                          className="bg-white"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1.5">
+                          <Label htmlFor="firstName">First name</Label>
+                          <Input
+                            id="firstName"
+                            value={details.firstName}
+                            onChange={(e) => setDetails((d) => ({ ...d, firstName: e.target.value }))}
+                            className="bg-white"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label htmlFor="lastName">Last name</Label>
+                          <Input
+                            id="lastName"
+                            value={details.lastName}
+                            onChange={(e) => setDetails((d) => ({ ...d, lastName: e.target.value }))}
+                            className="bg-white"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <p className="text-sm font-semibold">Delivery</p>
+                    <div className="space-y-3">
+                      <div className="space-y-1.5">
+                        <Label htmlFor="address1">Address</Label>
+                        <Input
+                          id="address1"
+                          placeholder="Street address"
+                          value={details.address1}
+                          onChange={(e) => setDetails((d) => ({ ...d, address1: e.target.value }))}
+                          className="bg-white"
+                        />
+                      </div>
+                      <div className="grid grid-cols-3 gap-3">
+                        <div className="space-y-1.5">
+                          <Label htmlFor="city">City</Label>
+                          <Input
+                            id="city"
+                            value={details.city}
+                            onChange={(e) => setDetails((d) => ({ ...d, city: e.target.value }))}
+                            className="bg-white"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label htmlFor="state">State</Label>
+                          <Input
+                            id="state"
+                            value={details.state}
+                            onChange={(e) => setDetails((d) => ({ ...d, state: e.target.value }))}
+                            className="bg-white"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label htmlFor="pin">PIN code</Label>
+                          <Input
+                            id="pin"
+                            inputMode="numeric"
+                            value={details.pin}
+                            onChange={(e) => setDetails((d) => ({ ...d, pin: e.target.value }))}
+                            className="bg-white"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="phone">Phone</Label>
+                        <Input
+                          id="phone"
+                          inputMode="tel"
+                          placeholder="+91"
+                          value={details.phone}
+                          onChange={(e) => setDetails((d) => ({ ...d, phone: e.target.value }))}
+                          className="bg-white"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 border-t border-gray-300/60" />
+                  <div className="flex items-center justify-between">
+                    <p className="font-extrabold">Total</p>
+                    <p className="font-extrabold">₹{estimatedTotal.toLocaleString()}</p>
+                  </div>
+                  <p className="text-xs text-gray-600">
+                    Taxes, discounts and <span className="underline">shipping</span> calculated at checkout.
+                  </p>
+
+                  <div className="flex gap-2 pt-1">
+                    <Button
+                      variant="outline"
+                      className="h-12 rounded-full"
+                      onClick={() => setCheckoutStep("review")}
+                    >
+                      Back
+                    </Button>
+                    <Button
+                      className="flex-1 h-12 rounded-full bg-black text-white hover:bg-black/90"
                       onClick={() => {
+                        // Basic validation for key fields
+                        const required = [
+                          details.firstName,
+                          details.lastName,
+                          details.address1,
+                          details.city,
+                          details.state,
+                          details.pin,
+                          details.phone,
+                        ].every((v) => String(v || "").trim().length > 0);
+                        if (!required) {
+                          alert("Please fill all delivery details.");
+                          return;
+                        }
                         if (!cartItems || cartItems.length === 0) {
                           window.location.href = "https://wa.me/9871629699";
                           return;
                         }
                         const lines: Array<string> = [];
-                        lines.push("I want to order:");
+                        lines.push("New checkout request:");
                         lines.push("");
+                        lines.push("Contact:");
+                        if (details.email) lines.push(`Email: ${details.email}`);
+                        lines.push(`Phone: ${details.phone}`);
+                        lines.push("");
+                        lines.push("Delivery:");
+                        lines.push(`${details.firstName} ${details.lastName}`);
+                        lines.push(`${details.address1}`);
+                        lines.push(`${details.city}, ${details.state} - ${details.pin}`);
+                        lines.push("");
+                        lines.push("Items:");
                         let grandTotal = 0;
                         for (const item of cartItems) {
                           const name = item.product.name;
-                          const mrpPart = item.product.originalPrice
-                            ? ` | MRP ₹${item.product.originalPrice.toLocaleString()}`
-                            : "";
                           const price = `₹${item.product.price.toLocaleString()}`;
                           const qty = item.quantity ?? 1;
                           const subtotalNum = (item.product.price ?? 0) * qty;
                           grandTotal += subtotalNum;
-                          lines.push(`- ${name} | Qty: ${qty} | Price: ${price}${mrpPart}`);
+                          lines.push(`- ${name} | Qty: ${qty} | Price: ${price}`);
                           if ((item as any).color) {
                             const c = String((item as any).color);
                             const cap = c.charAt(0).toUpperCase() + c.slice(1);
@@ -313,7 +476,7 @@ export default function Navbar() {
                         window.location.href = url;
                       }}
                     >
-                      Checkout
+                      Save & WhatsApp
                     </Button>
                   </div>
                 </div>
