@@ -306,17 +306,6 @@ export default function Navbar() {
                   <div>
                     <p className="text-sm font-semibold mb-2">Contact</p>
                     <div className="space-y-3">
-                      <div className="space-y-1.5">
-                        <Label htmlFor="email">Email</Label>
-                        <Input
-                          id="email"
-                          type="email"
-                          placeholder="name@example.com"
-                          value={details.email}
-                          onChange={(e) => setDetails((d) => ({ ...d, email: e.target.value }))}
-                          className="bg-white"
-                        />
-                      </div>
                       <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1.5">
                           <Label htmlFor="firstName">First name</Label>
@@ -497,9 +486,6 @@ export default function Navbar() {
                         lines.push(`Contact number: ${details.phone}`);
                         lines.push(`${details.address1}`);
                         lines.push(`${details.city}, ${details.state} - ${details.pin}`);
-                        if (details.email) {
-                          lines.push(`Email: ${details.email}`);
-                        }
 
                         lines.push("");
                         lines.push(`Grand Total: ₹${grandTotal.toLocaleString()}`);
