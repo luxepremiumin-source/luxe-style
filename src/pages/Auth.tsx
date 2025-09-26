@@ -202,9 +202,20 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                       className="w-full mt-4"
                       onClick={handleGoogleLogin}
                       disabled={isLoading}
+                      aria-busy={isLoading}
                     >
-                      Continue with Google
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Redirecting to Google...
+                        </>
+                      ) : (
+                        "Continue with Google"
+                      )}
                     </Button>
+                    <p className="mt-2 text-xs text-muted-foreground text-center">
+                      You'll be redirected to Google to choose your account.
+                    </p>
 
                     {/* Removed: Continue as Guest button */}
                     {/* 
