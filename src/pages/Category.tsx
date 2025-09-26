@@ -127,7 +127,7 @@ export default function CategoryPage() {
                             onClick={(e) => {
                               e.stopPropagation();
                               const message = `Hi! I'm interested in "${product.name}" (${prettyName[product.category] ?? product.category}). Price: ₹${product.price.toLocaleString()}${product.originalPrice ? ` (MRP ₹${product.originalPrice.toLocaleString()})` : ""}. Please share more details.`;
-                              const url = `https://wa.me/919871629699?text=${encodeURIComponent(message)}`;
+                              const url = `https://wa.me/9871629699?text=${encodeURIComponent(message)}`;
                               window.location.href = url;
                             }}
                           >

@@ -226,8 +226,8 @@ export default function ProductPage() {
                 className="w-full h-12 rounded-full bg-[#25D366] text-white hover:bg-[#20bd5b]"
                 onClick={() => {
                   const message = `Hi! I'm interested in "${product.name}" (${prettyName[product.category] ?? product.category}). Price: ₹${product.price.toLocaleString()}${product.originalPrice ? ` (MRP ₹${product.originalPrice.toLocaleString()})` : ""}.${supportsColors ? ` Color: ${color[0].toUpperCase() + color.slice(1)}.` : ""}`;
-                  // Use international format without '+' as per WhatsApp docs and navigate in same tab
-                  const url = `https://wa.me/919871629699?text=${encodeURIComponent(message)}`;
+                  // Redirect to WhatsApp with specified number and pre-filled message
+                  const url = `https://wa.me/9871629699?text=${encodeURIComponent(message)}`;
                   window.location.href = url;
                 }}
               >
