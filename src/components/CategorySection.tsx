@@ -31,7 +31,7 @@ const categories = [
 export default function CategorySection() {
   const navigate = useNavigate();
   return (
-    <section className="py-24 bg-white">
+    <section className="py-24 bg-black">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -39,10 +39,10 @@ export default function CategorySection() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl lg:text-5xl font-bold tracking-tight text-gray-900 mb-4">
+          <h2 className="text-4xl lg:text-5xl font-bold tracking-tight text-white mb-4">
             Explore Our Collections
           </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-300 max-w-2xl mx-auto">
             Discover premium accessories that elevate your style and make a statement
           </p>
         </motion.div>
@@ -57,7 +57,7 @@ export default function CategorySection() {
               transition={{ delay: index * 0.1 }}
             >
               <Card
-                className="group cursor-pointer overflow-hidden border border-gray-200 hover:border-gray-300 transition-all duration-300"
+                className="group cursor-pointer overflow-hidden ring-1 ring-white/10 hover:ring-white/20 bg-transparent transition-all duration-300"
                 onClick={() => navigate(category.href)}
                 role="link"
                 tabIndex={0}
@@ -70,7 +70,7 @@ export default function CategorySection() {
               >
                 <div className="relative aspect-[4/3] overflow-hidden">
                   <div className={`absolute inset-0 bg-gradient-to-br ${category.color} opacity-90`} />
-                  <div className="absolute inset-0 bg-gray-200 flex items-center justify-center">
+                  <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
                     <span className="text-white font-semibold text-lg">{category.name}</span>
                   </div>
                   <motion.div
@@ -81,15 +81,15 @@ export default function CategorySection() {
                 </div>
                 
                 <div className="p-6">
-                  <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-gray-700 transition-colors">
+                  <h3 className="text-xl font-bold text-white mb-2">
                     {category.name}
                   </h3>
-                  <p className="text-gray-600 mb-4">
+                  <p className="text-gray-300 mb-4">
                     {category.description}
                   </p>
                   <Button
                     variant="ghost"
-                    className="p-0 h-auto text-gray-900 hover:text-gray-700 group-hover:translate-x-1 transition-transform"
+                    className="p-0 h-auto text-white hover:text-white/80 group-hover:translate-x-1 transition-transform"
                     onClick={(e) => {
                       e.stopPropagation();
                       navigate(category.href);
