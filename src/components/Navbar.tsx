@@ -435,26 +435,20 @@ export default function Navbar() {
                           window.location.href = "https://wa.me/9871629699";
                           return;
                         }
+
+                        // Build WhatsApp message in the requested order/wording
                         const lines: Array<string> = [];
-                        lines.push("New checkout request:");
+                        lines.push("I want to order:");
                         lines.push("");
-                        lines.push("Contact:");
-                        if (details.email) lines.push(`Email: ${details.email}`);
-                        lines.push(`Phone: ${details.phone}`);
-                        lines.push("");
-                        lines.push("Delivery:");
-                        lines.push(`${details.firstName} ${details.lastName}`);
-                        lines.push(`${details.address1}`);
-                        lines.push(`${details.city}, ${details.state} - ${details.pin}`);
-                        lines.push("");
-                        lines.push("Items:");
+
                         let grandTotal = 0;
                         for (const item of cartItems) {
                           const name = item.product.name;
-                          const price = `₹${item.product.price.toLocaleString()}`;
                           const qty = item.quantity ?? 1;
-                          const subtotalNum = (item.product.price ?? 0) * qty;
-                          grandTotal += subtotalNum;
+                          const priceNum = item.product.price ?? 0;
+                          grandTotal += priceNum * qty;
+                          const price = `₹${priceNum.toLocaleString()}`;
+
                           lines.push(`- ${name} | Qty: ${qty} | Price: ${price}`);
                           if ((item as any).color) {
                             const c = String((item as any).color);
@@ -464,8 +458,20 @@ export default function Navbar() {
                           const productLink = `${window.location.origin}/product/${item.product._id}`;
                           lines.push(`  Link: ${productLink}`);
                         }
+
+                        lines.push("");
+                        lines.push("My address:");
+                        lines.push(`${details.firstName} ${details.lastName}`);
+                        lines.push(`Contact number: ${details.phone}`);
+                        lines.push(`${details.address1}`);
+                        lines.push(`${details.city}, ${details.state} - ${details.pin}`);
+                        if (details.email) {
+                          lines.push(`Email: ${details.email}`);
+                        }
+
                         lines.push("");
                         lines.push(`Grand Total: ₹${grandTotal.toLocaleString()}`);
+
                         const message = lines.join("\n");
                         const url = `https://wa.me/9871629699?text=${encodeURIComponent(message)}`;
                         window.location.href = url;
