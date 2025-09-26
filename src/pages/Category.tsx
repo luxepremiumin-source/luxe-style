@@ -44,7 +44,7 @@ export default function CategoryPage() {
   };
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="min-h-screen">
+    <div className="min-h-screen">
       <Navbar />
       <main className="pt-20">
         <section className="bg-black">
@@ -146,6 +146,6 @@ export default function CategoryPage() {
         </section>
       </main>
       <Footer />
-    </motion.div>
+    </div>
   );
 }
