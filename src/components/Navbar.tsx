@@ -7,7 +7,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { api } from "@/convex/_generated/api";
 import { useQuery } from "convex/react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
 export default function Navbar() {
   const { isAuthenticated, user, signOut } = useAuth();
@@ -32,6 +32,10 @@ export default function Navbar() {
 
   // Cart items for drawer
   const cartItems = useQuery(api.cart.getCartItems, { userId: user?._id ?? null });
+
+  // Estimated total for display in the cart panel
+  const estimatedTotal =
+    (cartItems ?? []).reduce((sum, item) => sum + (item.product.price ?? 0) * (item.quantity ?? 1), 0);
 
   const categories = [
     { name: "Home page", href: "/" },
@@ -154,13 +158,16 @@ export default function Navbar() {
         )}
       </div>
 
-      {/* Cart Popup (Dialog) */}
+      {/* Cart Slide-over (Sheet) */}
       {mounted && (
-        <Dialog open={isCartOpen} onOpenChange={setIsCartOpen}>
-          <DialogContent className="sm:max-w-lg rounded-2xl p-0 overflow-hidden bg-gray-100 text-gray-900">
-            <DialogHeader className="px-6 pt-5">
+        <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
+          <SheetContent
+            side="right"
+            className="w-full sm:max-w-md p-0 h-full bg-gray-100 text-gray-900 border-l border-black/10"
+          >
+            <SheetHeader className="px-6 pt-5">
               <div className="flex items-center justify-between">
-                <DialogTitle className="text-2xl font-extrabold">Your cart</DialogTitle>
+                <SheetTitle className="text-2xl font-extrabold">Your cart</SheetTitle>
                 <button
                   aria-label="Close cart"
                   className="p-2 rounded-md hover:bg-black/5"
@@ -169,7 +176,7 @@ export default function Navbar() {
                   ✕
                 </button>
               </div>
-            </DialogHeader>
+            </SheetHeader>
             <div className="px-6">
               <div className="border-t border-gray-300/60" />
             </div>
@@ -213,9 +220,21 @@ export default function Navbar() {
                     ))}
                   </ul>
 
-                  <div className="pt-2 border-t">
+                  {/* Divider */}
+                  <div className="pt-2 border-t border-gray-300/60" />
+
+                  {/* Estimated total + note */}
+                  <div className="flex items-center justify-between text-gray-900">
+                    <p className="font-extrabold">Estimated total</p>
+                    <p className="font-extrabold">₹{estimatedTotal.toLocaleString()}</p>
+                  </div>
+                  <p className="text-xs text-gray-600">
+                    Taxes, discounts and <span className="underline">shipping</span> calculated at checkout.
+                  </p>
+
+                  <div className="pt-2">
                     <Button
-                      className="w-full rounded-full bg-black text-white hover:bg-black/90"
+                      className="w-full h-12 rounded-full bg-black text-white hover:bg-black/90"
                       onClick={() => {
                         if (!cartItems || cartItems.length === 0) {
                           window.location.href = "https://wa.me/9871629699";
@@ -256,8 +275,8 @@ export default function Navbar() {
                 </div>
               )}
             </div>
-          </DialogContent>
-        </Dialog>
+          </SheetContent>
+        </Sheet>
       )}
     </motion.nav>
   );
