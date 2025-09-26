@@ -117,6 +117,24 @@ export default function CategoryPage() {
                             ₹{product.price.toLocaleString()}
                           </span>
                         </div>
+
+                        {/* Order on WhatsApp - direct open with product details */}
+                        <div className="mt-3">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="rounded-full border-white/30 text-white hover:bg-white/10"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const message = `Hi! I'm interested in "${product.name}" (${prettyName[product.category] ?? product.category}). Price: ₹${product.price.toLocaleString()}${product.originalPrice ? ` (MRP ₹${product.originalPrice.toLocaleString()})` : ""}. Please share more details.`;
+                              const url = `https://wa.me/919871629699?text=${encodeURIComponent(message)}`;
+                              window.location.href = url;
+                            }}
+                          >
+                            <MessageCircle className="h-4 w-4 mr-2" />
+                            Order on WhatsApp
+                          </Button>
+                        </div>
                       </div>
                     </Card>
                   </motion.div>
