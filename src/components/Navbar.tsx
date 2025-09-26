@@ -126,21 +126,16 @@ export default function Navbar() {
 
             {isAuthenticated ? (
               <div className="flex items-center space-x-2">
-                {/* Add: Admin link visible only to authorized admin */}
-                {isAuthorizedAdmin && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => navigate("/admin")}
-                    className="hidden sm:flex border-white/40 text-white bg-transparent hover:bg-white/10"
-                  >
-                    Admin
-                  </Button>
-                )}
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => navigate("/profile")}
+                  onClick={() => {
+                    if (isAuthorizedAdmin) {
+                      navigate("/admin");
+                    } else {
+                      navigate("/auth");
+                    }
+                  }}
                   className="hover:bg-white/10"
                 >
                   <User className="h-5 w-5 text-white" />
