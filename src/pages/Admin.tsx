@@ -31,9 +31,17 @@ type NewProduct = {
 
 export default function Admin() {
   const navigate = useNavigate();
-  const { isLoading, isAuthenticated } = useAuth();
+  const { isLoading, isAuthenticated, user } = useAuth();
   const createProduct = useMutation(api.products.createProduct);
   const products = useQuery(api.products.getAllProducts);
+
+  // Add: strict admin access (by email and/or role)
+  const allowedEmails = new Set<string>(["vidhigadgets@gmail.com"]);
+  const isAuthorized =
+    !!isAuthenticated &&
+    !!user &&
+    ((user.role as string | undefined) === "admin" ||
+      (user.email ? allowedEmails.has(user.email) : false));
 
   const [form, setForm] = useState<NewProduct>({
     name: "",
@@ -51,6 +59,14 @@ export default function Admin() {
       navigate("/auth");
     }
   }, [isLoading, isAuthenticated, navigate]);
+
+  // Add: redirect non-admins away from /admin
+  useEffect(() => {
+    if (!isLoading && isAuthenticated && user !== undefined && !isAuthorized) {
+      toast("You are not authorized to access Admin.");
+      navigate("/");
+    }
+  }, [isLoading, isAuthenticated, user, isAuthorized, navigate]);
 
   const submitting = useMemo(() => false, []); // keep UI simple; Button will be disabled during async op via local state below
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -117,7 +133,8 @@ export default function Admin() {
     }
   };
 
-  if (isLoading || !isAuthenticated) {
+  // Update: guard render against unauthorized users
+  if (isLoading || !isAuthenticated || !isAuthorized) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <span className="text-sm text-gray-500">Loading...</span>
