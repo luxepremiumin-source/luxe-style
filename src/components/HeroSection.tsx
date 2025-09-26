@@ -1,6 +1,4 @@
-import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
 
 export default function HeroSection() {
   const bg =
@@ -8,12 +6,16 @@ export default function HeroSection() {
 
   return (
     <section className="relative min-h-[88vh] w-full overflow-hidden bg-black">
-      {/* Background image */}
-      <img
+      {/* Background image with looping center zoom */}
+      <motion.img
         src={bg}
         alt="LUXE flagship visual"
         className="absolute inset-0 h-full w-full object-cover"
         loading="eager"
+        initial={{ scale: 1 }}
+        animate={{ scale: [1, 1.08, 1] }}
+        transition={{ duration: 14, ease: "easeInOut", repeat: Infinity }}
+        style={{ transformOrigin: "50% 50%" }} // center focus
       />
       {/* Subtle dark overlay for contrast */}
       <div className="absolute inset-0 bg-black/40" />
