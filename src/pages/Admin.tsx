@@ -54,6 +54,42 @@ export default function Admin() {
     inStock: true,
   });
 
+  // Add: uploaded image URLs from device (public Convex URLs)
+  const [uploadedUrls, setUploadedUrls] = useState<string[]>([]);
+
+  // Add: Convex storage upload action
+  const generateUploadUrl = useMutation((api as any).storage.generateUploadUrl);
+
+  // Add: upload handler
+  const handleFilesUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    try {
+      setIsSubmitting(true);
+      const convexUrl = import.meta.env.VITE_CONVEX_URL as string;
+      const newUrls: Array<string> = [];
+      // Upload sequentially for simplicity/reliability
+      for (const file of Array.from(files)) {
+        const postUrl: string = await generateUploadUrl({});
+        const res = await fetch(postUrl, {
+          method: "POST",
+          headers: { "Content-Type": file.type || "application/octet-stream" },
+          body: file,
+        });
+        if (!res.ok) throw new Error("Upload failed");
+        const json = (await res.json()) as { storageId: string };
+        const publicUrl = `${convexUrl}/api/storage/${json.storageId}`;
+        newUrls.push(publicUrl);
+      }
+      setUploadedUrls((prev) => [...prev, ...newUrls]);
+      toast("Images uploaded");
+    } catch (err) {
+      console.error(err);
+      toast("Failed to upload image(s). Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       navigate("/auth");
@@ -109,12 +145,15 @@ export default function Admin() {
         price: priceNum,
         originalPrice: originalPriceNum,
         category: form.category,
-        images: imagesArray.length ? imagesArray : ["/api/placeholder/400/400"],
+        // Combine device-uploaded URLs + typed URLs
+        images: [...uploadedUrls, ...(imagesArray.length ? imagesArray : [])].length
+          ? [...uploadedUrls, ...(imagesArray.length ? imagesArray : [])]
+          : ["/api/placeholder/400/400"],
         featured: form.featured,
         inStock: form.inStock,
       });
       toast("Product added successfully!");
-      // Reset minimal fields; keep category for speed
+      // Reset minimal fields; keep category for speed. Clear uploads as well.
       setForm((prev) => ({
         ...prev,
         name: "",
@@ -125,6 +164,7 @@ export default function Admin() {
         featured: false,
         inStock: true,
       }));
+      setUploadedUrls([]);
     } catch (err) {
       console.error(err);
       toast("Failed to add product. Please try again.");
@@ -231,8 +271,44 @@ export default function Admin() {
                   </Select>
                 </div>
 
+                {/* Add: Device upload section */}
                 <div className="space-y-2">
-                  <Label htmlFor="images">Images (comma separated URLs)</Label>
+                  <Label htmlFor="upload">Upload Images (multiple)</Label>
+                  <Input
+                    id="upload"
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={(e) => handleFilesUpload(e.target.files)}
+                  />
+                  {uploadedUrls.length > 0 && (
+                    <div className="mt-2 grid grid-cols-3 gap-2">
+                      {uploadedUrls.map((url, idx) => (
+                        <div key={url + idx} className="relative">
+                          <img
+                            src={url}
+                            alt={`uploaded-${idx}`}
+                            className="h-20 w-full object-cover rounded-md border"
+                          />
+                          <button
+                            type="button"
+                            className="absolute top-1 right-1 text-[10px] px-2 py-0.5 rounded bg-black/70 text-white"
+                            onClick={() =>
+                              setUploadedUrls((prev) => prev.filter((u) => u !== url))
+                            }
+                            aria-label="Remove image"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Existing: URL input remains, now optional */}
+                <div className="space-y-2">
+                  <Label htmlFor="images">Or paste image URLs (comma separated)</Label>
                   <Input
                     id="images"
                     value={form.images}
