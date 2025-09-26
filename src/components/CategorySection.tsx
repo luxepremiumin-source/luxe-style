@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
+import { useNavigate } from "react-router";
 
 const categories = [
   {
@@ -28,6 +29,7 @@ const categories = [
 ];
 
 export default function CategorySection() {
+  const navigate = useNavigate();
   return (
     <section className="py-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -54,7 +56,18 @@ export default function CategorySection() {
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
             >
-              <Card className="group cursor-pointer overflow-hidden border border-gray-200 hover:border-gray-300 transition-all duration-300">
+              <Card
+                className="group cursor-pointer overflow-hidden border border-gray-200 hover:border-gray-300 transition-all duration-300"
+                onClick={() => navigate(category.href)}
+                role="link"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    navigate(category.href);
+                  }
+                }}
+              >
                 <div className="relative aspect-[4/3] overflow-hidden">
                   <div className={`absolute inset-0 bg-gradient-to-br ${category.color} opacity-90`} />
                   <div className="absolute inset-0 bg-gray-200 flex items-center justify-center">
@@ -77,6 +90,10 @@ export default function CategorySection() {
                   <Button
                     variant="ghost"
                     className="p-0 h-auto text-gray-900 hover:text-gray-700 group-hover:translate-x-1 transition-transform"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(category.href);
+                    }}
                   >
                     Shop Now
                     <ArrowRight className="ml-2 h-4 w-4" />
