@@ -66,7 +66,8 @@ export default function Admin() {
 
   // Add: wait until the uploaded file is publicly readable (handles brief propagation delay)
   const ensureFileAvailable = async (url: string) => {
-    const delays = [0, 150, 300, 600, 1200, 2000]; // ms
+    // Extended delay schedule to handle slower propagation and avoid negative caching
+    const delays = [0, 200, 400, 800, 1500, 2500, 4000, 6000]; // ms
     for (let i = 0; i < delays.length; i++) {
       if (delays[i]) await new Promise((r) => setTimeout(r, delays[i]));
       try {
@@ -103,8 +104,10 @@ export default function Admin() {
           ? String(import.meta.env.VITE_CONVEX_URL).replace(/\/+$/, "")
           : new URL(postUrl).origin;
       const publicUrl = `${convexBase}/api/storage/${json.storageId}`;
-      await ensureFileAvailable(publicUrl); // NEW
-      newUrls.push(publicUrl);
+      await ensureFileAvailable(publicUrl);
+      // Use cache-busting only for previews to avoid negative cache of early 404s
+      const previewUrl = `${publicUrl}?v=${Date.now()}`;
+      newUrls.push(previewUrl);
     }
     setUploadedUrls((prev) => [...prev, ...newUrls]);
   };
@@ -127,8 +130,10 @@ export default function Admin() {
           ? String(import.meta.env.VITE_CONVEX_URL).replace(/\/+$/, "")
           : new URL(postUrl).origin;
       const publicUrl = `${convexBase}/api/storage/${json.storageId}`;
-      await ensureFileAvailable(publicUrl); // NEW
-      newUrls.push(publicUrl);
+      await ensureFileAvailable(publicUrl);
+      // Preview with cache-busting param
+      const previewUrl = `${publicUrl}?v=${Date.now()}`;
+      newUrls.push(previewUrl);
     }
     setEditUploadedUrls((prev) => [...prev, ...newUrls]);
   };
@@ -264,15 +269,16 @@ export default function Admin() {
 
     try {
       setIsSubmitting(true);
+      // Strip cache-busting params when saving to DB
+      const cleanedUploaded = uploadedUrls.map((u) => u.split("?")[0]);
       await createProduct({
         name: form.name.trim(),
         description: form.description.trim(),
         price: priceNum,
         originalPrice: originalPriceNum,
         category: form.category,
-        // Combine device-uploaded URLs + typed URLs
-        images: [...uploadedUrls, ...(imagesArray.length ? imagesArray : [])].length
-          ? [...uploadedUrls, ...(imagesArray.length ? imagesArray : [])]
+        images: [...cleanedUploaded, ...(imagesArray.length ? imagesArray : [])].length
+          ? [...cleanedUploaded, ...(imagesArray.length ? imagesArray : [])]
           : ["/api/placeholder/400/400"],
         featured: form.featured,
         inStock: form.inStock,
@@ -355,8 +361,9 @@ export default function Admin() {
       .map((s) => s.trim())
       .filter(Boolean);
 
-    // NEW: combine newly uploaded edit images + typed URLs
-    const combinedImages: Array<string> = [...editUploadedUrls, ...imagesArray];
+    // Combine newly uploaded edit images (strip ?v=...) + typed URLs
+    const cleanedEditUploaded = editUploadedUrls.map((u) => u.split("?")[0]);
+    const combinedImages: Array<string> = [...cleanedEditUploaded, ...imagesArray];
 
     try {
       setIsSubmitting(true);
@@ -370,7 +377,6 @@ export default function Admin() {
         featured: editForm.featured,
         inStock: editForm.inStock,
       };
-      // Only patch images if user provided new uploads or typed URLs
       if (combinedImages.length > 0) {
         payload.images = combinedImages;
       }
