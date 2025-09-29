@@ -64,7 +64,28 @@ export default function Admin() {
   // Add: Convex storage upload action
   const generateUploadUrl = useAction((api as any).storage.generateUploadUrl);
 
-  // Update: helper to upload an array of image files/blobs — ensure correct Convex base URL
+  // Add: wait until the uploaded file is publicly readable (handles brief propagation delay)
+  const ensureFileAvailable = async (url: string) => {
+    const delays = [0, 150, 300, 600, 1200, 2000]; // ms
+    for (let i = 0; i < delays.length; i++) {
+      if (delays[i]) await new Promise((r) => setTimeout(r, delays[i]));
+      try {
+        const res = await fetch(url, { method: "HEAD", cache: "no-store" });
+        if (res.ok) return;
+      } catch {
+        // try next
+      }
+    }
+    // Final attempt using GET as a fallback; ignore body
+    try {
+      const res = await fetch(url, { method: "GET", cache: "no-store" });
+      if (res.ok) return;
+    } catch {
+      // swallow
+    }
+  };
+
+  // Update: helper to upload an array of image files/blobs — ensure correct Convex base URL and wait for availability
   const uploadImageFiles = async (files: Array<File>) => {
     if (!files || files.length === 0) return;
     const newUrls: Array<string> = [];
@@ -77,18 +98,18 @@ export default function Admin() {
       });
       if (!res.ok) throw new Error("Upload failed");
       const json = (await res.json()) as { storageId: string };
-      // Prefer configured Convex URL; fallback to the postUrl origin
       const convexBase =
         (import.meta.env.VITE_CONVEX_URL as string | undefined) && String(import.meta.env.VITE_CONVEX_URL).trim().length > 0
           ? String(import.meta.env.VITE_CONVEX_URL).replace(/\/+$/, "")
           : new URL(postUrl).origin;
       const publicUrl = `${convexBase}/api/storage/${json.storageId}`;
+      await ensureFileAvailable(publicUrl); // NEW
       newUrls.push(publicUrl);
     }
     setUploadedUrls((prev) => [...prev, ...newUrls]);
   };
 
-  // NEW: helper for edit dialog uploads — ensure correct Convex base URL
+  // NEW: helper for edit dialog uploads — ensure correct Convex base URL and wait for availability
   const uploadImageFilesForEdit = async (files: Array<File>) => {
     if (!files || files.length === 0) return;
     const newUrls: Array<string> = [];
@@ -106,6 +127,7 @@ export default function Admin() {
           ? String(import.meta.env.VITE_CONVEX_URL).replace(/\/+$/, "")
           : new URL(postUrl).origin;
       const publicUrl = `${convexBase}/api/storage/${json.storageId}`;
+      await ensureFileAvailable(publicUrl); // NEW
       newUrls.push(publicUrl);
     }
     setEditUploadedUrls((prev) => [...prev, ...newUrls]);
