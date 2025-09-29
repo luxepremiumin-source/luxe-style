@@ -62,31 +62,63 @@ export default function Admin() {
   // Add: Convex storage upload action
   const generateUploadUrl = useMutation((api as any).storage.generateUploadUrl);
 
-  // Add: upload handler
+  // Add: helper to upload an array of image files/blobs
+  const uploadImageFiles = async (files: Array<File>) => {
+    if (!files || files.length === 0) return;
+    const convexUrl = import.meta.env.VITE_CONVEX_URL as string;
+    const newUrls: Array<string> = [];
+    for (const file of files) {
+      const postUrl: string = await generateUploadUrl({});
+      const res = await fetch(postUrl, {
+        method: "POST",
+        headers: { "Content-Type": file.type || "application/octet-stream" },
+        body: file,
+      });
+      if (!res.ok) throw new Error("Upload failed");
+      const json = (await res.json()) as { storageId: string };
+      const publicUrl = `${convexUrl}/api/storage/${json.storageId}`;
+      newUrls.push(publicUrl);
+    }
+    setUploadedUrls((prev) => [...prev, ...newUrls]);
+  };
+
+  // Update: reuse helper for input[type=file] uploads
   const handleFilesUpload = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
     try {
       setIsSubmitting(true);
-      const convexUrl = import.meta.env.VITE_CONVEX_URL as string;
-      const newUrls: Array<string> = [];
-      // Upload sequentially for simplicity/reliability
-      for (const file of Array.from(files)) {
-        const postUrl: string = await generateUploadUrl({});
-        const res = await fetch(postUrl, {
-          method: "POST",
-          headers: { "Content-Type": file.type || "application/octet-stream" },
-          body: file,
-        });
-        if (!res.ok) throw new Error("Upload failed");
-        const json = (await res.json()) as { storageId: string };
-        const publicUrl = `${convexUrl}/api/storage/${json.storageId}`;
-        newUrls.push(publicUrl);
-      }
-      setUploadedUrls((prev) => [...prev, ...newUrls]);
+      await uploadImageFiles(Array.from(files));
       toast("Images uploaded");
     } catch (err) {
       console.error(err);
       toast("Failed to upload image(s). Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // NEW: paste handler to accept images from clipboard
+  const handlePasteUpload = async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    try {
+      const items = e.clipboardData?.items;
+      if (!items || items.length === 0) return;
+      const files: Array<File> = [];
+      for (const item of Array.from(items)) {
+        if (item.kind === "file") {
+          const file = item.getAsFile();
+          if (file && file.type.startsWith("image/")) {
+            files.push(file);
+          }
+        }
+      }
+      if (files.length === 0) return;
+      e.preventDefault();
+      setIsSubmitting(true);
+      await uploadImageFiles(files);
+      toast(`Pasted ${files.length} image${files.length > 1 ? "s" : ""}`);
+    } catch (err) {
+      console.error(err);
+      toast("Failed to upload pasted image(s). Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -385,6 +417,20 @@ export default function Admin() {
                       ))}
                     </div>
                   )}
+                </div>
+
+                {/* NEW: Paste images area */}
+                <div className="space-y-2">
+                  <Label htmlFor="paste-area">Or paste images (Ctrl/⌘+V)</Label>
+                  <textarea
+                    id="paste-area"
+                    onPaste={handlePasteUpload}
+                    placeholder="Click here and paste images from clipboard"
+                    className="w-full h-16 rounded-md border border-gray-200 p-3 text-sm bg-white/90"
+                  />
+                  <p className="text-xs text-gray-500">
+                    Tip: Copy an image (or screenshot) and press Ctrl/⌘+V here. We'll upload it automatically.
+                  </p>
                 </div>
 
                 {/* Existing: URL input remains, now optional */}
