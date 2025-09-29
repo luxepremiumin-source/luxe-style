@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAuth } from "@/hooks/use-auth";
 import { api } from "@/convex/_generated/api";
-import { useMutation, useQuery } from "convex/react";
+import { useMutation, useQuery, useAction } from "convex/react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -60,7 +60,7 @@ export default function Admin() {
   const [uploadedUrls, setUploadedUrls] = useState<string[]>([]);
 
   // Add: Convex storage upload action
-  const generateUploadUrl = useMutation((api as any).storage.generateUploadUrl);
+  const generateUploadUrl = useAction((api as any).storage.generateUploadUrl);
 
   // Add: helper to upload an array of image files/blobs
   const uploadImageFiles = async (files: Array<File>) => {
