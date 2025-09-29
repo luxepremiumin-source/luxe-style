@@ -67,7 +67,6 @@ export default function Admin() {
   // Add: helper to upload an array of image files/blobs
   const uploadImageFiles = async (files: Array<File>) => {
     if (!files || files.length === 0) return;
-    const convexUrl = import.meta.env.VITE_CONVEX_URL as string;
     const newUrls: Array<string> = [];
     for (const file of files) {
       const postUrl: string = await generateUploadUrl({});
@@ -78,16 +77,17 @@ export default function Admin() {
       });
       if (!res.ok) throw new Error("Upload failed");
       const json = (await res.json()) as { storageId: string };
-      const publicUrl = `${convexUrl}/api/storage/${json.storageId}`;
+      // Build public URL from the origin of the generated upload URL
+      const origin = new URL(postUrl).origin;
+      const publicUrl = `${origin}/api/storage/${json.storageId}`;
       newUrls.push(publicUrl);
     }
     setUploadedUrls((prev) => [...prev, ...newUrls]);
   };
 
-  // NEW: helper for edit dialog uploads
+  // NEW: helper for edit dialog uploads — also derive from postUrl
   const uploadImageFilesForEdit = async (files: Array<File>) => {
     if (!files || files.length === 0) return;
-    const convexUrl = import.meta.env.VITE_CONVEX_URL as string;
     const newUrls: Array<string> = [];
     for (const file of files) {
       const postUrl: string = await generateUploadUrl({});
@@ -98,7 +98,8 @@ export default function Admin() {
       });
       if (!res.ok) throw new Error("Upload failed");
       const json = (await res.json()) as { storageId: string };
-      const publicUrl = `${convexUrl}/api/storage/${json.storageId}`;
+      const origin = new URL(postUrl).origin;
+      const publicUrl = `${origin}/api/storage/${json.storageId}`;
       newUrls.push(publicUrl);
     }
     setEditUploadedUrls((prev) => [...prev, ...newUrls]);
