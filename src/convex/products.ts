@@ -14,6 +14,7 @@ export const getProductsByCategory = query({
     return await ctx.db
       .query("products")
       .withIndex("by_category", (q) => q.eq("category", args.category))
+      .order("desc") // Show newest products first so the last added item is visible at the top
       .collect();
   },
 });
