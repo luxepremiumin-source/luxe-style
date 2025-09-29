@@ -58,6 +58,8 @@ export default function Admin() {
 
   // Add: uploaded image URLs from device (public Convex URLs)
   const [uploadedUrls, setUploadedUrls] = useState<string[]>([]);
+  // NEW: uploaded image URLs used while editing
+  const [editUploadedUrls, setEditUploadedUrls] = useState<string[]>([]);
 
   // Add: Convex storage upload action
   const generateUploadUrl = useAction((api as any).storage.generateUploadUrl);
@@ -82,6 +84,26 @@ export default function Admin() {
     setUploadedUrls((prev) => [...prev, ...newUrls]);
   };
 
+  // NEW: helper for edit dialog uploads
+  const uploadImageFilesForEdit = async (files: Array<File>) => {
+    if (!files || files.length === 0) return;
+    const convexUrl = import.meta.env.VITE_CONVEX_URL as string;
+    const newUrls: Array<string> = [];
+    for (const file of files) {
+      const postUrl: string = await generateUploadUrl({});
+      const res = await fetch(postUrl, {
+        method: "POST",
+        headers: { "Content-Type": file.type || "application/octet-stream" },
+        body: file,
+      });
+      if (!res.ok) throw new Error("Upload failed");
+      const json = (await res.json()) as { storageId: string };
+      const publicUrl = `${convexUrl}/api/storage/${json.storageId}`;
+      newUrls.push(publicUrl);
+    }
+    setEditUploadedUrls((prev) => [...prev, ...newUrls]);
+  };
+
   // Update: reuse helper for input[type=file] uploads
   const handleFilesUpload = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
@@ -97,7 +119,22 @@ export default function Admin() {
     }
   };
 
-  // NEW: paste handler to accept images from clipboard
+  // NEW: file upload handler for edit dialog
+  const handleEditFilesUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    try {
+      setIsSubmitting(true);
+      await uploadImageFilesForEdit(Array.from(files));
+      toast("Images uploaded");
+    } catch (err) {
+      console.error(err);
+      toast("Failed to upload image(s). Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // NEW: paste handler to accept images from clipboard for create form
   const handlePasteUpload = async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
     try {
       const items = e.clipboardData?.items;
@@ -115,6 +152,31 @@ export default function Admin() {
       e.preventDefault();
       setIsSubmitting(true);
       await uploadImageFiles(files);
+      toast(`Pasted ${files.length} image${files.length > 1 ? "s" : ""}`);
+    } catch (err) {
+      console.error(err);
+      toast("Failed to upload pasted image(s). Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // NEW: paste handler for edit dialog
+  const handleEditPasteUpload = async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    try {
+      const items = e.clipboardData?.items;
+      if (!items || items.length === 0) return;
+      const files: Array<File> = [];
+      for (const item of Array.from(items)) {
+        if (item.kind === "file") {
+          const file = item.getAsFile();
+          if (file && file.type.startsWith("image/")) files.push(file);
+        }
+      }
+      if (files.length === 0) return;
+      e.preventDefault();
+      setIsSubmitting(true);
+      await uploadImageFilesForEdit(files);
       toast(`Pasted ${files.length} image${files.length > 1 ? "s" : ""}`);
     } catch (err) {
       console.error(err);
@@ -242,6 +304,8 @@ export default function Admin() {
       featured: !!p.featured,
       inStock: !!p.inStock,
     });
+    // NEW: reset any previously uploaded edit URLs
+    setEditUploadedUrls([]);
     setIsEditOpen(true);
   };
 
@@ -262,19 +326,26 @@ export default function Admin() {
       .map((s) => s.trim())
       .filter(Boolean);
 
+    // NEW: combine newly uploaded edit images + typed URLs
+    const combinedImages: Array<string> = [...editUploadedUrls, ...imagesArray];
+
     try {
       setIsSubmitting(true);
-      await updateProduct({
+      const payload: any = {
         id: editId as any,
         name: editForm.name.trim(),
         description: editForm.description.trim(),
         price: priceNum,
         originalPrice: originalPriceNum,
         category: editForm.category,
-        images: imagesArray,
         featured: editForm.featured,
         inStock: editForm.inStock,
-      } as any);
+      };
+      // Only patch images if user provided new uploads or typed URLs
+      if (combinedImages.length > 0) {
+        payload.images = combinedImages;
+      }
+      await updateProduct(payload);
       toast("Product updated.");
       setIsEditOpen(false);
       setEditId(null);
@@ -574,6 +645,56 @@ export default function Admin() {
                 placeholder="https://..., https://..."
               />
             </div>
+
+            {/* NEW: Upload Images in Edit */}
+            <div className="space-y-2">
+              <Label htmlFor="e_upload">Upload Images (multiple)</Label>
+              <Input
+                id="e_upload"
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={(e) => handleEditFilesUpload(e.target.files)}
+              />
+              {editUploadedUrls.length > 0 && (
+                <div className="mt-2 grid grid-cols-3 gap-2">
+                  {editUploadedUrls.map((url, idx) => (
+                    <div key={url + idx} className="relative">
+                      <img
+                        src={url}
+                        alt={`uploaded-edit-${idx}`}
+                        className="h-20 w-full object-cover rounded-md border"
+                      />
+                      <button
+                        type="button"
+                        className="absolute top-1 right-1 text-[10px] px-2 py-0.5 rounded bg-black/70 text-white"
+                        onClick={() =>
+                          setEditUploadedUrls((prev) => prev.filter((u) => u !== url))
+                        }
+                        aria-label="Remove image"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* NEW: Paste Images in Edit */}
+            <div className="space-y-2">
+              <Label htmlFor="e_paste">Or paste images (Ctrl/⌘+V)</Label>
+              <textarea
+                id="e_paste"
+                onPaste={handleEditPasteUpload}
+                placeholder="Click here and paste images from clipboard"
+                className="w-full h-16 rounded-md border border-gray-200 p-3 text-sm bg-white/90"
+              />
+              <p className="text-xs text-gray-500">
+                Tip: Copy an image (or screenshot) and press Ctrl/⌘+V here. We'll upload it automatically.
+              </p>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div className="flex items-center justify-between rounded-md border border-gray-200 p-3">
                 <div>
