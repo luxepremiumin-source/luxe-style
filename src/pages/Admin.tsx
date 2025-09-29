@@ -63,6 +63,8 @@ export default function Admin() {
 
   // Add: Convex storage upload action
   const generateUploadUrl = useAction((api as any).storage.generateUploadUrl);
+  // Add: Convex storage URL resolver action (returns a canonical public URL)
+  const resolvePublicUrl = useAction((api as any).storage.resolvePublicUrl);
 
   // Add: wait until the uploaded file is publicly readable (handles brief propagation delay)
   const ensureFileAvailable = async (url: string) => {
@@ -86,7 +88,7 @@ export default function Admin() {
     }
   };
 
-  // Update: helper to upload an array of image files/blobs — ensure correct Convex base URL and wait for availability
+  // Update: helper to upload an array of image files/blobs — resolve via Convex and wait for availability
   const uploadImageFiles = async (files: Array<File>) => {
     if (!files || files.length === 0) return;
     const newUrls: Array<string> = [];
@@ -99,20 +101,18 @@ export default function Admin() {
       });
       if (!res.ok) throw new Error("Upload failed");
       const json = (await res.json()) as { storageId: string };
-      const convexBase =
-        (import.meta.env.VITE_CONVEX_URL as string | undefined) && String(import.meta.env.VITE_CONVEX_URL).trim().length > 0
-          ? String(import.meta.env.VITE_CONVEX_URL).replace(/\/+$/, "")
-          : new URL(postUrl).origin;
-      const publicUrl = `${convexBase}/api/storage/${json.storageId}`;
+      // Ask backend for the canonical public URL for this storageId
+      const publicUrl: string = await resolvePublicUrl({ storageId: json.storageId as any });
       await ensureFileAvailable(publicUrl);
-      // Use cache-busting only for previews to avoid negative cache of early 404s
-      const previewUrl = `${publicUrl}?v=${Date.now()}`;
+      // Build preview URL with proper cache-busting whether or not publicUrl already has query params
+      const previewUrl =
+        publicUrl + (publicUrl.includes("?") ? "&" : "?") + "v=" + Date.now();
       newUrls.push(previewUrl);
     }
     setUploadedUrls((prev) => [...prev, ...newUrls]);
   };
 
-  // NEW: helper for edit dialog uploads — ensure correct Convex base URL and wait for availability
+  // Update: helper for edit dialog uploads — resolve via Convex and wait for availability
   const uploadImageFilesForEdit = async (files: Array<File>) => {
     if (!files || files.length === 0) return;
     const newUrls: Array<string> = [];
@@ -125,14 +125,11 @@ export default function Admin() {
       });
       if (!res.ok) throw new Error("Upload failed");
       const json = (await res.json()) as { storageId: string };
-      const convexBase =
-        (import.meta.env.VITE_CONVEX_URL as string | undefined) && String(import.meta.env.VITE_CONVEX_URL).trim().length > 0
-          ? String(import.meta.env.VITE_CONVEX_URL).replace(/\/+$/, "")
-          : new URL(postUrl).origin;
-      const publicUrl = `${convexBase}/api/storage/${json.storageId}`;
+      const publicUrl: string = await resolvePublicUrl({ storageId: json.storageId as any });
       await ensureFileAvailable(publicUrl);
-      // Preview with cache-busting param
-      const previewUrl = `${publicUrl}?v=${Date.now()}`;
+      // Build preview URL with proper cache-busting whether or not publicUrl already has query params
+      const previewUrl =
+        publicUrl + (publicUrl.includes("?") ? "&" : "?") + "v=" + Date.now();
       newUrls.push(previewUrl);
     }
     setEditUploadedUrls((prev) => [...prev, ...newUrls]);
