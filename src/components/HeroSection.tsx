@@ -21,7 +21,8 @@ export default function HeroSection() {
           style={{ transformOrigin: "50% 50%" }} // centered focus
         />
         {/* Subtle dark overlay for contrast — ensure it reaches exactly up to the announcement bar */}
-        <div className="absolute inset-0 bg-black/40 -mt-[1px]" />
+        {/* Move overlay slightly further up so it visually kisses the announcement bar line */}
+        <div className="absolute inset-0 bg-black/40 -mt-[2px]" />
         {/* Added: Center-bottom pill buttons to navigate to Goggles and Watches */}
         <div className="absolute inset-0 flex items-end justify-center pb-20 sm:pb-24 pointer-events-none">
           <div className="flex gap-3 sm:gap-4">
