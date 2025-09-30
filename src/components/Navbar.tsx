@@ -264,13 +264,11 @@ export default function Navbar() {
 
       {/* Announcement bar BELOW navbar with no extra margins/padding to avoid gaps */}
       <div className="w-full bg-black text-white relative">
-        <div className="border-t border-white/10" />
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="h-6 flex items-center justify-center" aria-live="polite" role="status">
             <AnnouncementRow />
           </div>
         </div>
-        <div className="border-t border-white/10" />
       </div>
 
       {/* Cart Slide-over (Sheet) */}
