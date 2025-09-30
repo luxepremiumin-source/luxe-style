@@ -172,7 +172,7 @@ export default function Navbar() {
       animate={{ y: 0 }}
       className="sticky top-0 left-0 right-0 z-50 bg-black text-white border-b border-white/10"
     >
-      {/* MOVE: Main nav container stays at the very top */}
+      {/* Main nav container */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="relative flex items-center justify-between h-20">
           <Button
@@ -258,44 +258,15 @@ export default function Navbar() {
             )}
           </div>
         </div>
-
-        {/* Mobile Menu */}
-        {isMenuOpen && (
-          <motion.div
-            id="luxe-nav-overlay"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            // Full-viewport overlay below the navbar on ALL screen sizes
-            className="fixed left-0 right-0 top-16 bottom-0 bg-black/80 backdrop-blur-sm border-t border-white/10 z-50"
-          >
-            <div className="max-w-md w-full h-full bg-black/90 p-6">
-              <div className="flex flex-col space-y-4">
-                {categories.map((category) => (
-                  <a
-                    key={category.name}
-                    href={category.href}
-                    className="text-white/90 hover:text-white font-medium py-3 px-2 rounded hover:bg-white/5"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    {category.name}
-                  </a>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-        )}
+        {/* Remove extra bottom spacing from navbar content */}
+        <div className="h-0" />
       </div>
 
-      {/* Announcement bar moved BELOW the navbar */}
+      {/* Announcement bar BELOW navbar with no extra margins/padding to avoid gaps */}
       <div className="w-full bg-black text-white">
         <div className="border-t border-white/10" />
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div
-            className="h-8 flex items-center justify-center"
-            aria-live="polite"
-            role="status"
-          >
+          <div className="h-8 flex items-center justify-center" aria-live="polite" role="status">
             <AnnouncementRow />
           </div>
         </div>
