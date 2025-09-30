@@ -6,7 +6,7 @@ export default function HeroSection() {
 
   return (
     <>
-      {/* Pull hero further up so it kisses the announcement bar border with no gap */}
+      {/* Pull hero fully up to kiss the announcement bar with zero gap */}
       <section className="relative min-h-[88vh] w-full overflow-hidden bg-black -mt-[4px]">
         {/* Background image with looping center zoom */}
         <motion.img
@@ -19,7 +19,7 @@ export default function HeroSection() {
           transition={{ duration: 9, ease: "easeInOut", repeat: Infinity }}
           style={{ transformOrigin: "50% 50%" }}
         />
-        {/* Subtle dark overlay for contrast — ensure it reaches exactly up to the announcement bar */}
+        {/* Make overlay flush — no extra spacing */}
         <div className="absolute inset-0 bg-black/40 -mt-[4px]" />
         {/* Added: Center-bottom pill buttons to navigate to Goggles and Watches */}
         {/* Raise buttons further for mobile-first visibility */}
