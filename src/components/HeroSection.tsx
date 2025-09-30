@@ -12,19 +12,16 @@ export default function HeroSection() {
         <motion.img
           src={bg}
           alt="LUXE flagship visual"
-          className="absolute inset-0 h-full w-full object-cover"
+          className="absolute inset-0 h-full w-full object-cover -mt-[3px]"
           loading="eager"
           initial={{ scale: 1 }}
-          // Increase zoom amount and speed to focus tighter on the center "LUXE" area
           animate={{ scale: [1, 1.18, 1] }}
           transition={{ duration: 9, ease: "easeInOut", repeat: Infinity }}
-          style={{ transformOrigin: "50% 50%" }} // centered focus
+          style={{ transformOrigin: "50% 50%" }}
         />
         {/* Subtle dark overlay for contrast — ensure it reaches exactly up to the announcement bar */}
-        {/* Move overlay slightly further up so it visually kisses the announcement bar line */}
         <div className="absolute inset-0 bg-black/40 -mt-[3px]" />
         {/* Added: Center-bottom pill buttons to navigate to Goggles and Watches */}
-        {/* Move the pill buttons a bit higher */}
         <div className="absolute inset-0 flex items-end justify-center pb-24 sm:pb-28 pointer-events-none">
           <div className="flex gap-3 sm:gap-4">
             <a
