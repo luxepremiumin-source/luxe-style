@@ -5,8 +5,7 @@ export default function HeroSection() {
     "https://harmless-tapir-303.convex.cloud/api/storage/9c7a0c50-e4a8-4cc2-b631-f5a35f277a9a"; // Updated hero image
 
   return (
-    {/* Pull hero 1 more pixel up to kiss the announcement bar border */}
-    <section className="relative min-h-[88vh] w-full overflow-hidden bg-black -mt-[2px]">
+    <section className="relative min-h-[88vh] w-full overflow-hidden bg-black -mt-px">
       {/* Background image with looping center zoom */}
       <motion.img
         src={bg}
