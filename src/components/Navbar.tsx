@@ -174,17 +174,17 @@ export default function Navbar() {
     >
       {/* Main nav container */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="relative flex items-center justify-between h-20">
+        <div className="relative flex items-center justify-between h-24">
           <Button
             variant="ghost"
             size="icon"
-            className="h-11 w-11 border border-white/50 hover:bg-white/10 rounded-md"
+            className="h-12 w-12 border border-white/50 hover:bg-white/10 rounded-md"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label="Open menu"
             aria-expanded={isMenuOpen}
             aria-controls="luxe-nav-overlay"
           >
-            <Menu className="h-5 w-5 text-white" />
+            <Menu className="h-6 w-6 text-white" />
           </Button>
 
           <motion.div
@@ -212,11 +212,11 @@ export default function Navbar() {
 
           <div className="flex items-center space-x-4">
             <Button variant="ghost" size="icon" className="hidden sm:flex hover:bg-white/10">
-              <Search className="h-5 w-5 text-white" />
+              <Search className="h-6 w-6 text-white" />
             </Button>
 
             <Button variant="ghost" size="icon" className="relative hover:bg-white/10" onClick={() => setIsCartOpen(true)} aria-label="Open cart">
-              <ShoppingBag className="h-5 w-5 text-white" />
+              <ShoppingBag className="h-6 w-6 text-white" />
               <Badge className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs bg-transparent border border-white/60 text-white">
                 {cartCount ?? 0}
               </Badge>
@@ -236,7 +236,7 @@ export default function Navbar() {
                   }}
                   className="hover:bg-white/10"
                 >
-                  <User className="h-5 w-5 text-white" />
+                  <User className="h-6 w-6 text-white" />
                 </Button>
                 <Button
                   variant="outline"
