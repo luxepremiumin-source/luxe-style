@@ -323,9 +323,9 @@ export default function Navbar() {
                         ) : (
                           <Button
                             onClick={() => {
-                              // Only allow when 2+ items and code matches exactly
+                              // Guard: not applicable if less than 2 items
                               if (cartItemCount < 2) {
-                                alert("Add at least 2 products to apply this code.");
+                                alert("Not applicable now (add at least 2 products).");
                                 return;
                               }
                               if (promoCode.trim() === "LUXE150") {
@@ -340,6 +340,12 @@ export default function Navbar() {
                           </Button>
                         )}
                       </div>
+                      {/* Inline status/helper messages */}
+                      {cartItemCount < 2 && appliedDiscount === 0 ? (
+                        <p className="text-xs text-gray-600">
+                          Not applicable now — add at least 2 products to use LUXE150.
+                        </p>
+                      ) : null}
                       {appliedDiscount > 0 && (
                         <p className="text-xs text-green-700">
                           Code applied: LUXE150 — ₹150 off
