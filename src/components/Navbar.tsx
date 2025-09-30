@@ -174,11 +174,11 @@ export default function Navbar() {
     >
       {/* MOVE: Main nav container stays at the very top */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="relative flex items-center justify-between h-16">
+        <div className="relative flex items-center justify-between h-20">
           <Button
             variant="ghost"
             size="icon"
-            className="h-10 w-10 border border-white/50 hover:bg-white/10 rounded-md"
+            className="h-11 w-11 border border-white/50 hover:bg-white/10 rounded-md"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label="Open menu"
             aria-expanded={isMenuOpen}
@@ -201,7 +201,7 @@ export default function Navbar() {
             }}
           >
             <span
-              className="text-xl font-extrabold tracking-widest"
+              className="text-2xl font-extrabold tracking-widest"
               onClick={() => navigate("/")}
               role="button"
               tabIndex={-1}
