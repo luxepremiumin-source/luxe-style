@@ -40,6 +40,11 @@ export default function Navbar() {
     phone: "",
   });
 
+  // ADD: promo code state and derived helpers
+  const [promoCode, setPromoCode] = useState("");
+  const [appliedDiscount, setAppliedDiscount] = useState<number>(0);
+  /* moved below after cartItems definition */
+
   useEffect(() => {
     setMounted(true);
     return () => {
@@ -57,6 +62,7 @@ export default function Navbar() {
 
   // Cart items for drawer
   const cartItems = useQuery(api.cart.getCartItems, { userId: user?._id ?? null });
+  const cartItemCount = (cartItems ?? []).reduce((sum, item) => sum + (item.quantity ?? 0), 0);
 
   // Add mutation for updating cart quantities
   const setCartItemQuantity = useMutation(api.cart.setCartItemQuantity);
@@ -64,6 +70,8 @@ export default function Navbar() {
   // Estimated total for display in the cart panel
   const estimatedTotal =
     (cartItems ?? []).reduce((sum, item) => sum + (item.product.price ?? 0) * (item.quantity ?? 1), 0);
+
+  const discountedTotal = Math.max(0, estimatedTotal - appliedDiscount);
 
   const categories = [
     { name: "Goggles", href: "/category/goggles" },
@@ -284,12 +292,79 @@ export default function Navbar() {
                     ))}
                   </ul>
 
+                  {/* ADD: Promo code section (visible only when 2+ items) */}
+                  {cartItemCount >= 2 && (
+                    <div className="mt-2 rounded-md border border-gray-300 p-3 space-y-2">
+                      <p className="text-sm font-semibold">Have a code?</p>
+                      <div className="flex gap-2">
+                        <Input
+                          value={promoCode}
+                          onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                          placeholder="Enter code"
+                          className="bg-white"
+                        />
+                        {appliedDiscount > 0 ? (
+                          <Button
+                            variant="outline"
+                            onClick={() => {
+                              setAppliedDiscount(0);
+                              setPromoCode("");
+                            }}
+                          >
+                            Remove
+                          </Button>
+                        ) : (
+                          <Button
+                            onClick={() => {
+                              // Only allow when 2+ items and code matches exactly
+                              if (cartItemCount < 2) {
+                                alert("Add at least 2 products to apply this code.");
+                                return;
+                              }
+                              if (promoCode.trim() === "LUXE150") {
+                                setAppliedDiscount(150);
+                              } else {
+                                alert("Invalid code.");
+                              }
+                            }}
+                            className="bg-black text-white hover:bg-black/90"
+                          >
+                            Apply
+                          </Button>
+                        )}
+                      </div>
+                      {appliedDiscount > 0 && (
+                        <p className="text-xs text-green-700">
+                          Code applied: LUXE150 — ₹150 off
+                        </p>
+                      )}
+                    </div>
+                  )}
+
                   <div className="pt-2 border-t border-gray-300/60" />
 
+                  {/* Existing subtotal (renamed visually to show both if discounted) */}
                   <div className="flex items-center justify-between text-gray-900">
-                    <p className="font-extrabold">Estimated total</p>
+                    <p className="font-extrabold">{appliedDiscount > 0 ? "Subtotal" : "Estimated total"}</p>
                     <p className="font-extrabold">₹{estimatedTotal.toLocaleString()}</p>
                   </div>
+
+                  {/* ADD: discount row */}
+                  {appliedDiscount > 0 && (
+                    <div className="flex items-center justify-between text-gray-900">
+                      <p className="font-semibold text-green-700">Discount (LUXE150)</p>
+                      <p className="font-semibold text-green-700">-₹{appliedDiscount.toLocaleString()}</p>
+                    </div>
+                  )}
+
+                  {/* Final total after discount */}
+                  {appliedDiscount > 0 && (
+                    <div className="flex items-center justify-between text-gray-900">
+                      <p className="font-extrabold">Estimated total</p>
+                      <p className="font-extrabold">₹{discountedTotal.toLocaleString()}</p>
+                    </div>
+                  )}
+
                   <p className="text-xs text-gray-600">
                     Taxes, discounts and <span className="underline">shipping</span> calculated at checkout.
                   </p>
@@ -431,10 +506,25 @@ export default function Navbar() {
                   </div>
 
                   <div className="pt-2 border-t border-gray-300/60" />
+                  {/* Show totals consistent with applied discount */}
                   <div className="flex items-center justify-between">
-                    <p className="font-extrabold">Total</p>
+                    <p className="font-extrabold">{appliedDiscount > 0 ? "Subtotal" : "Total"}</p>
                     <p className="font-extrabold">₹{estimatedTotal.toLocaleString()}</p>
                   </div>
+
+                  {appliedDiscount > 0 && (
+                    <>
+                      <div className="flex items-center justify-between">
+                        <p className="font-semibold text-green-700">Discount (LUXE150)</p>
+                        <p className="font-semibold text-green-700">-₹{appliedDiscount.toLocaleString()}</p>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <p className="font-extrabold">Total</p>
+                        <p className="font-extrabold">₹{discountedTotal.toLocaleString()}</p>
+                      </div>
+                    </>
+                  )}
+
                   <p className="text-xs text-gray-600">
                     Taxes, discounts and <span className="underline">shipping</span> calculated at checkout.
                   </p>
@@ -492,6 +582,14 @@ export default function Navbar() {
                           lines.push(`  Link: ${productLink}`);
                         }
 
+                        // Apply discount if any
+                        let finalTotal = grandTotal;
+                        if (appliedDiscount > 0) {
+                          lines.push("");
+                          lines.push(`Discount code applied: LUXE150 (₹${appliedDiscount.toLocaleString()} off)`);
+                          finalTotal = Math.max(0, grandTotal - appliedDiscount);
+                        }
+
                         lines.push("");
                         lines.push("My address:");
                         lines.push(`${details.firstName} ${details.lastName}`);
@@ -504,7 +602,7 @@ export default function Navbar() {
                         lines.push(`${details.city}, ${details.state} - ${details.pin}`);
 
                         lines.push("");
-                        lines.push(`Grand Total: ₹${grandTotal.toLocaleString()}`);
+                        lines.push(`Grand Total: ₹${finalTotal.toLocaleString()}`);
 
                         const message = lines.join("\n");
                         const url = `https://wa.me/9871629699?text=${encodeURIComponent(message)}`;
