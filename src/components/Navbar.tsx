@@ -12,6 +12,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
+// Add: thin announcement bar content text
+const ANNOUNCEMENT_TEXT = "Use LUXE150 to get discount";
+
 export default function Navbar() {
   const { isAuthenticated, user, signOut } = useAuth();
   const navigate = useNavigate();
@@ -92,6 +95,20 @@ export default function Navbar() {
       animate={{ y: 0 }}
       className="sticky top-0 left-0 right-0 z-50 bg-black text-white border-b border-white/10"
     >
+      {/* Announcement bar (thin strip) */}
+      <div className="w-full bg-black text-white">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div
+            className="h-8 flex items-center justify-center text-xs sm:text-sm tracking-wide"
+            aria-live="polite"
+            role="status"
+          >
+            {ANNOUNCEMENT_TEXT}
+          </div>
+        </div>
+        <div className="border-t border-white/10" />
+      </div>
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="relative flex items-center justify-between h-16">
           <Button
