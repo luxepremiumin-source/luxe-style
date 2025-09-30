@@ -13,7 +13,7 @@ export default function Landing() {
       className="min-h-screen bg-black text-white"
     >
       <Navbar />
-      <main className="pt-14">
+      <main className="pt-12">
         <HeroSection />
         <CategorySection />
       </main>
