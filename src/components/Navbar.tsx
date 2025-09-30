@@ -348,7 +348,7 @@ export default function Navbar() {
                         <Label htmlFor="address2">Apartment, suite, etc. (optional)</Label>
                         <Input
                           id="address2"
-                          placeholder="Apartment, suite, etc. (optional)"
+                          placeholder=""
                           value={details.address2}
                           onChange={(e) => setDetails((d) => ({ ...d, address2: e.target.value }))}
                           className="bg-white"
