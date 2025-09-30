@@ -131,20 +131,7 @@ export default function Navbar() {
       animate={{ y: 0 }}
       className="sticky top-0 left-0 right-0 z-50 bg-black text-white border-b border-white/10"
     >
-      {/* Announcement bar (thin strip) with repeating message and centered white dot separators */}
-      <div className="w-full bg-black text-white">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div
-            className="h-8 flex items-center justify-center"
-            aria-live="polite"
-            role="status"
-          >
-            <AnnouncementRow />
-          </div>
-        </div>
-        <div className="border-t border-white/10" />
-      </div>
-
+      {/* MOVE: Main nav container stays at the very top */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="relative flex items-center justify-between h-16">
           <Button
@@ -257,6 +244,21 @@ export default function Navbar() {
             </div>
           </motion.div>
         )}
+      </div>
+
+      {/* Announcement bar moved BELOW the navbar */}
+      <div className="w-full bg-black text-white">
+        <div className="border-t border-white/10" />
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div
+            className="h-8 flex items-center justify-center"
+            aria-live="polite"
+            role="status"
+          >
+            <AnnouncementRow />
+          </div>
+        </div>
+        <div className="border-t border-white/10" />
       </div>
 
       {/* Cart Slide-over (Sheet) */}
