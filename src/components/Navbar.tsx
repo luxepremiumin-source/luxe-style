@@ -201,7 +201,7 @@ export default function Navbar() {
             }}
           >
             <span
-              className="text-2xl font-extrabold tracking-widest"
+              className="text-2xl font-extrabold tracking-widest font-['Abril_Fatface',serif]"
               onClick={() => navigate("/")}
               role="button"
               tabIndex={-1}
