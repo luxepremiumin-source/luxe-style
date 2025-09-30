@@ -29,12 +29,26 @@ export default function CategoryPage() {
   const handleAddToCart = async (productId: string) => {
     try {
       let currentUserId = user?._id;
+
+      // If not signed in, perform anonymous sign-in and wait for the user document
       if (!isAuthenticated || !currentUserId) {
         await signIn("anonymous");
-        toast("Signed in as guest");
-        // After anonymous sign in completes, the hook will refresh user doc automatically.
-        return; // User will click again; keeps logic simple and avoids race with auth refresh
+        // Wait for the user doc to populate after sign-in (short, bounded poll)
+        const deadline = Date.now() + 3000;
+        while (!currentUserId && Date.now() < deadline) {
+          await new Promise((r) => setTimeout(r, 100));
+          // re-read from latest closure values (hook will refresh)
+          currentUserId = (typeof window !== "undefined" ? (window as any).__luxeUserId : undefined) || user?._id;
+        }
+        // As a fallback, use the latest hook value directly
+        currentUserId = user?._id || currentUserId;
       }
+
+      if (!currentUserId) {
+        toast("Please try again");
+        return;
+      }
+
       await addToCart({ userId: currentUserId, productId: productId as any, quantity: 1 });
       toast("Added to cart");
     } catch (e) {
@@ -134,9 +148,13 @@ export default function CategoryPage() {
                           <Button
                             size="sm"
                             className="rounded-full bg-white text-black hover:bg-white/90"
-                            onClick={(e) => {
+                            onClick={async (e) => {
                               e.stopPropagation();
-                              handleAddToCart(product._id as any);
+                              // expose latest userId for the short poll above
+                              if (typeof window !== "undefined") {
+                                (window as any).__luxeUserId = user?._id;
+                              }
+                              await handleAddToCart(product._id as any);
                             }}
                           >
                             Add to Cart
