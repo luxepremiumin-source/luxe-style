@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useAuth } from "@/hooks/use-auth";
@@ -9,7 +10,7 @@ import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
 import { useQuery } from "convex/react";
 import { motion } from "framer-motion";
-import { MessageCircle, Star } from "lucide-react";
+import { MessageCircle } from "lucide-react";
 import { useParams } from "react-router";
 import { useNavigate } from "react-router";
 
@@ -30,17 +31,13 @@ export default function CategoryPage() {
     try {
       let currentUserId = user?._id;
 
-      // If not signed in, perform anonymous sign-in and wait for the user document
       if (!isAuthenticated || !currentUserId) {
         await signIn("anonymous");
-        // Wait for the user doc to populate after sign-in (short, bounded poll)
         const deadline = Date.now() + 3000;
         while (!currentUserId && Date.now() < deadline) {
           await new Promise((r) => setTimeout(r, 100));
-          // re-read from latest closure values (hook will refresh)
           currentUserId = (typeof window !== "undefined" ? (window as any).__luxeUserId : undefined) || user?._id;
         }
-        // As a fallback, use the latest hook value directly
         currentUserId = user?._id || currentUserId;
       }
 
@@ -71,7 +68,20 @@ export default function CategoryPage() {
             </div>
 
             {!products ? (
-              <p className="text-sm text-gray-400">Loading...</p>
+              // Loading skeleton
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <div key={i} className="space-y-3">
+                    <Skeleton className="aspect-square rounded-2xl bg-white/10" />
+                    <Skeleton className="h-6 w-3/4 bg-white/10" />
+                    <Skeleton className="h-5 w-1/2 bg-white/10" />
+                    <div className="flex gap-2">
+                      <Skeleton className="h-9 flex-1 rounded-full bg-white/10" />
+                      <Skeleton className="h-9 flex-1 rounded-full bg-white/10" />
+                    </div>
+                  </div>
+                ))}
+              </div>
             ) : products.length === 0 ? (
               <div className="text-center py-20">
                 <p className="text-gray-300">No products found in this category.</p>
@@ -84,23 +94,21 @@ export default function CategoryPage() {
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    transition={{ delay: index * 0.05 }}
+                    transition={{ delay: index * 0.02, duration: 0.3 }}
                   >
                     <Card
                       className="group bg-transparent border-transparent shadow-none cursor-pointer"
                       onClick={() => navigate(`/product/${product._id}`)}
                     >
-                      <div
-                        className="relative aspect-square overflow-hidden rounded-2xl ring-1 ring-white/10"
-                      >
+                      <div className="relative aspect-square overflow-hidden rounded-2xl ring-1 ring-white/10">
                         {product.images && product.images.length > 0 ? (
                           <img
                             src={product.images[0]}
                             alt={product.name}
                             className="absolute inset-0 w-full h-full object-cover"
-                            loading="lazy"
+                            loading={index < 3 ? "eager" : "lazy"}
+                            decoding="async"
                             onError={(e) => {
-                              // Fallback to next available image or placeholder if the current one fails
                               const imgs: Array<string> = Array.isArray(product.images) ? product.images : [];
                               const current = e.currentTarget.getAttribute("src") || "";
                               const idx = Math.max(0, imgs.findIndex((u) => u === current));
@@ -125,12 +133,10 @@ export default function CategoryPage() {
                       </div>
 
                       <div className="px-1 sm:px-0 pt-3">
-                        {/* Name */}
                         <h3 className="font-extrabold tracking-tight text-white text-base md:text-lg mb-1 line-clamp-2">
                           {product.name}
                         </h3>
 
-                        {/* Prices */}
                         <div className="flex items-center gap-3">
                           {product.originalPrice && (
                             <span className="text-sm text-white/50 line-through">
@@ -142,15 +148,12 @@ export default function CategoryPage() {
                           </span>
                         </div>
 
-                        {/* Order on WhatsApp + Add to Cart */}
                         <div className="mt-3 flex gap-2">
-                          {/* Make Add to Cart first and prominent */}
                           <Button
                             size="sm"
                             className="rounded-full bg-white text-black hover:bg-white/90"
                             onClick={async (e) => {
                               e.stopPropagation();
-                              // expose latest userId for the short poll above
                               if (typeof window !== "undefined") {
                                 (window as any).__luxeUserId = user?._id;
                               }
@@ -160,7 +163,6 @@ export default function CategoryPage() {
                             Add to Cart
                           </Button>
 
-                          {/* WhatsApp button second */}
                           <Button
                             size="sm"
                             className="rounded-full bg-[#25D366] text-white hover:bg-[#20bd5b]"
