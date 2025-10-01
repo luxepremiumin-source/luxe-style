@@ -599,21 +599,63 @@ export default function Admin() {
                     .map((p) => (
                       <div
                         key={p._id}
-                        className="flex items-center justify-between border border-gray-200 rounded-md p-3"
+                        className="border border-gray-200 rounded-md p-3 space-y-3"
                       >
-                        <div className="min-w-0">
-                          <p className="font-medium truncate">{p.name}</p>
-                          <p className="text-xs text-gray-500 capitalize">
-                            {p.category} • ₹{p.price.toLocaleString()}
-                            {p.originalPrice ? ` (₹${p.originalPrice.toLocaleString()})` : ""}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <div className="text-xs text-gray-500">{p.inStock ? "In Stock" : "Out of Stock"}</div>
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0 flex-1">
+                            <p className="font-medium truncate">{p.name}</p>
+                            <p className="text-xs text-gray-500 capitalize">
+                              {p.category} • ₹{p.price.toLocaleString()}
+                              {p.originalPrice ? ` (₹${p.originalPrice.toLocaleString()})` : ""}
+                            </p>
+                            <div className="text-xs text-gray-500 mt-1">
+                              {p.inStock ? "In Stock" : "Out of Stock"}
+                            </div>
+                          </div>
                           <Button variant="outline" size="sm" onClick={() => openEdit(p)}>
                             Edit
                           </Button>
                         </div>
+                        
+                        {/* Product Images Display */}
+                        {p.images && p.images.length > 0 && (
+                          <div className="space-y-2">
+                            <p className="text-xs font-medium text-gray-700">Product Images:</p>
+                            <div className="grid grid-cols-4 gap-2">
+                              {p.images.map((img, idx) => (
+                                <div key={img + idx} className="relative group">
+                                  <img
+                                    src={img}
+                                    alt={`${p.name} - ${idx + 1}`}
+                                    className="h-16 w-full object-cover rounded border border-gray-200"
+                                  />
+                                  <button
+                                    type="button"
+                                    className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs"
+                                    onClick={async () => {
+                                      if (confirm(`Remove this image from ${p.name}?`)) {
+                                        const updatedImages = p.images.filter((_, i) => i !== idx);
+                                        try {
+                                          await updateProduct({
+                                            id: p._id as any,
+                                            images: updatedImages.length > 0 ? updatedImages : ["/api/placeholder/400/400"],
+                                          });
+                                          toast("Image removed");
+                                        } catch (e) {
+                                          console.error(e);
+                                          toast("Failed to remove image");
+                                        }
+                                      }
+                                    }}
+                                    aria-label="Remove image"
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     ))}
                 </div>
