@@ -119,12 +119,12 @@ export default function CategorySection() {
                         alt={category.name}
                         className="absolute inset-0 h-full w-full object-cover"
                         loading="eager"
-                        initial={{ opacity: 0, scale: 1.1 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.9 }}
+                        initial={{ opacity: 0, scale: 1.2, rotate: -5 }}
+                        animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                        exit={{ opacity: 0, scale: 0.85, rotate: 5 }}
                         transition={{ 
-                          duration: 0.4, 
-                          ease: "easeInOut"
+                          duration: 0.5, 
+                          ease: [0.43, 0.13, 0.23, 0.96]
                         }}
                         style={{ willChange: "transform, opacity" }}
                       />
