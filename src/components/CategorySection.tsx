@@ -11,7 +11,8 @@ const categories = [
     description: "Luxury eyewear for the modern trendsetter",
     images: [
       "https://harmless-tapir-303.convex.cloud/api/storage/1a7551ea-0394-4354-b7ed-fc2497132148",
-      "https://harmless-tapir-303.convex.cloud/api/storage/adc0df0b-62a0-4fdb-87fd-507cb9c5ab6a"
+      "https://harmless-tapir-303.convex.cloud/api/storage/adc0df0b-62a0-4fdb-87fd-507cb9c5ab6a",
+      "https://harmless-tapir-303.convex.cloud/api/storage/9a4ba976-cc68-4bea-9765-52ae7d573872"
     ],
     href: "/category/goggles",
     color: "from-blue-500 to-purple-600"
@@ -39,7 +40,7 @@ export default function CategorySection() {
   // Auto-slide effect for Premium Goggles
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentImageIndex((prev) => (prev + 1) % 2);
+      setCurrentImageIndex((prev) => (prev + 1) % 3);
     }, 2000); // Change image every 2 seconds
 
     return () => clearInterval(interval);
@@ -93,9 +94,9 @@ export default function CategorySection() {
                         alt={category.name}
                         className="absolute inset-0 h-full w-full object-cover"
                         loading="lazy"
-                        initial={{ opacity: 0, x: 100 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -100 }}
+                        initial={{ opacity: 0, scale: 1.1 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
                         transition={{ duration: 0.4, ease: "easeInOut" }}
                       />
                     </AnimatePresence>
