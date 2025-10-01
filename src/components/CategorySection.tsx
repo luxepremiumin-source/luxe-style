@@ -36,15 +36,40 @@ const categories = [
 export default function CategorySection() {
   const navigate = useNavigate();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [imagesLoaded, setImagesLoaded] = useState(false);
 
-  // Auto-slide effect for Premium Goggles
+  // Preload all images for smooth transitions
   useEffect(() => {
+    const gogglesCategory = categories.find(c => c.name === "Premium Goggles");
+    if (gogglesCategory?.images) {
+      const imagePromises = gogglesCategory.images.map((src) => {
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          img.src = src;
+          img.onload = resolve;
+          img.onerror = reject;
+        });
+      });
+
+      Promise.all(imagePromises)
+        .then(() => setImagesLoaded(true))
+        .catch((err) => {
+          console.error("Error preloading images:", err);
+          setImagesLoaded(true); // Still show carousel even if preload fails
+        });
+    }
+  }, []);
+
+  // Auto-slide effect for Premium Goggles - only start after images are loaded
+  useEffect(() => {
+    if (!imagesLoaded) return;
+    
     const interval = setInterval(() => {
       setCurrentImageIndex((prev) => (prev + 1) % 3);
-    }, 2000); // Change image every 2 seconds
+    }, 2000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [imagesLoaded]);
 
   return (
     <section className="py-24 bg-black">
@@ -93,11 +118,15 @@ export default function CategorySection() {
                         src={category.images[currentImageIndex]}
                         alt={category.name}
                         className="absolute inset-0 h-full w-full object-cover"
-                        loading="lazy"
+                        loading="eager"
                         initial={{ opacity: 0, scale: 1.1 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.9 }}
-                        transition={{ duration: 0.4, ease: "easeInOut" }}
+                        transition={{ 
+                          duration: 0.4, 
+                          ease: "easeInOut"
+                        }}
+                        style={{ willChange: "transform, opacity" }}
                       />
                     </AnimatePresence>
                   ) : (
