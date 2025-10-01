@@ -33,6 +33,31 @@ const categories = [
   }
 ];
 
+// Define different transition variants for each image
+const transitionVariants = [
+  // Image 0: Zoom in with rotation
+  {
+    initial: { opacity: 0, scale: 1.2, rotate: -5 },
+    animate: { opacity: 1, scale: 1, rotate: 0 },
+    exit: { opacity: 0, scale: 0.85, rotate: 5 },
+    transition: { duration: 0.5, ease: [0.43, 0.13, 0.23, 0.96] }
+  },
+  // Image 1: Slide from right with fade
+  {
+    initial: { opacity: 0, x: 100, scale: 0.9 },
+    animate: { opacity: 1, x: 0, scale: 1 },
+    exit: { opacity: 0, x: -100, scale: 0.9 },
+    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] }
+  },
+  // Image 2: Zoom out with vertical slide
+  {
+    initial: { opacity: 0, scale: 0.7, y: 50 },
+    animate: { opacity: 1, scale: 1, y: 0 },
+    exit: { opacity: 0, scale: 1.2, y: -50 },
+    transition: { duration: 0.5, ease: [0.65, 0, 0.35, 1] }
+  }
+];
+
 export default function CategorySection() {
   const navigate = useNavigate();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -55,7 +80,7 @@ export default function CategorySection() {
         .then(() => setImagesLoaded(true))
         .catch((err) => {
           console.error("Error preloading images:", err);
-          setImagesLoaded(true); // Still show carousel even if preload fails
+          setImagesLoaded(true);
         });
     }
   }, []);
@@ -119,13 +144,10 @@ export default function CategorySection() {
                         alt={category.name}
                         className="absolute inset-0 h-full w-full object-cover"
                         loading="eager"
-                        initial={{ opacity: 0, scale: 1.2, rotate: -5 }}
-                        animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                        exit={{ opacity: 0, scale: 0.85, rotate: 5 }}
-                        transition={{ 
-                          duration: 0.5, 
-                          ease: [0.43, 0.13, 0.23, 0.96]
-                        }}
+                        initial={transitionVariants[currentImageIndex].initial}
+                        animate={transitionVariants[currentImageIndex].animate}
+                        exit={transitionVariants[currentImageIndex].exit}
+                        transition={transitionVariants[currentImageIndex].transition}
                         style={{ willChange: "transform, opacity" }}
                       />
                     </AnimatePresence>
