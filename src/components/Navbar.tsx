@@ -386,7 +386,7 @@ export default function Navbar() {
         >
           <SheetContent
             side="right"
-            className="w-full sm:max-w-md p-0 h-full bg-gray-100 text-gray-900 border-l border-black/10"
+            className="w-full sm:max-w-md p-0 h-full bg-gray-100 text-gray-900 border-l border-black/10 flex flex-col overflow-hidden"
           >
             <SheetHeader className="px-6 pt-5">
               <div className="flex items-center justify-between">
@@ -398,7 +398,7 @@ export default function Navbar() {
             <div className="px-6">
               <div className="border-t border-gray-300/60" />
             </div>
-            <div className="px-6 pb-6 pt-4">
+            <div className="flex-1 overflow-y-auto px-6 pb-6 pt-4">
               {!cartItems || cartItems.length === 0 ? (
                 <div className="min-h-[40vh] flex flex-col items-center justify-center text-center">
                   <h3 className="text-2xl font-extrabold mb-6 text-gray-900">Your cart is empty</h3>
