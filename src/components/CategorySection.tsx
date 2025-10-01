@@ -40,7 +40,7 @@ export default function CategorySection() {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentImageIndex((prev) => (prev + 1) % 2);
-    }, 3500); // Change image every 3.5 seconds
+    }, 2000); // Change image every 2 seconds
 
     return () => clearInterval(interval);
   }, []);
@@ -96,7 +96,7 @@ export default function CategorySection() {
                         initial={{ opacity: 0, x: 100 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: -100 }}
-                        transition={{ duration: 0.6, ease: "easeInOut" }}
+                        transition={{ duration: 0.4, ease: "easeInOut" }}
                       />
                     </AnimatePresence>
                   ) : (
