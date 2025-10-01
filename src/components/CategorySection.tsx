@@ -8,7 +8,7 @@ const categories = [
   {
     name: "Premium Goggles",
     description: "Luxury eyewear for the modern trendsetter",
-    image: "/api/placeholder/400/300",
+    image: "https://harmless-tapir-303.convex.cloud/api/storage/1a7551ea-0394-4354-b7ed-fc2497132148",
     href: "/category/goggles",
     color: "from-blue-500 to-purple-600"
   },
@@ -70,8 +70,14 @@ export default function CategorySection() {
                 }}
               >
                 <div className="relative aspect-[4/3] overflow-hidden">
-                  <div className={`absolute inset-0 bg-gradient-to-br ${category.color} opacity-90`} />
-                  <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                  <img
+                    src={category.image}
+                    alt={category.name}
+                    className="absolute inset-0 h-full w-full object-cover"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-black/40" />
+                  <div className="absolute inset-0 flex items-center justify-center">
                     <span className="text-white font-semibold text-lg">{category.name}</span>
                   </div>
                   <motion.div
