@@ -1,14 +1,18 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router";
+import { useState, useEffect } from "react";
 
 const categories = [
   {
     name: "Premium Goggles",
     description: "Luxury eyewear for the modern trendsetter",
-    image: "https://harmless-tapir-303.convex.cloud/api/storage/1a7551ea-0394-4354-b7ed-fc2497132148",
+    images: [
+      "https://harmless-tapir-303.convex.cloud/api/storage/1a7551ea-0394-4354-b7ed-fc2497132148",
+      "https://harmless-tapir-303.convex.cloud/api/storage/adc0df0b-62a0-4fdb-87fd-507cb9c5ab6a"
+    ],
     href: "/category/goggles",
     color: "from-blue-500 to-purple-600"
   },
@@ -30,6 +34,17 @@ const categories = [
 
 export default function CategorySection() {
   const navigate = useNavigate();
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  // Auto-slide effect for Premium Goggles
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % 2);
+    }, 3500); // Change image every 3.5 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <section className="py-24 bg-black">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -70,12 +85,28 @@ export default function CategorySection() {
                 }}
               >
                 <div className="relative aspect-[4/3] overflow-hidden">
-                  <img
-                    src={category.image}
-                    alt={category.name}
-                    className="absolute inset-0 h-full w-full object-cover"
-                    loading="lazy"
-                  />
+                  {category.name === "Premium Goggles" && category.images ? (
+                    <AnimatePresence mode="wait">
+                      <motion.img
+                        key={currentImageIndex}
+                        src={category.images[currentImageIndex]}
+                        alt={category.name}
+                        className="absolute inset-0 h-full w-full object-cover"
+                        loading="lazy"
+                        initial={{ opacity: 0, x: 100 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -100 }}
+                        transition={{ duration: 0.6, ease: "easeInOut" }}
+                      />
+                    </AnimatePresence>
+                  ) : (
+                    <img
+                      src={category.image}
+                      alt={category.name}
+                      className="absolute inset-0 h-full w-full object-cover"
+                      loading="lazy"
+                    />
+                  )}
                   <motion.div
                     whileHover={{ scale: 1.05 }}
                     transition={{ duration: 0.3 }}
