@@ -280,7 +280,7 @@ export default function Navbar() {
       {isMenuOpen && (
         <div
           id="luxe-mobile-menu"
-          className="fixed inset-0 z-[65] lg:hidden"
+          className="fixed inset-0 z-[80]"
           aria-modal="true"
           role="dialog"
           onClick={() => setIsMenuOpen(false)}
