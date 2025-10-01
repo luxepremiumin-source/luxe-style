@@ -40,6 +40,7 @@ export default function ProductPage() {
     (product?.name ?? "").toLowerCase() === "coach premium belt";
   const [color, setColor] = useState<"black" | "white">("black");
   const [activeIndex, setActiveIndex] = useState(0);
+  const [showStickyBar, setShowStickyBar] = useState(false);
 
   useEffect(() => {
     if (!product?.images?.length) return;
@@ -55,6 +56,17 @@ export default function ProductPage() {
       trackView({ userId: user._id, productId: id as any });
     }
   }, [product?._id, user?._id]);
+
+  // Sticky bar visibility on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY;
+      setShowStickyBar(scrollPosition > 400);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const handleWishlistToggle = async () => {
     try {
@@ -99,6 +111,13 @@ export default function ProductPage() {
     }
   };
 
+  const handleWhatsAppOrder = () => {
+    const link = `${window.location.origin}/product/${product?._id}`;
+    const message = `Hi! I'm interested in "${product?.name}" (${prettyName[product?.category ?? ""] ?? product?.category}). Price: ₹${product?.price.toLocaleString()}${product?.originalPrice ? ` (MRP ₹${product.originalPrice.toLocaleString()})` : ""}.${supportsColors ? ` Color: ${color[0].toUpperCase() + color.slice(1)}.` : ""} Link: ${link}`;
+    const url = `https://wa.me/9871629699?text=${encodeURIComponent(message)}`;
+    window.location.href = url;
+  };
+
   if (product === undefined) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-black">
@@ -129,7 +148,7 @@ export default function ProductPage() {
   return (
     <div className="min-h-screen bg-black text-white">
       <Navbar />
-      <main className="pt-20">
+      <main className="pt-20 pb-20 md:pb-0">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 grid lg:grid-cols-2 gap-10">
           <Card className="bg-black border-white/10 overflow-hidden rounded-2xl">
             <div className="relative aspect-square">
@@ -155,12 +174,12 @@ export default function ProductPage() {
 
             {images.length > 1 && (
               <div className="p-4">
-                <div className="flex gap-3 overflow-x-auto">
+                <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-hide">
                   {images.map((src, idx) => (
                     <button
                       key={src + idx}
                       onClick={() => setActiveIndex(idx)}
-                      className={`relative h-18 w-18 sm:h-20 sm:w-20 rounded-xl overflow-hidden flex-shrink-0 ring-1 transition-all duration-200 ${
+                      className={`relative h-18 w-18 sm:h-20 sm:w-20 rounded-xl overflow-hidden flex-shrink-0 ring-1 transition-all duration-200 snap-center ${
                         activeIndex === idx
                           ? "ring-white"
                           : "ring-white/20 hover:ring-white/40"
@@ -270,12 +289,7 @@ export default function ProductPage() {
               </Button>
               <Button
                 className="w-full h-12 rounded-full bg-[#25D366] text-white hover:bg-[#20bd5b] transition-colors duration-200"
-                onClick={() => {
-                  const link = `${window.location.origin}/product/${product._id}`;
-                  const message = `Hi! I'm interested in "${product.name}" (${prettyName[product.category] ?? product.category}). Price: ₹${product.price.toLocaleString()}${product.originalPrice ? ` (MRP ₹${product.originalPrice.toLocaleString()})` : ""}.${supportsColors ? ` Color: ${color[0].toUpperCase() + color.slice(1)}.` : ""} Link: ${link}`;
-                  const url = `https://wa.me/9871629699?text=${encodeURIComponent(message)}`;
-                  window.location.href = url;
-                }}
+                onClick={handleWhatsAppOrder}
               >
                 <MessageCircle className="h-5 w-5 mr-2" />
                 ORDER ON WHATSAPP
@@ -294,6 +308,34 @@ export default function ProductPage() {
         
         <RecentlyViewed />
       </main>
+
+      {/* Sticky Mobile CTA Bar */}
+      {showStickyBar && (
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-black/95 backdrop-blur-md border-t border-white/10 p-4 md:hidden">
+          <div className="flex items-center gap-3">
+            <div className="flex-1">
+              <p className="text-xs text-white/60 mb-1">
+                {prettyName[product.category] ?? product.category}
+              </p>
+              <p className="font-bold text-lg">₹{product.price.toLocaleString()}</p>
+            </div>
+            <Button
+              onClick={handleAddToCart}
+              className="h-12 px-6 rounded-full bg-white text-black hover:bg-white/90 transition-colors duration-200"
+            >
+              Add to cart
+            </Button>
+            <Button
+              onClick={handleWhatsAppOrder}
+              size="icon"
+              className="h-12 w-12 rounded-full bg-[#25D366] text-white hover:bg-[#20bd5b] transition-colors duration-200"
+            >
+              <MessageCircle className="h-5 w-5" />
+            </Button>
+          </div>
+        </div>
+      )}
+
       <Footer />
     </div>
   );
