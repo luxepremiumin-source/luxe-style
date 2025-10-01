@@ -290,15 +290,15 @@ export default function Navbar() {
 
           {/* Panel */}
           <div
-            className="absolute left-0 top-0 h-full w-72 max-w-[85vw] bg-black border-r border-white/10 p-4 flex flex-col pointer-events-auto"
+            className="absolute left-0 top-0 h-full w-72 max-w-[85vw] bg-gray-50 border-r border-gray-200 p-4 flex flex-col pointer-events-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-2">
-              <span className="text-lg font-semibold tracking-wide">Menu</span>
+              <span className="text-lg font-semibold tracking-wide text-gray-900">Menu</span>
               <Button
                 variant="ghost"
                 size="sm"
-                className="border border-white/20 hover:bg-white/10"
+                className="border border-gray-300 hover:bg-gray-100 text-gray-900"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Close
@@ -309,21 +309,21 @@ export default function Navbar() {
             <div className="flex flex-col gap-2">
               <a
                 href="/category/goggles"
-                className="block rounded-md px-3 py-2 hover:bg-white/10"
+                className="block rounded-md px-3 py-2 hover:bg-gray-100 text-gray-900 font-medium"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Goggles
               </a>
               <a
                 href="/category/watches"
-                className="block rounded-md px-3 py-2 hover:bg-white/10"
+                className="block rounded-md px-3 py-2 hover:bg-gray-100 text-gray-900 font-medium"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Watches
               </a>
               <a
                 href="/category/belts"
-                className="block rounded-md px-3 py-2 hover:bg-white/10"
+                className="block rounded-md px-3 py-2 hover:bg-gray-100 text-gray-900 font-medium"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Belts
@@ -331,12 +331,12 @@ export default function Navbar() {
             </div>
 
             {/* Instagram link at bottom */}
-            <div className="mt-auto pt-4 border-t border-white/10">
+            <div className="mt-auto pt-4 border-t border-gray-200">
               <a
                 href="https://www.instagram.com/luxe.premium.in"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-white/10 text-white"
+                className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-100 text-gray-900"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -348,7 +348,7 @@ export default function Navbar() {
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  className="text-white"
+                  className="text-gray-900"
                 >
                   <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
                   <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
