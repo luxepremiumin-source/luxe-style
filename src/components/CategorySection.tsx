@@ -20,7 +20,10 @@ const categories = [
   {
     name: "Designer Watches",
     description: "Timepieces that define sophistication",
-    image: "/api/placeholder/400/300",
+    images: [
+      "https://harmless-tapir-303.convex.cloud/api/storage/0df7a66e-c4cd-4165-8eb8-eb91d8b079b1",
+      "https://harmless-tapir-303.convex.cloud/api/storage/882e40ac-661b-4f0a-87f2-48744b7ddf77"
+    ],
     href: "/category/watches",
     color: "from-amber-500 to-orange-600"
   },
@@ -58,12 +61,32 @@ const transitionVariants = [
   }
 ];
 
+// Unique transition variants for watches
+const watchTransitionVariants = [
+  // Watch Image 0: Slide from left with scale
+  {
+    initial: { opacity: 0, x: -100, scale: 0.85 },
+    animate: { opacity: 1, x: 0, scale: 1 },
+    exit: { opacity: 0, x: 100, scale: 0.85 },
+    transition: { duration: 0.2, ease: [0.34, 1.56, 0.64, 1] }
+  },
+  // Watch Image 1: Fade with rotation
+  {
+    initial: { opacity: 0, rotate: 10, scale: 1.1 },
+    animate: { opacity: 1, rotate: 0, scale: 1 },
+    exit: { opacity: 0, rotate: -10, scale: 0.9 },
+    transition: { duration: 0.2, ease: [0.16, 1, 0.3, 1] }
+  }
+];
+
 export default function CategorySection() {
   const navigate = useNavigate();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [currentWatchIndex, setCurrentWatchIndex] = useState(0);
   const [imagesLoaded, setImagesLoaded] = useState(false);
+  const [watchesLoaded, setWatchesLoaded] = useState(false);
 
-  // Preload all images for smooth transitions
+  // Preload all images for smooth transitions - Goggles
   useEffect(() => {
     const gogglesCategory = categories.find(c => c.name === "Premium Goggles");
     if (gogglesCategory?.images) {
@@ -85,6 +108,28 @@ export default function CategorySection() {
     }
   }, []);
 
+  // Preload watch images
+  useEffect(() => {
+    const watchesCategory = categories.find(c => c.name === "Designer Watches");
+    if (watchesCategory?.images) {
+      const imagePromises = watchesCategory.images.map((src) => {
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          img.src = src;
+          img.onload = resolve;
+          img.onerror = reject;
+        });
+      });
+
+      Promise.all(imagePromises)
+        .then(() => setWatchesLoaded(true))
+        .catch((err) => {
+          console.error("Error preloading watch images:", err);
+          setWatchesLoaded(true);
+        });
+    }
+  }, []);
+
   // Auto-slide effect for Premium Goggles - only start after images are loaded
   useEffect(() => {
     if (!imagesLoaded) return;
@@ -95,6 +140,17 @@ export default function CategorySection() {
 
     return () => clearInterval(interval);
   }, [imagesLoaded]);
+
+  // Auto-slide effect for Designer Watches - only start after images are loaded
+  useEffect(() => {
+    if (!watchesLoaded) return;
+    
+    const interval = setInterval(() => {
+      setCurrentWatchIndex((prev) => (prev + 1) % 2);
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [watchesLoaded]);
 
   return (
     <section className="py-24 bg-black">
@@ -148,6 +204,21 @@ export default function CategorySection() {
                         animate={transitionVariants[currentImageIndex].animate}
                         exit={transitionVariants[currentImageIndex].exit}
                         transition={transitionVariants[currentImageIndex].transition}
+                        style={{ willChange: "transform, opacity" }}
+                      />
+                    </AnimatePresence>
+                  ) : category.name === "Designer Watches" && category.images ? (
+                    <AnimatePresence mode="wait">
+                      <motion.img
+                        key={currentWatchIndex}
+                        src={category.images[currentWatchIndex]}
+                        alt={category.name}
+                        className="absolute inset-0 h-full w-full object-cover"
+                        loading="eager"
+                        initial={watchTransitionVariants[currentWatchIndex].initial}
+                        animate={watchTransitionVariants[currentWatchIndex].animate}
+                        exit={watchTransitionVariants[currentWatchIndex].exit}
+                        transition={watchTransitionVariants[currentWatchIndex].transition}
                         style={{ willChange: "transform, opacity" }}
                       />
                     </AnimatePresence>
