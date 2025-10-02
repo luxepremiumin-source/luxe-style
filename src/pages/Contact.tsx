@@ -22,7 +22,7 @@ export default function Contact() {
               Contact information
             </h1>
 
-            <div className="space-y-3 text-xs sm:text-sm text-neutral-700 leading-relaxed">
+            <div className="space-y-3 text-xs sm:text-sm text-neutral-700 leading-relaxed font-['Noyh_Bold']">
               <p>Dear valued customers,</p>
 
               <p>
