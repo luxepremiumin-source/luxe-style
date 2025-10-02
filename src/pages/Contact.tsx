@@ -8,7 +8,7 @@ export default function Contact() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="min-h-screen bg-black text-white"
+      className="min-h-screen bg-neutral-200 text-neutral-900"
     >
       <Navbar />
       <main className="pt-24">
@@ -18,11 +18,11 @@ export default function Contact() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-center mb-12 sm:mb-16">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-center mb-12 sm:mb-16 text-black">
               Contact information
             </h1>
 
-            <div className="space-y-6 text-base sm:text-lg text-gray-300 leading-relaxed">
+            <div className="space-y-6 text-base sm:text-lg text-neutral-700 leading-relaxed">
               <p>Dear valued customers,</p>
 
               <p>
@@ -37,8 +37,8 @@ export default function Contact() {
               </p>
 
               <div className="py-4">
-                <p className="font-semibold text-white">WhatsApp: +91 9871629699</p>
-                <p className="font-semibold text-white">Email: luxe.premium.in@gmail.com</p>
+                <p className="font-semibold text-black">WhatsApp: +91 9871629699</p>
+                <p className="font-semibold text-black">Email: luxe.premium.in@gmail.com</p>
               </div>
 
               <p>
@@ -47,8 +47,8 @@ export default function Contact() {
 
               <div className="pt-6">
                 <p>Warm regards,</p>
-                <p className="font-semibold text-white">Tanmay Agrawal</p>
-                <p className="text-gray-400">Owner, LUXE</p>
+                <p className="font-semibold text-black">Tanmay Agrawal</p>
+                <p className="text-neutral-700">Owner, LUXE</p>
               </div>
             </div>
           </motion.div>
