@@ -30,7 +30,11 @@ const categories = [
   {
     name: "Luxury Belts",
     description: "Crafted accessories for the discerning individual",
-    image: "/api/placeholder/400/400",
+    images: [
+      "https://harmless-tapir-303.convex.cloud/api/storage/5d06c704-4d0d-4c4b-bd9c-b4a42c7e2d96",
+      "https://harmless-tapir-303.convex.cloud/api/storage/8b8a5a4e-e0dd-45b8-885f-dae0013cf643",
+      "https://harmless-tapir-303.convex.cloud/api/storage/d598cf55-8bc8-43ac-9151-f4187d918545"
+    ],
     href: "/category/belts",
     color: "from-emerald-500 to-teal-600"
   }
@@ -79,12 +83,39 @@ const watchTransitionVariants = [
   }
 ];
 
+// Unique transition variants for belts
+const beltTransitionVariants = [
+  // Belt Image 0: Diagonal slide with scale
+  {
+    initial: { opacity: 0, x: -80, y: -80, scale: 0.8 },
+    animate: { opacity: 1, x: 0, y: 0, scale: 1 },
+    exit: { opacity: 0, x: 80, y: 80, scale: 0.8 },
+    transition: { duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }
+  },
+  // Belt Image 1: Flip effect with scale
+  {
+    initial: { opacity: 0, rotateY: 90, scale: 0.85 },
+    animate: { opacity: 1, rotateY: 0, scale: 1 },
+    exit: { opacity: 0, rotateY: -90, scale: 0.85 },
+    transition: { duration: 0.2, ease: [0.68, -0.55, 0.265, 1.55] }
+  },
+  // Belt Image 2: Spiral zoom
+  {
+    initial: { opacity: 0, scale: 0.5, rotate: -180 },
+    animate: { opacity: 1, scale: 1, rotate: 0 },
+    exit: { opacity: 0, scale: 1.5, rotate: 180 },
+    transition: { duration: 0.2, ease: [0.87, 0, 0.13, 1] }
+  }
+];
+
 export default function CategorySection() {
   const navigate = useNavigate();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [currentWatchIndex, setCurrentWatchIndex] = useState(0);
+  const [currentBeltIndex, setCurrentBeltIndex] = useState(0);
   const [imagesLoaded, setImagesLoaded] = useState(false);
   const [watchesLoaded, setWatchesLoaded] = useState(false);
+  const [beltsLoaded, setBeltsLoaded] = useState(false);
 
   // Preload all images for smooth transitions - Goggles
   useEffect(() => {
@@ -130,6 +161,28 @@ export default function CategorySection() {
     }
   }, []);
 
+  // Preload belt images
+  useEffect(() => {
+    const beltsCategory = categories.find(c => c.name === "Luxury Belts");
+    if (beltsCategory?.images) {
+      const imagePromises = beltsCategory.images.map((src) => {
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          img.src = src;
+          img.onload = resolve;
+          img.onerror = reject;
+        });
+      });
+
+      Promise.all(imagePromises)
+        .then(() => setBeltsLoaded(true))
+        .catch((err) => {
+          console.error("Error preloading belt images:", err);
+          setBeltsLoaded(true);
+        });
+    }
+  }, []);
+
   // Auto-slide effect for Premium Goggles - only start after images are loaded
   useEffect(() => {
     if (!imagesLoaded) return;
@@ -151,6 +204,17 @@ export default function CategorySection() {
 
     return () => clearInterval(interval);
   }, [watchesLoaded]);
+
+  // Auto-slide effect for Luxury Belts - only start after images are loaded
+  useEffect(() => {
+    if (!beltsLoaded) return;
+    
+    const interval = setInterval(() => {
+      setCurrentBeltIndex((prev) => (prev + 1) % 3);
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [beltsLoaded]);
 
   return (
     <section className="py-24 bg-black">
@@ -222,14 +286,29 @@ export default function CategorySection() {
                         style={{ willChange: "transform, opacity" }}
                       />
                     </AnimatePresence>
-                  ) : (
+                  ) : category.name === "Luxury Belts" && category.images ? (
+                    <AnimatePresence mode="wait">
+                      <motion.img
+                        key={currentBeltIndex}
+                        src={category.images[currentBeltIndex]}
+                        alt={category.name}
+                        className="absolute inset-0 h-full w-full object-cover"
+                        loading="eager"
+                        initial={beltTransitionVariants[currentBeltIndex].initial}
+                        animate={beltTransitionVariants[currentBeltIndex].animate}
+                        exit={beltTransitionVariants[currentBeltIndex].exit}
+                        transition={beltTransitionVariants[currentBeltIndex].transition}
+                        style={{ willChange: "transform, opacity" }}
+                      />
+                    </AnimatePresence>
+                  ) : category.images && category.images.length > 0 ? (
                     <img
-                      src={category.image}
+                      src={category.images[0]}
                       alt={category.name}
                       className="absolute inset-0 h-full w-full object-cover"
                       loading="lazy"
                     />
-                  )}
+                  ) : null}
                   <motion.div
                     whileHover={{ scale: 1.05 }}
                     transition={{ duration: 0.3 }}
