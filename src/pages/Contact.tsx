@@ -36,7 +36,7 @@ export default function Contact() {
                 WhatsApp or email using the contact details below:
               </p>
 
-              <div className="py-3">
+              <div className="py-2">
                 <p className="font-semibold text-black">WhatsApp: +91 9871629699</p>
                 <p className="font-semibold text-black">Email: luxe.premium.in@gmail.com</p>
               </div>
@@ -45,7 +45,7 @@ export default function Contact() {
                 Your satisfaction is our priority, and we look forward to serving you!
               </p>
 
-              <div className="pt-5">
+              <div className="pt-4">
                 <p>Warm regards,</p>
                 <p className="font-semibold text-black">Tanmay Agrawal</p>
                 <p className="text-neutral-700">Owner, LUXE</p>
