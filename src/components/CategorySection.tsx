@@ -194,11 +194,11 @@ export default function CategorySection() {
     return () => clearInterval(interval);
   }, [imagesLoaded]);
 
-  // Auto-slide effect for Designer Watches - start with initial delay, then sync with goggles
+  // Auto-slide effect for Designer Watches - start with 1000ms delay, then transition every 2000ms (separate from goggles/belts)
   useEffect(() => {
     if (!watchesLoaded) return;
     
-    // Start with a 700ms delay, then transition every 2000ms (synced with goggles)
+    // Start with a 1000ms delay, then transition every 2000ms (separate timing)
     const timeout = setTimeout(() => {
       setCurrentWatchIndex((prev) => (prev + 1) % 2);
       
@@ -207,27 +207,21 @@ export default function CategorySection() {
       }, 2000);
       
       return () => clearInterval(interval);
-    }, 700);
+    }, 1000);
 
     return () => clearTimeout(timeout);
   }, [watchesLoaded]);
 
-  // Auto-slide effect for Luxury Belts - start with initial delay, then sync with goggles
+  // Auto-slide effect for Luxury Belts - sync with goggles (no delay, same timing)
   useEffect(() => {
     if (!beltsLoaded) return;
     
-    // Start with a 1400ms delay, then transition every 2000ms (synced with goggles)
-    const timeout = setTimeout(() => {
+    // No delay - transitions at the same time as goggles
+    const interval = setInterval(() => {
       setCurrentBeltIndex((prev) => (prev + 1) % 3);
-      
-      const interval = setInterval(() => {
-        setCurrentBeltIndex((prev) => (prev + 1) % 3);
-      }, 2000);
-      
-      return () => clearInterval(interval);
-    }, 1400);
+    }, 2000);
 
-    return () => clearTimeout(timeout);
+    return () => clearInterval(interval);
   }, [beltsLoaded]);
 
   return (
