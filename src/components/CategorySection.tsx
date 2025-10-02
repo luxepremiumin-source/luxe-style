@@ -30,7 +30,7 @@ const categories = [
   {
     name: "Luxury Belts",
     description: "Crafted accessories for the discerning individual",
-    image: "/api/placeholder/400/300",
+    image: "/api/placeholder/400/400",
     href: "/category/belts",
     color: "from-emerald-500 to-teal-600"
   }
