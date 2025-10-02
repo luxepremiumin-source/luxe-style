@@ -225,24 +225,24 @@ export default function CategorySection() {
   }, [beltsLoaded]);
 
   return (
-    <section className="py-24 bg-black">
+    <section className="py-12 sm:py-16 md:py-24 bg-black">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.4 }}
-          className="text-center mb-16"
+          className="text-center mb-8 sm:mb-12 md:mb-16"
         >
-          <h2 className="text-4xl lg:text-5xl font-bold tracking-tight text-white mb-4">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white mb-3 sm:mb-4">
             Explore Our Collections
           </h2>
-          <p className="text-xl text-gray-300 max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl text-gray-300 max-w-2xl mx-auto px-4">
             Discover premium accessories that elevate your style and make a statement
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           {categories.map((category, index) => (
             <motion.div
               key={category.name}
@@ -252,7 +252,7 @@ export default function CategorySection() {
               transition={{ delay: index * 0.08, duration: 0.4 }}
             >
               <Card
-                className="group cursor-pointer overflow-hidden ring-1 ring-white/10 hover:ring-white/20 bg-transparent transition-all duration-300"
+                className="group cursor-pointer overflow-hidden ring-1 ring-white/10 active:ring-white/30 hover:ring-white/20 bg-transparent transition-all duration-200 touch-manipulation"
                 onClick={() => navigate(category.href)}
                 role="link"
                 tabIndex={0}
@@ -263,7 +263,7 @@ export default function CategorySection() {
                   }
                 }}
               >
-                <div className="relative aspect-[4/3] overflow-hidden">
+                <div className="relative aspect-[4/3] overflow-hidden touch-none">
                   {category.name === "Premium Goggles" && category.images ? (
                     <AnimatePresence mode="wait">
                       <motion.img
@@ -324,23 +324,23 @@ export default function CategorySection() {
                   />
                 </div>
                 
-                <div className="p-6">
-                  <h3 className="text-xl font-bold text-white mb-2">
+                <div className="p-4 sm:p-6">
+                  <h3 className="text-lg sm:text-xl font-bold text-white mb-1.5 sm:mb-2">
                     {category.name}
                   </h3>
-                  <p className="text-gray-300 mb-4">
+                  <p className="text-sm sm:text-base text-gray-300 mb-3 sm:mb-4">
                     {category.description}
                   </p>
                   <Button
                     variant="ghost"
-                    className="p-0 h-auto text-white hover:text-white/80 group-hover:translate-x-1 transition-transform duration-200"
+                    className="p-0 h-auto text-sm sm:text-base text-white hover:text-white/80 active:text-white/70 group-hover:translate-x-1 transition-transform duration-200 touch-manipulation"
                     onClick={(e) => {
                       e.stopPropagation();
                       navigate(category.href);
                     }}
                   >
                     Shop Now
-                    <ArrowRight className="ml-2 h-4 w-4" />
+                    <ArrowRight className="ml-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   </Button>
                 </div>
               </Card>
