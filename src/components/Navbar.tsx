@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { ShoppingBag, User, Search, Menu } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 import { api } from "@/convex/_generated/api";
 import { useQuery, useMutation } from "convex/react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -96,6 +96,7 @@ function AnnouncementRow() {
 export default function Navbar() {
   const { isAuthenticated, user, signOut } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   // Add: admin visibility check
   const allowedEmails = new Set<string>(["vidhigadgets@gmail.com"]);
   const isAuthorizedAdmin =
@@ -267,14 +268,16 @@ export default function Navbar() {
         <div className="h-0" />
       </div>
 
-      {/* Announcement bar BELOW navbar */}
-      <div className="w-full bg-black text-white relative">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="h-6 flex items-center justify-center" aria-live="polite" role="status">
-            <AnnouncementRow />
+      {/* Announcement bar BELOW navbar - only show on homepage */}
+      {location.pathname === "/" && (
+        <div className="w-full bg-black text-white relative">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="h-6 flex items-center justify-center" aria-live="polite" role="status">
+              <AnnouncementRow />
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Mobile menu overlay + panel (categories only) */}
       {isMenuOpen && (
