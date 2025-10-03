@@ -21,6 +21,9 @@ export const sendWelcomeEmail = action({
       process.env.RESEND_FROM_EMAIL?.trim() ||
       "LUXE <onboarding@resend.dev>";
 
+    // NEW: Set Reply-To so responses go to your Gmail address
+    const replyTo = process.env.RESEND_REPLY_TO?.trim() || "luxe.premium.in@gmail.com";
+
     const subject = "Welcome to LUXE — Thanks for subscribing!";
     const html = `
       <div style="font-family: Helvetica Neue, Arial, sans-serif; color: #111; line-height: 1.6;">
@@ -35,6 +38,8 @@ export const sendWelcomeEmail = action({
       to,
       subject,
       html,
+      // NEW: ensure replies reach your Gmail inbox
+      replyTo: replyTo,
     });
 
     if (error) {
