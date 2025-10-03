@@ -126,7 +126,7 @@ export default function Footer() {
                 Terms of service
               </a>
               <span className="text-gray-600">·</span>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors duration-200 font-normal">
+              <a href="/shipping-policy" className="text-gray-400 hover:text-white transition-colors duration-200 font-normal">
                 Shipping policy
               </a>
               <span className="text-gray-600">·</span>
