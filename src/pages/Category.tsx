@@ -40,12 +40,14 @@ export default function CategoryPage() {
 
       if (!isAuthenticated || !currentUserId) {
         await signIn("anonymous");
-        const deadline = Date.now() + 3000;
+        // Wait for user id to become available after anonymous sign-in (single-tap UX)
+        const deadline = Date.now() + 4000;
         while (!currentUserId && Date.now() < deadline) {
           await new Promise((r) => setTimeout(r, 100));
-          currentUserId = (typeof window !== "undefined" ? (window as any).__luxeUserId : undefined) || user?._id;
+          currentUserId =
+            (typeof window !== "undefined" ? (window as any).__luxeUserId : undefined) ||
+            user?._id;
         }
-        currentUserId = user?._id || currentUserId;
       }
 
       if (!currentUserId) {
@@ -53,7 +55,7 @@ export default function CategoryPage() {
         return;
       }
 
-      await addToCart({ userId: currentUserId, productId: productId as any, quantity: 1 });
+      await addToCart({ userId: currentUserId as any, productId: productId as any, quantity: 1 });
       toast("Added to cart");
     } catch (e) {
       console.error(e);

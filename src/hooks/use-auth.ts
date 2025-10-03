@@ -19,6 +19,13 @@ export function useAuth() {
     }
   }, [isAuthLoading, user]);
 
+  // Add: expose user id globally for immediate availability after sign-in
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      (window as any).__luxeUserId = user?._id ?? null;
+    }
+  }, [user?._id]);
+
   return {
     isLoading,
     isAuthenticated,

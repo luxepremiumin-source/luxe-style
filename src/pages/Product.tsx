@@ -93,13 +93,26 @@ export default function ProductPage() {
   const handleAddToCart = async () => {
     try {
       let currentUserId = user?._id;
+
       if (!isAuthenticated || !currentUserId) {
         await signIn("anonymous");
-        toast("Signed in as guest. Tap Add to Cart again.");
+        // Wait for user id to become available after anonymous sign-in (single-tap UX)
+        const deadline = Date.now() + 4000;
+        while (!currentUserId && Date.now() < deadline) {
+          await new Promise((r) => setTimeout(r, 100));
+          currentUserId =
+            (typeof window !== "undefined" ? (window as any).__luxeUserId : undefined) ||
+            user?._id;
+        }
+      }
+
+      if (!currentUserId) {
+        toast("Please try again");
         return;
       }
+
       await addToCart({
-        userId: currentUserId,
+        userId: currentUserId as any,
         productId: id as any,
         quantity: qty,
         color: supportsColors ? color : undefined,
