@@ -122,7 +122,7 @@ export default function Footer() {
                 Privacy policy
               </a>
               <span className="text-gray-600">·</span>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors duration-200 font-normal">
+              <a href="/terms-of-service" className="text-gray-400 hover:text-white transition-colors duration-200 font-normal">
                 Terms of service
               </a>
               <span className="text-gray-600">·</span>
