@@ -142,16 +142,23 @@ export default function Navbar() {
   });
 
   // Cart items for drawer
-  const cartItems = useQuery(api.cart.getCartItems, { userId: user?._id ?? null });
-  const cartItemCount = (cartItems ?? []).reduce((sum, item) => sum + (item.quantity ?? 0), 0);
+  const cartItems = useQuery(
+    api.cart.getCartItems,
+    isCartOpen ? { userId: user?._id ?? null } : undefined,
+  );
+  const cartItemCount = (cartItems ?? []).reduce(
+    (sum, item) => sum + (item.quantity ?? 0),
+    0,
+  );
 
   // Add: auto-remove promo if cart becomes ineligible (< 2 items)
   useEffect(() => {
+    if (!isCartOpen) return;
     if (cartItemCount < 2 && appliedDiscount > 0) {
       setAppliedDiscount(0);
       setPromoCode("");
     }
-  }, [cartItemCount, appliedDiscount]);
+  }, [isCartOpen, cartItemCount, appliedDiscount]);
 
   // Add mutation for updating cart quantities
   const setCartItemQuantity = useMutation(api.cart.setCartItemQuantity);
