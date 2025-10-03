@@ -17,12 +17,10 @@ export const sendWelcomeEmail = action({
 
     const resend = new Resend(apiKey);
 
-    // Prefer a configured sender; fall back to Resend's onboarding domain
     const from =
       process.env.RESEND_FROM_EMAIL?.trim() ||
       "LUXE <onboarding@resend.dev>";
 
-    // NEW: Set Reply-To so responses go to your Gmail address
     const replyTo = process.env.RESEND_REPLY_TO?.trim() || "luxe.premium.in@gmail.com";
 
     const subject = "Welcome to LUXE — Thanks for subscribing!";
@@ -33,23 +31,34 @@ export const sendWelcomeEmail = action({
         <p style="margin:0 0 12px;">— Team LUXE</p>
       </div>
     `;
+    const text = `Welcome to LUXE
 
-    const { error } = await resend.emails.send({
-      from,
-      to,
-      subject,
-      html,
-      // NEW: ensure replies reach your Gmail inbox
-      replyTo: replyTo,
-    });
+Thanks for subscribing to our updates. You'll be the first to know about new arrivals, drops, and deals.
 
-    if (error) {
-      throw new Error(
-        typeof error === "string" ? error : "Failed to send email"
-      );
+— Team LUXE`;
+
+    try {
+      const { error } = await resend.emails.send({
+        from,
+        to: [to], // ensure array form
+        subject,
+        html,
+        text,
+        replyTo,
+      });
+
+      if (error) {
+        const msg =
+          (error as any)?.message ||
+          (typeof error === "string" ? error : JSON.stringify(error));
+        throw new Error(`Resend error: ${msg}`);
+      }
+
+      return { ok: true };
+    } catch (e: any) {
+      const msg = e?.message || String(e);
+      throw new Error(`Failed to send email: ${msg}`);
     }
-
-    return { ok: true };
   },
 });
 
@@ -86,24 +95,34 @@ export const sendNewsletterToAll = action({
            <p style="margin:0 0 12px;">Thank you for subscribing. We've got fresh drops and deals—reply if you want early access.</p>
            <p style="margin:0 0 12px;">— Team LUXE</p>
          </div>`) as string;
+    const text =
+      (args.text ??
+        `Latest from LUXE
+
+Thank you for subscribing. We've got fresh drops and deals—reply if you want early access.
+
+— Team LUXE`) as string;
 
     let sent = 0;
     for (const batch of chunk(subscribers.map(s => s.email), 50)) {
-      const { error } = await resend.emails.send({
-        from,
-        to: batch,
-        subject,
-        html,
-        replyTo,
-      });
-      if (error) {
-        // Continue sending to the rest; surface a generic error if all fail
-        // but we won't throw to avoid stopping halfway.
-        // You can inspect logs in Resend dashboard if needed.
-      } else {
-        sent += batch.length;
+      try {
+        const { error } = await resend.emails.send({
+          from,
+          to: batch,
+          subject,
+          html,
+          text,
+          replyTo,
+        });
+        if (!error) {
+          sent += batch.length;
+        } else {
+          // expose the actual error in logs via thrown error; continue remaining batches
+          console.error("Resend batch error:", (error as any)?.message || error);
+        }
+      } catch (e: any) {
+        console.error("Resend batch exception:", e?.message || e);
       }
-      // minimal pacing
       await wait(150);
     }
 
