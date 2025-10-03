@@ -211,7 +211,7 @@ export default function CategoryPage() {
 
                           <div className="mt-3 flex gap-2">
                             <div
-                              className="inline-flex items-center gap-2 rounded-full border border-white/20 px-2 py-1"
+                              className="inline-flex items-center gap-2 rounded-full border border-white/40 bg-white/10 px-2 py-1 text-white"
                               onClick={(e) => e.stopPropagation()}
                             >
                               <Button
