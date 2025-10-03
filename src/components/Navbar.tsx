@@ -141,10 +141,10 @@ export default function Navbar() {
     userId: user?._id ?? null,
   });
 
-  // Cart items for drawer
+  // Cart items for drawer - only fetch when cart is open
   const cartItems = useQuery(
     api.cart.getCartItems,
-    mounted && isCartOpen ? { userId: user?._id ?? null } : "skip",
+    isCartOpen && user?._id ? { userId: user._id } : "skip",
   );
   const cartItemCount = (cartItems ?? []).reduce(
     (sum, item) => sum + (item.quantity ?? 0),
@@ -153,12 +153,12 @@ export default function Navbar() {
 
   // Add: auto-remove promo if cart becomes ineligible (< 2 items)
   useEffect(() => {
-    if (!isCartOpen) return;
+    if (!isCartOpen || !cartItems) return;
     if (cartItemCount < 2 && appliedDiscount > 0) {
       setAppliedDiscount(0);
       setPromoCode("");
     }
-  }, [isCartOpen, cartItemCount, appliedDiscount]);
+  }, [isCartOpen, cartItems, cartItemCount, appliedDiscount]);
 
   // Add mutation for updating cart quantities
   const setCartItemQuantity = useMutation(api.cart.setCartItemQuantity);
