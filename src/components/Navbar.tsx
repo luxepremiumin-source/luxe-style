@@ -141,10 +141,10 @@ export default function Navbar() {
     userId: user?._id ?? null,
   });
 
-  // Cart items for drawer
+  // Cart items for drawer - only query when cart is open
   const cartItems = useQuery(
     api.cart.getCartItems,
-    isCartOpen ? { userId: user?._id ?? null } : "skip",
+    isCartOpen ? { userId: user?._id ?? null } : ("skip" as const),
   );
   const cartItemCount = (cartItems ?? []).reduce(
     (sum, item) => sum + (item.quantity ?? 0),
