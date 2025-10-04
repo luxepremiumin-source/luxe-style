@@ -85,35 +85,24 @@ export const getCartItems = query({
 export const setCartItemQuantity = mutation({
   args: {
     userId: v.id("users"),
-    productId: v.id("products"),
+    cartItemId: v.id("cart"),
     quantity: v.number(),
   },
   handler: async (ctx, args) => {
-    const existing = await ctx.db
-      .query("cart")
-      .withIndex("by_user_and_product", (q) =>
-        q.eq("userId", args.userId).eq("productId", args.productId),
-      )
-      .unique();
+    const existing = await ctx.db.get(args.cartItemId);
 
-    // If quantity <= 0, delete existing row (if any)
-    if (args.quantity <= 0) {
-      if (existing) {
-        await ctx.db.delete(existing._id);
-      }
+    if (!existing) {
       return null;
     }
 
-    if (existing) {
-      await ctx.db.patch(existing._id, { quantity: args.quantity });
-      return existing._id;
+    // If quantity <= 0, delete the cart item
+    if (args.quantity <= 0) {
+      await ctx.db.delete(args.cartItemId);
+      return null;
     }
 
-    // If not existing and quantity > 0, insert a new row (no color by default)
-    return await ctx.db.insert("cart", {
-      userId: args.userId,
-      productId: args.productId,
-      quantity: args.quantity,
-    });
+    // Update the quantity
+    await ctx.db.patch(args.cartItemId, { quantity: args.quantity });
+    return args.cartItemId;
   },
 });

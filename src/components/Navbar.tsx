@@ -457,7 +457,7 @@ export default function Navbar() {
                                 if (!user?._id) return;
                                 await setCartItemQuantity({
                                   userId: user._id as any,
-                                  productId: item.productId as any,
+                                  cartItemId: item._id as any,
                                   quantity: Math.max(0, (item.quantity ?? 1) - 1),
                                 });
                               }}
@@ -472,7 +472,7 @@ export default function Navbar() {
                                 if (!user?._id) return;
                                 await setCartItemQuantity({
                                   userId: user._id as any,
-                                  productId: item.productId as any,
+                                  cartItemId: item._id as any,
                                   quantity: (item.quantity ?? 1) + 1,
                                 });
                               }}
