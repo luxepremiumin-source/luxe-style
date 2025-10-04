@@ -68,6 +68,7 @@ export const getCartItems = query({
         quantity: item.quantity ?? 1,
         productId: item.productId,
         color: item.color,
+        packaging: item.packaging,
         product,
       });
     }
