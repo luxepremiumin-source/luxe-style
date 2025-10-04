@@ -183,7 +183,7 @@ export default function Navbar() {
 
   // Generate UPI QR code URL with locked amount
   const generateQRCode = () => {
-    const upiId = "tanmayagrawal2005-1@oksbi"; // Your SBI UPI ID from the QR code
+    const upiId = "9302559917@jio"; // Your Jio UPI ID
     const payeeName = "Tanmay Agrawal";
     const amount = discountedTotal.toFixed(2);
     const transactionNote = `LUXE Order - ${details.firstName} ${details.lastName}`;
