@@ -665,69 +665,34 @@ export default function Navbar() {
                   <div className="space-y-3">
                     <p className="text-sm font-semibold">Delivery</p>
                     <div className="space-y-3">
-                      <div className="space-y-1.5">
-                        <Label htmlFor="pin">PIN code</Label>
-                        <Input
-                          id="pin"
-                          inputMode="numeric"
-                          placeholder="Enter 6-digit PIN code"
-                          value={details.pin}
-                          onChange={async (e) => {
-                            const pincode = e.target.value.replace(/\D/g, "").slice(0, 6);
-                            setDetails((d) => ({ ...d, pin: pincode }));
-                            
-                            // Auto-fetch city and state when 6 digits are entered
-                            if (pincode.length === 6) {
-                              try {
-                                const response = await fetch(`https://api.postalpincode.in/pincode/${pincode}`);
-                                const data = await response.json();
-                                
-                                console.log("PIN code API response:", data); // Debug log
-                                
-                                if (data && data[0] && data[0].Status === "Success" && data[0].PostOffice && data[0].PostOffice.length > 0) {
-                                  const postOffice = data[0].PostOffice[0];
-                                  const city = postOffice.District || postOffice.Name;
-                                  const state = postOffice.State;
-                                  
-                                  console.log("Setting city:", city, "state:", state); // Debug log
-                                  setDetails((d) => ({ ...d, city, state }));
-                                } else {
-                                  console.log("Invalid PIN code or no data found"); // Debug log
-                                  // Clear city and state if PIN code is invalid
-                                  setDetails((d) => ({ ...d, city: "", state: "" }));
-                                }
-                              } catch (error) {
-                                console.error("Error fetching pincode data:", error);
-                                setDetails((d) => ({ ...d, city: "", state: "" }));
-                              }
-                            } else {
-                              // Clear city and state if PIN code is incomplete
-                              setDetails((d) => ({ ...d, city: "", state: "" }));
-                            }
-                          }}
-                          className="bg-white"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label htmlFor="city">City/Town</Label>
-                        <Input
-                          id="city"
-                          value={details.city}
-                          disabled
-                          className="bg-gray-100 text-gray-700 cursor-not-allowed"
-                          placeholder="Auto-filled from PIN code"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label htmlFor="state">State</Label>
-                        <Input
-                          id="state"
-                          value={details.state}
-                          disabled
-                          className="bg-gray-100 text-gray-700 cursor-not-allowed"
-                          placeholder="Auto-filled from PIN code"
-                        />
-                      </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="city">City/Town</Label>
+                      <Input
+                        id="city"
+                        value={details.city}
+                        onChange={(e) => setDetails((d) => ({ ...d, city: e.target.value }))}
+                        className="bg-white"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="state">State</Label>
+                      <Input
+                        id="state"
+                        value={details.state}
+                        onChange={(e) => setDetails((d) => ({ ...d, state: e.target.value }))}
+                        className="bg-white"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="pin">PIN code</Label>
+                      <Input
+                        id="pin"
+                        inputMode="numeric"
+                        value={details.pin}
+                        onChange={(e) => setDetails((d) => ({ ...d, pin: e.target.value }))}
+                        className="bg-white"
+                      />
+                    </div>
                       <div className="space-y-1.5">
                         <Label htmlFor="address1">Address</Label>
                         <Input
