@@ -665,34 +665,16 @@ export default function Navbar() {
                   <div className="space-y-3">
                     <p className="text-sm font-semibold">Delivery</p>
                     <div className="space-y-3">
-                    <div className="space-y-1.5">
-                      <Label htmlFor="city">City/Town</Label>
-                      <Input
-                        id="city"
-                        value={details.city}
-                        onChange={(e) => setDetails((d) => ({ ...d, city: e.target.value }))}
-                        className="bg-white"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label htmlFor="state">State</Label>
-                      <Input
-                        id="state"
-                        value={details.state}
-                        onChange={(e) => setDetails((d) => ({ ...d, state: e.target.value }))}
-                        className="bg-white"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label htmlFor="pin">PIN code</Label>
-                      <Input
-                        id="pin"
-                        inputMode="numeric"
-                        value={details.pin}
-                        onChange={(e) => setDetails((d) => ({ ...d, pin: e.target.value }))}
-                        className="bg-white"
-                      />
-                    </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="pin">PIN code</Label>
+                        <Input
+                          id="pin"
+                          inputMode="numeric"
+                          value={details.pin}
+                          onChange={(e) => setDetails((d) => ({ ...d, pin: e.target.value }))}
+                          className="bg-white"
+                        />
+                      </div>
                       <div className="space-y-1.5">
                         <Label htmlFor="address1">Address</Label>
                         <Input
@@ -712,6 +694,57 @@ export default function Navbar() {
                           onChange={(e) => setDetails((d) => ({ ...d, address2: e.target.value }))}
                           className="bg-white"
                         />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="city">City/Town</Label>
+                        <Input
+                          id="city"
+                          value={details.city}
+                          onChange={(e) => setDetails((d) => ({ ...d, city: e.target.value }))}
+                          className="bg-white"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="state">State</Label>
+                        <Select
+                          value={details.state}
+                          onValueChange={(v) => setDetails((d) => ({ ...d, state: v }))}
+                        >
+                          <SelectTrigger className="bg-white">
+                            <SelectValue placeholder="Select state" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Andhra Pradesh">Andhra Pradesh</SelectItem>
+                            <SelectItem value="Arunachal Pradesh">Arunachal Pradesh</SelectItem>
+                            <SelectItem value="Assam">Assam</SelectItem>
+                            <SelectItem value="Bihar">Bihar</SelectItem>
+                            <SelectItem value="Chhattisgarh">Chhattisgarh</SelectItem>
+                            <SelectItem value="Goa">Goa</SelectItem>
+                            <SelectItem value="Gujarat">Gujarat</SelectItem>
+                            <SelectItem value="Haryana">Haryana</SelectItem>
+                            <SelectItem value="Himachal Pradesh">Himachal Pradesh</SelectItem>
+                            <SelectItem value="Jharkhand">Jharkhand</SelectItem>
+                            <SelectItem value="Karnataka">Karnataka</SelectItem>
+                            <SelectItem value="Kerala">Kerala</SelectItem>
+                            <SelectItem value="Madhya Pradesh">Madhya Pradesh</SelectItem>
+                            <SelectItem value="Maharashtra">Maharashtra</SelectItem>
+                            <SelectItem value="Manipur">Manipur</SelectItem>
+                            <SelectItem value="Meghalaya">Meghalaya</SelectItem>
+                            <SelectItem value="Mizoram">Mizoram</SelectItem>
+                            <SelectItem value="Nagaland">Nagaland</SelectItem>
+                            <SelectItem value="Odisha">Odisha</SelectItem>
+                            <SelectItem value="Punjab">Punjab</SelectItem>
+                            <SelectItem value="Rajasthan">Rajasthan</SelectItem>
+                            <SelectItem value="Sikkim">Sikkim</SelectItem>
+                            <SelectItem value="Tamil Nadu">Tamil Nadu</SelectItem>
+                            <SelectItem value="Telangana">Telangana</SelectItem>
+                            <SelectItem value="Tripura">Tripura</SelectItem>
+                            <SelectItem value="Uttar Pradesh">Uttar Pradesh</SelectItem>
+                            <SelectItem value="Uttarakhand">Uttarakhand</SelectItem>
+                            <SelectItem value="West Bengal">West Bengal</SelectItem>
+                            <SelectItem value="Delhi">Delhi</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                       <div className="space-y-1.5">
                         <Label htmlFor="phone">Phone</Label>
