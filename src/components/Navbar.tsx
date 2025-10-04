@@ -682,13 +682,17 @@ export default function Navbar() {
                                 const response = await fetch(`https://api.postalpincode.in/pincode/${pincode}`);
                                 const data = await response.json();
                                 
+                                console.log("PIN code API response:", data); // Debug log
+                                
                                 if (data && data[0] && data[0].Status === "Success" && data[0].PostOffice && data[0].PostOffice.length > 0) {
                                   const postOffice = data[0].PostOffice[0];
                                   const city = postOffice.District || postOffice.Name;
                                   const state = postOffice.State;
                                   
+                                  console.log("Setting city:", city, "state:", state); // Debug log
                                   setDetails((d) => ({ ...d, city, state }));
                                 } else {
+                                  console.log("Invalid PIN code or no data found"); // Debug log
                                   // Clear city and state if PIN code is invalid
                                   setDetails((d) => ({ ...d, city: "", state: "" }));
                                 }
