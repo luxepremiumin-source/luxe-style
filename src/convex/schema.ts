@@ -43,12 +43,13 @@ const schema = defineSchema(
       inStock: v.boolean(),
     }).index("by_category", ["category"]),
 
-    cart: defineTable({
-      userId: v.id("users"),
-      productId: v.id("products"),
-      quantity: v.number(),
-      color: v.optional(v.string()),
-    })
+  cart: defineTable({
+    userId: v.id("users"),
+    productId: v.id("products"),
+    quantity: v.number(),
+    color: v.optional(v.string()),
+    packaging: v.optional(v.string()),
+  })
       .index("by_user", ["userId"])
       .index("by_user_and_product", ["userId", "productId"]),
 

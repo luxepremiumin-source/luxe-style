@@ -39,6 +39,9 @@ export default function ProductPage() {
     (product?.name ?? "").toLowerCase() === "coach belt" ||
     (product?.name ?? "").toLowerCase() === "coach premium belt";
   const [color, setColor] = useState<"black" | "white">("black");
+  
+  const supportsPackaging = (product?.category ?? "").toLowerCase() === "goggles";
+  const [packaging, setPackaging] = useState<"indian" | "imported" | "without">("indian");
   const [activeIndex, setActiveIndex] = useState(0);
   const [showStickyBar, setShowStickyBar] = useState(false);
 
@@ -50,6 +53,13 @@ export default function ProductPage() {
       setActiveIndex(0);
     }
   }, [product?._id, product?.images?.length, supportsColors, color]);
+  
+  // Reset packaging when product changes
+  useEffect(() => {
+    if (supportsPackaging) {
+      setPackaging("indian");
+    }
+  }, [product?._id, supportsPackaging]);
 
   useEffect(() => {
     if (product && user?._id) {
@@ -116,6 +126,7 @@ export default function ProductPage() {
         productId: id as any,
         quantity: qty,
         color: supportsColors ? color : undefined,
+        packaging: supportsPackaging ? packaging : undefined,
       } as any);
       toast("Added to cart");
     } catch (e) {
@@ -126,7 +137,10 @@ export default function ProductPage() {
 
   const handleWhatsAppOrder = () => {
     const link = `${window.location.origin}/product/${product?._id}`;
-    const message = `Hi! I'm interested in "${product?.name}" (${prettyName[product?.category ?? ""] ?? product?.category}). Price: ₹${product?.price.toLocaleString()}${product?.originalPrice ? ` (MRP ₹${product.originalPrice.toLocaleString()})` : ""}.${supportsColors ? ` Color: ${color[0].toUpperCase() + color.slice(1)}.` : ""} Link: ${link}`;
+    const packagingText = supportsPackaging 
+      ? ` Packaging: ${packaging === "indian" ? "Indian Box" : packaging === "imported" ? "Imported Box (Premium)" : "Without Box"}.`
+      : "";
+    const message = `Hi! I'm interested in "${product?.name}" (${prettyName[product?.category ?? ""] ?? product?.category}). Price: ₹${product?.price.toLocaleString()}${product?.originalPrice ? ` (MRP ₹${product.originalPrice.toLocaleString()})` : ""}.${supportsColors ? ` Color: ${color[0].toUpperCase() + color.slice(1)}.` : ""}${packagingText} Link: ${link}`;
     const url = `https://wa.me/9871629699?text=${encodeURIComponent(message)}`;
     window.location.href = url;
   };
@@ -296,6 +310,25 @@ export default function ProductPage() {
                   <SelectContent>
                     <SelectItem value="black">Black</SelectItem>
                     <SelectItem value="white">White</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {supportsPackaging && (
+              <div className="mt-6">
+                <p className="text-sm text-white/70 mb-2">Packaging</p>
+                <Select
+                  value={packaging}
+                  onValueChange={(v) => setPackaging((v as "indian" | "imported" | "without"))}
+                >
+                  <SelectTrigger className="h-12 rounded-full border-white/20 bg-transparent text-white transition-colors duration-200">
+                    <SelectValue placeholder="Select packaging" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="indian">Indian Box</SelectItem>
+                    <SelectItem value="imported">Imported Box (Premium)</SelectItem>
+                    <SelectItem value="without">Without Box</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

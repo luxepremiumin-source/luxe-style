@@ -473,6 +473,15 @@ export default function Navbar() {
                           {(item as any).color ? (
                             <p className="text-xs text-gray-600">Color: {`${String((item as any).color)[0].toUpperCase()}${String((item as any).color).slice(1)}`}</p>
                           ) : null}
+                          {(item as any).packaging ? (
+                            <p className="text-xs text-gray-600">
+                              Packaging: {
+                                (item as any).packaging === "indian" ? "Indian Box" :
+                                (item as any).packaging === "imported" ? "Imported Box (Premium)" :
+                                "Without Box"
+                              }
+                            </p>
+                          ) : null}
                         </div>
                       </li>
                     ))}
@@ -789,6 +798,11 @@ export default function Navbar() {
                             const c = String((item as any).color);
                             const cap = c.charAt(0).toUpperCase() + c.slice(1);
                             lines.push(`  Color: ${cap}`);
+                          }
+                          if ((item as any).packaging) {
+                            const p = String((item as any).packaging);
+                            const packText = p === "indian" ? "Indian Box" : p === "imported" ? "Imported Box (Premium)" : "Without Box";
+                            lines.push(`  Packaging: ${packText}`);
                           }
                           const productLink = `${window.location.origin}/product/${item.product._id}`;
                           lines.push(`  Link: ${productLink}`);

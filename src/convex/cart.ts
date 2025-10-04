@@ -7,6 +7,7 @@ export const addToCart = mutation({
     productId: v.id("products"),
     quantity: v.optional(v.number()),
     color: v.optional(v.string()),
+    packaging: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const qty = args.quantity ?? 1;
@@ -22,6 +23,7 @@ export const addToCart = mutation({
       await ctx.db.patch(existing._id, {
         quantity: (existing.quantity ?? 0) + qty,
         ...(args.color ? { color: args.color } : {}),
+        ...(args.packaging ? { packaging: args.packaging } : {}),
       });
       return existing._id;
     }
@@ -31,6 +33,7 @@ export const addToCart = mutation({
       productId: args.productId,
       quantity: qty,
       color: args.color,
+      packaging: args.packaging,
     });
   },
 });
