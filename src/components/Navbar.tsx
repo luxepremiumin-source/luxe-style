@@ -183,10 +183,10 @@ export default function Navbar() {
 
   // Generate UPI QR code URL with locked amount
   const generateQRCode = () => {
-    const upiId = "vidhigadgets@paytm"; // Replace with your actual UPI ID
-    const payeeName = "LUXE";
+    const upiId = "tanmayagrawal2005-1@oksbi"; // Your SBI UPI ID from the QR code
+    const payeeName = "Tanmay Agrawal";
     const amount = discountedTotal.toFixed(2);
-    const transactionNote = `Order from ${details.firstName} ${details.lastName}`;
+    const transactionNote = `LUXE Order - ${details.firstName} ${details.lastName}`;
     
     // UPI Intent URL with locked amount (am parameter)
     const upiUrl = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&tn=${encodeURIComponent(transactionNote)}`;
