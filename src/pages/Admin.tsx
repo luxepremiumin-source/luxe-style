@@ -409,16 +409,18 @@ export default function Admin() {
     : [];
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="min-h-screen bg-white"
-    >
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-bold tracking-tight">Admin</h1>
-          <Button variant="outline" onClick={() => navigate("/")}>
-            Back to Site
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
+            <p className="text-gray-600">Manage products and view analytics</p>
+          </div>
+          <Button
+            onClick={() => navigate("/admin/customers")}
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            View Customer Analytics
           </Button>
         </div>
 
@@ -831,6 +833,6 @@ export default function Admin() {
           </div>
         </DialogContent>
       </Dialog>
-    </motion.div>
+    </div>
   );
 }

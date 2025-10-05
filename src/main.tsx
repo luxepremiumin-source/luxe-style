@@ -6,7 +6,7 @@ import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import { ConvexReactClient } from "convex/react";
 import { StrictMode, useEffect } from "react";
 import { createRoot } from "react-dom/client";
-import { BrowserRouter, Route, Routes, useLocation } from "react-router";
+import { createBrowserRouter, RouterProvider, useLocation } from "react-router";
 import "./index.css";
 import Landing from "./pages/Landing.tsx";
 import NotFound from "./pages/NotFound.tsx";
@@ -19,11 +19,65 @@ import TrackOrder from "@/pages/TrackOrder.tsx";
 import TermsOfService from "@/pages/TermsOfService.tsx";
 import ShippingPolicy from "@/pages/ShippingPolicy.tsx";
 import RefundPolicy from "@/pages/RefundPolicy.tsx";
+import AdminCustomers from "./pages/AdminCustomers";
 import "./types/global.d.ts";
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
 
-
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Landing />,
+  },
+  {
+    path: "/auth",
+    element: <AuthPage redirectAfterAuth="/" />,
+  },
+  {
+    path: "/admin",
+    element: <Admin />,
+  },
+  {
+    path: "/admin/customers",
+    element: <AdminCustomers />,
+  },
+  {
+    path: "/category/:category",
+    element: <CategoryPage />,
+  },
+  {
+    path: "/product/:id",
+    element: <ProductPage />,
+  },
+  {
+    path: "/contact",
+    element: <Contact />,
+  },
+  {
+    path: "/about",
+    element: <AboutUs />,
+  },
+  {
+    path: "/track-order",
+    element: <TrackOrder />,
+  },
+  {
+    path: "/terms-of-service",
+    element: <TermsOfService />,
+  },
+  {
+    path: "/shipping-policy",
+    element: <ShippingPolicy />,
+  },
+  {
+    path: "/refund-policy",
+    element: <RefundPolicy />,
+  },
+  {
+    path: "*",
+    element: <NotFound />,
+  },
+]);
 
 function RouteSyncer() {
   const location = useLocation();
@@ -50,29 +104,12 @@ function RouteSyncer() {
   return null;
 }
 
-
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <VlyToolbar />
     <InstrumentationProvider>
       <ConvexAuthProvider client={convex}>
-        <BrowserRouter>
-          <RouteSyncer />
-          <Routes>
-            <Route path="/" element={<Landing />} />
-            <Route path="/auth" element={<AuthPage redirectAfterAuth="/" />} />
-            <Route path="/admin" element={<Admin />} />
-            <Route path="/category/:category" element={<CategoryPage />} />
-            <Route path="/product/:id" element={<ProductPage />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/about" element={<AboutUs />} />
-            <Route path="/track-order" element={<TrackOrder />} />
-            <Route path="/terms-of-service" element={<TermsOfService />} />
-            <Route path="/shipping-policy" element={<ShippingPolicy />} />
-            <Route path="/refund-policy" element={<RefundPolicy />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
+        <RouterProvider router={router} />
         <Toaster />
       </ConvexAuthProvider>
     </InstrumentationProvider>
