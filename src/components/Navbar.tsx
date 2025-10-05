@@ -714,12 +714,6 @@ export default function Navbar() {
                     </p>
                   </div>
 
-                  <div className="mt-2 p-2.5 bg-gray-50 border border-gray-200 rounded-md">
-                    <p className="text-xs text-gray-600">
-                      <span className="font-medium">💳 Payment:</span> COD unavailable due to RTO issues. Online payment only.
-                    </p>
-                  </div>
-
                   <div className="pt-2">
                     <Button
                       className="w-full h-12 rounded-full bg-black text-white hover:bg-black/90"
