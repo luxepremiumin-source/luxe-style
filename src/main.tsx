@@ -18,6 +18,7 @@ import AboutUs from "@/pages/AboutUs.tsx";
 import TrackOrder from "@/pages/TrackOrder.tsx";
 import TermsOfService from "@/pages/TermsOfService.tsx";
 import ShippingPolicy from "@/pages/ShippingPolicy.tsx";
+import RefundPolicy from "@/pages/RefundPolicy.tsx";
 import "./types/global.d.ts";
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
@@ -68,6 +69,7 @@ createRoot(document.getElementById("root")!).render(
             <Route path="/track-order" element={<TrackOrder />} />
             <Route path="/terms-of-service" element={<TermsOfService />} />
             <Route path="/shipping-policy" element={<ShippingPolicy />} />
+            <Route path="/refund-policy" element={<RefundPolicy />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
