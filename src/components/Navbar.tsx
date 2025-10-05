@@ -125,6 +125,7 @@ export default function Navbar() {
   // ADD: promo code state and derived helpers
   const [promoCode, setPromoCode] = useState("");
   const [appliedDiscount, setAppliedDiscount] = useState<number>(0);
+  const [discountPercentage, setDiscountPercentage] = useState<number>(0);
   const [qrCodeUrl, setQrCodeUrl] = useState<string>("");
 
   useEffect(() => {
@@ -158,6 +159,7 @@ export default function Navbar() {
     if (cartItemCount < 2 && appliedDiscount > 0) {
       setAppliedDiscount(0);
       setPromoCode("");
+      setDiscountPercentage(0);
     }
   }, [isCartOpen, cartItems, cartItemCount, appliedDiscount]);
 
@@ -179,7 +181,11 @@ export default function Navbar() {
     (cartItems ?? []).reduce((sum, item) => sum + (item.product.price ?? 0) * (item.quantity ?? 1), 0);
 
   const subtotalWithPackaging = estimatedTotal + packagingCharges;
-  const discountedTotal = Math.max(0, subtotalWithPackaging - appliedDiscount);
+  // Calculate discount: if percentage is set, use that; otherwise use fixed amount
+  const finalDiscount = discountPercentage > 0 
+    ? Math.round(subtotalWithPackaging * (discountPercentage / 100))
+    : appliedDiscount;
+  const discountedTotal = Math.max(0, subtotalWithPackaging - finalDiscount);
 
   // Generate UPI QR code URL with locked amount
   const generateQRCode = () => {
@@ -523,16 +529,18 @@ export default function Navbar() {
                     <p className="text-xs font-semibold text-gray-700">Have a code?</p>
                     
                     {/* Show available codes as clickable chips when eligible */}
-                    {cartItemCount >= 2 && appliedDiscount === 0 && (
+                    {cartItemCount >= 2 && appliedDiscount === 0 && discountPercentage === 0 && (
                       <div className="flex flex-wrap gap-1.5 mb-1">
                         <button
                           onClick={() => {
-                            setPromoCode("LUXE150");
-                            setAppliedDiscount(150);
+                            setPromoCode("COMBO15");
+                            setDiscountPercentage(15);
+                            const discount = Math.round(subtotalWithPackaging * 0.15);
+                            setAppliedDiscount(discount);
                           }}
                           className="px-2.5 py-1 text-xs font-bold bg-gradient-to-r from-black to-gray-800 text-white rounded-full hover:from-gray-800 hover:to-black shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 border border-white/20"
                         >
-                          🎉 LUXE150 - ₹150 OFF
+                          🎉 COMBO15 - 15% OFF
                         </button>
                       </div>
                     )}
@@ -551,6 +559,7 @@ export default function Navbar() {
                           onClick={() => {
                             setAppliedDiscount(0);
                             setPromoCode("");
+                            setDiscountPercentage(0);
                           }}
                           className="h-9 text-xs"
                         >
@@ -564,13 +573,17 @@ export default function Navbar() {
                             if (cartItemCount < 2) {
                               // Force a small UI tick to show helper text below
                               setAppliedDiscount(0);
+                              setDiscountPercentage(0);
                               return;
                             }
-                            if (promoCode.trim() === "LUXE150") {
-                              setAppliedDiscount(150);
+                            if (promoCode.trim() === "COMBO15") {
+                              setDiscountPercentage(15);
+                              const discount = Math.round(subtotalWithPackaging * 0.15);
+                              setAppliedDiscount(discount);
                             } else {
                               // Trigger inline "Invalid code." helper below
                               setAppliedDiscount(0);
+                              setDiscountPercentage(0);
                             }
                           }}
                           className="bg-black text-white hover:bg-black/90 h-9 text-xs"
@@ -582,17 +595,17 @@ export default function Navbar() {
                     {/* Inline helper messages */}
                     {cartItemCount < 2 && appliedDiscount === 0 ? (
                       <p className="text-xs text-gray-600">
-                        Not applicable now — add at least 2 products to use LUXE150.
+                        Not applicable now — add at least 2 products to use COMBO15.
                       </p>
                     ) : null}
-                    {cartItemCount >= 2 && appliedDiscount === 0 && promoCode && promoCode !== "LUXE150" ? (
+                    {cartItemCount >= 2 && appliedDiscount === 0 && promoCode && promoCode !== "COMBO15" ? (
                       <p className="text-xs text-red-600">
                         Invalid code.
                       </p>
                     ) : null}
                     {appliedDiscount > 0 && (
                       <p className="text-xs text-green-700 font-semibold bg-green-50 px-2 py-1 rounded">
-                        ✓ Code applied: LUXE150 — ₹150 off
+                        ✓ Code applied: COMBO15 — 15% off (₹{finalDiscount.toLocaleString()})
                       </p>
                     )}
                   </div>
@@ -610,10 +623,10 @@ export default function Navbar() {
                       <p className="font-semibold">₹{packagingCharges.toLocaleString()}</p>
                     </div>
                   )}
-                  {appliedDiscount > 0 && (
+                  {finalDiscount > 0 && (
                     <div className="flex items-center justify-between text-gray-900">
-                      <p className="font-semibold text-green-700">Discount (LUXE150)</p>
-                      <p className="font-semibold text-green-700">-₹{appliedDiscount.toLocaleString()}</p>
+                      <p className="font-semibold text-green-700">Discount (COMBO15)</p>
+                      <p className="font-semibold text-green-700">-₹{finalDiscount.toLocaleString()}</p>
                     </div>
                   )}
                   <div className="flex items-center justify-between text-gray-900">
@@ -841,10 +854,10 @@ export default function Navbar() {
                     </div>
                   )}
 
-                  {appliedDiscount > 0 && (
+                  {finalDiscount > 0 && (
                     <div className="flex items-center justify-between">
-                      <p className="font-semibold text-green-700">Discount (LUXE150)</p>
-                      <p className="font-semibold text-green-700">-₹{appliedDiscount.toLocaleString()}</p>
+                      <p className="font-semibold text-green-700">Discount (COMBO15)</p>
+                      <p className="font-semibold text-green-700">-₹{finalDiscount.toLocaleString()}</p>
                     </div>
                   )}
                   
@@ -909,10 +922,10 @@ export default function Navbar() {
                         }
 
                         let finalTotal = grandTotal + totalPackagingCharges;
-                        if (appliedDiscount > 0) {
+                        if (finalDiscount > 0) {
                           lines.push("");
-                          lines.push(`Discount code applied: LUXE150 (₹${appliedDiscount.toLocaleString()} off)`);
-                          finalTotal = Math.max(0, finalTotal - appliedDiscount);
+                          lines.push(`Discount code applied: COMBO15 - 15% off (₹${finalDiscount.toLocaleString()} saved)`);
+                          finalTotal = Math.max(0, finalTotal - finalDiscount);
                         }
 
                         lines.push("");
