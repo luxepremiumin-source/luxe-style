@@ -525,7 +525,7 @@ export default function Navbar() {
                     ))}
                   </ul>
 
-                  {/* Promo code section - new design */}
+                  {/* Promo code section - new design matching reference */}
                   <div className="mt-2">
                     {appliedDiscount > 0 ? (
                       <div className="space-y-2">
@@ -557,7 +557,7 @@ export default function Navbar() {
                       <div className="space-y-2">
                         {/* Available coupons section */}
                         {cartItemCount >= 2 && (
-                          <div className="p-3 bg-gradient-to-r from-black to-gray-800 rounded-lg">
+                          <div className="p-3 bg-gradient-to-r from-black to-gray-800 rounded-lg shadow-md">
                             <button
                               onClick={() => {
                                 setPromoCode("COMBO15");
