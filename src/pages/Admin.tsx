@@ -36,6 +36,7 @@ export default function Admin() {
   const createProduct = useMutation(api.products.createProduct);
   const products = useQuery(api.products.getAllProducts);
   const updateProduct = useMutation(api.products.updateProduct);
+  const deleteProduct = useMutation(api.products.deleteProduct);
 
   // Add: strict admin access (by email and/or role)
   const allowedEmails = new Set<string>(["vidhigadgets@gmail.com"]);
@@ -392,6 +393,23 @@ export default function Admin() {
     }
   };
 
+  const handleDeleteProduct = async (productId: string, productName: string) => {
+    if (!confirm(`Are you sure you want to delete "${productName}"? This action cannot be undone.`)) {
+      return;
+    }
+    
+    try {
+      setIsSubmitting(true);
+      await deleteProduct({ id: productId as any });
+      toast("Product deleted successfully");
+    } catch (err) {
+      console.error(err);
+      toast("Failed to delete product. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   // Update: guard render against unauthorized users
   if (isLoading || !isAuthenticated || !isAuthorized) {
     return (
@@ -645,9 +663,19 @@ export default function Admin() {
                               {p.inStock ? "In Stock" : "Out of Stock"}
                             </div>
                           </div>
-                          <Button variant="outline" size="sm" onClick={() => openEdit(p)}>
-                            Edit
-                          </Button>
+                          <div className="flex gap-2">
+                            <Button variant="outline" size="sm" onClick={() => openEdit(p)}>
+                              Edit
+                            </Button>
+                            <Button 
+                              variant="destructive" 
+                              size="sm" 
+                              onClick={() => handleDeleteProduct(p._id, p.name)}
+                              disabled={isSubmitting}
+                            >
+                              Delete
+                            </Button>
+                          </div>
                         </div>
                         
                         {/* Product Images Display */}

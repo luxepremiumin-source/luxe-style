@@ -154,3 +154,11 @@ export const cleanupBeltsKeepCoach = mutation({
     return { removed };
   },
 });
+
+export const deleteProduct = mutation({
+  args: { id: v.id("products") },
+  handler: async (ctx, args) => {
+    await ctx.db.delete(args.id);
+    return { success: true };
+  },
+});
