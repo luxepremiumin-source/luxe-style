@@ -39,6 +39,7 @@ const schema = defineSchema(
       originalPrice: v.optional(v.number()),
       category: v.string(),
       images: v.array(v.string()),
+      colors: v.optional(v.array(v.string())),
       featured: v.boolean(),
       inStock: v.boolean(),
     }).index("by_category", ["category"]),

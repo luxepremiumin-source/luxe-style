@@ -26,6 +26,7 @@ type NewProduct = {
   originalPrice: string;
   category: "goggles" | "watches" | "belts";
   images: string; // comma separated
+  colors: string[];
   featured: boolean;
   inStock: boolean;
 };
@@ -53,9 +54,12 @@ export default function Admin() {
     originalPrice: "",
     category: "goggles",
     images: "",
+    colors: [],
     featured: false,
     inStock: true,
   });
+
+  const [newColor, setNewColor] = useState("");
 
   // Add: uploaded image URLs from device (public Convex URLs)
   const [uploadedUrls, setUploadedUrls] = useState<string[]>([]);
@@ -281,6 +285,7 @@ export default function Admin() {
         images: [...cleanedUploaded, ...(imagesArray.length ? imagesArray : [])].length
           ? [...cleanedUploaded, ...(imagesArray.length ? imagesArray : [])]
           : ["/api/placeholder/400/400"],
+        colors: form.colors.length > 0 ? form.colors : undefined,
         featured: form.featured,
         inStock: form.inStock,
       });
@@ -293,10 +298,12 @@ export default function Admin() {
         price: "",
         originalPrice: "",
         images: "",
+        colors: [],
         featured: false,
         inStock: true,
       }));
       setUploadedUrls([]);
+      setNewColor("");
     } catch (err) {
       console.error(err);
       toast("Failed to add product. Please try again.");
@@ -315,6 +322,7 @@ export default function Admin() {
     originalPrice: string;
     category: "goggles" | "watches" | "belts";
     images: string;
+    colors: string[];
     featured: boolean;
     inStock: boolean;
   }>({
@@ -324,9 +332,12 @@ export default function Admin() {
     originalPrice: "",
     category: "goggles",
     images: "",
+    colors: [],
     featured: false,
     inStock: true,
   });
+
+  const [editNewColor, setEditNewColor] = useState("");
 
   const openEdit = (p: any) => {
     setEditId(p._id as string);
@@ -337,11 +348,13 @@ export default function Admin() {
       originalPrice: p.originalPrice ? String(p.originalPrice) : "",
       category: (p.category as "goggles" | "watches" | "belts") ?? "goggles",
       images: Array.isArray(p.images) ? p.images.join(", ") : "",
+      colors: Array.isArray(p.colors) ? p.colors : [],
       featured: !!p.featured,
       inStock: !!p.inStock,
     });
     // NEW: reset any previously uploaded edit URLs
     setEditUploadedUrls([]);
+    setEditNewColor("");
     setIsEditOpen(true);
   };
 
@@ -380,6 +393,9 @@ export default function Admin() {
       };
       if (combinedImages.length > 0) {
         payload.images = combinedImages;
+      }
+      if (editForm.colors.length > 0) {
+        payload.colors = editForm.colors;
       }
       await updateProduct(payload);
       toast("Product updated.");
@@ -575,6 +591,72 @@ export default function Admin() {
                     onChange={(e) => handleChange("images", e.target.value)}
                     placeholder="/api/placeholder/400/400, https://example.com/img2.jpg"
                   />
+                </div>
+
+                {/* Color Options */}
+                <div className="space-y-2">
+                  <Label>Color Options (optional)</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={newColor}
+                      onChange={(e) => setNewColor(e.target.value)}
+                      placeholder="e.g., Black, White, Blue"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          if (newColor.trim()) {
+                            setForm((prev) => ({
+                              ...prev,
+                              colors: [...prev.colors, newColor.trim()],
+                            }));
+                            setNewColor("");
+                          }
+                        }
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        if (newColor.trim()) {
+                          setForm((prev) => ({
+                            ...prev,
+                            colors: [...prev.colors, newColor.trim()],
+                          }));
+                          setNewColor("");
+                        }
+                      }}
+                    >
+                      Add Color
+                    </Button>
+                  </div>
+                  {form.colors.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {form.colors.map((color, idx) => (
+                        <div
+                          key={idx}
+                          className="flex items-center gap-1 bg-gray-100 px-3 py-1 rounded-full text-sm"
+                        >
+                          <span>{color}</span>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setForm((prev) => ({
+                                ...prev,
+                                colors: prev.colors.filter((_, i) => i !== idx),
+                              }))
+                            }
+                            className="text-gray-500 hover:text-gray-700"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <p className="text-xs text-gray-500">
+                    Leave empty if product has no color variants
+                  </p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -827,6 +909,72 @@ export default function Admin() {
               />
               <p className="text-xs text-gray-500">
                 Tip: Copy an image (or screenshot) and press Ctrl/⌘+V here. We'll upload it automatically.
+              </p>
+            </div>
+
+            {/* Color Options for Edit */}
+            <div className="space-y-2">
+              <Label>Color Options (optional)</Label>
+              <div className="flex gap-2">
+                <Input
+                  value={editNewColor}
+                  onChange={(e) => setEditNewColor(e.target.value)}
+                  placeholder="e.g., Black, White, Blue"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      if (editNewColor.trim()) {
+                        setEditForm((prev) => ({
+                          ...prev,
+                          colors: [...prev.colors, editNewColor.trim()],
+                        }));
+                        setEditNewColor("");
+                      }
+                    }
+                  }}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    if (editNewColor.trim()) {
+                      setEditForm((prev) => ({
+                        ...prev,
+                        colors: [...prev.colors, editNewColor.trim()],
+                      }));
+                      setEditNewColor("");
+                    }
+                  }}
+                >
+                  Add
+                </Button>
+              </div>
+              {editForm.colors.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {editForm.colors.map((color, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center gap-1 bg-gray-100 px-3 py-1 rounded-full text-sm"
+                    >
+                      <span>{color}</span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setEditForm((prev) => ({
+                            ...prev,
+                            colors: prev.colors.filter((_, i) => i !== idx),
+                          }))
+                        }
+                        className="text-gray-500 hover:text-gray-700"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <p className="text-xs text-gray-500">
+                Leave empty if product has no color variants
               </p>
             </div>
 
