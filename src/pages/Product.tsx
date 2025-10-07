@@ -35,10 +35,8 @@ export default function ProductPage() {
   });
   
   const [qty, setQty] = useState(0);
-  const supportsColors =
-    (product?.name ?? "").toLowerCase() === "coach belt" ||
-    (product?.name ?? "").toLowerCase() === "coach premium belt";
-  const [color, setColor] = useState<"black" | "white">("black");
+  const supportsColors = product?.colors && product.colors.length > 0;
+  const [color, setColor] = useState<string>("");
   
   const supportsPackaging = (product?.category ?? "").toLowerCase() === "goggles";
   const [packaging, setPackaging] = useState<"indian" | "imported" | "without">("indian");
@@ -47,12 +45,15 @@ export default function ProductPage() {
 
   useEffect(() => {
     if (!product?.images?.length) return;
-    if (supportsColors) {
-      setActiveIndex(color === "black" ? 0 : Math.min(1, product.images.length - 1));
-    } else {
-      setActiveIndex(0);
+    setActiveIndex(0);
+  }, [product?._id, product?.images?.length]);
+
+  // Set default color when product loads
+  useEffect(() => {
+    if (supportsColors && product?.colors && product.colors.length > 0 && !color) {
+      setColor(product.colors[0]);
     }
-  }, [product?._id, product?.images?.length, supportsColors, color]);
+  }, [product?._id, product?.colors, supportsColors, color]);
   
   // Reset packaging when product changes
   useEffect(() => {
@@ -140,7 +141,8 @@ export default function ProductPage() {
     const packagingText = supportsPackaging 
       ? ` Packaging: ${packaging === "indian" ? "Indian Box" : packaging === "imported" ? "Imported Box (Premium)" : "Without Box"}.`
       : "";
-    const message = `Hi! I'm interested in "${product?.name}" (${prettyName[product?.category ?? ""] ?? product?.category}). Price: ₹${product?.price.toLocaleString()}${product?.originalPrice ? ` (MRP ₹${product.originalPrice.toLocaleString()})` : ""}.${supportsColors ? ` Color: ${color[0].toUpperCase() + color.slice(1)}.` : ""}${packagingText} Link: ${link}`;
+    const colorText = supportsColors && color ? ` Color: ${color}.` : "";
+    const message = `Hi! I'm interested in "${product?.name}" (${prettyName[product?.category ?? ""] ?? product?.category}). Price: ₹${product?.price.toLocaleString()}${product?.originalPrice ? ` (MRP ₹${product.originalPrice.toLocaleString()})` : ""}.${colorText}${packagingText} Link: ${link}`;
     const url = `https://wa.me/9871629699?text=${encodeURIComponent(message)}`;
     window.location.href = url;
   };
@@ -303,19 +305,22 @@ export default function ProductPage() {
               <span className="underline">Shipping</span> calculated at checkout.
             </p>
 
-            {supportsColors && (
+            {supportsColors && product?.colors && (
               <div className="mt-6">
                 <p className="text-sm text-white/70 mb-2">Color</p>
                 <Select
                   value={color}
-                  onValueChange={(v) => setColor((v as "black" | "white"))}
+                  onValueChange={(v) => setColor(v)}
                 >
                   <SelectTrigger className="h-12 rounded-full border-white/20 bg-transparent text-white transition-colors duration-200">
                     <SelectValue placeholder="Select color" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="black">Black</SelectItem>
-                    <SelectItem value="white">White</SelectItem>
+                    {product.colors.map((colorOption) => (
+                      <SelectItem key={colorOption} value={colorOption}>
+                        {colorOption}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
