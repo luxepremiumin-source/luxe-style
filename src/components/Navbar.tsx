@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
+import { Link } from "react-router-dom";
 
 // Add: thin announcement bar content text
 const ANNOUNCEMENT_TEXT = "Welcome to LUXE: Elevate Your Style with Today's Exclusive Deals!";
@@ -367,44 +368,44 @@ export default function Navbar() {
               </Button>
             </div>
 
-            {/* Category links only */}
-            <div className="flex flex-col gap-1">
-              <a
-                href="/category/goggles"
-                className="block px-0 py-3 text-gray-900 text-lg font-normal hover:text-gray-600 transition-colors duration-200"
-                onClick={() => setIsMenuOpen(false)}
+            {/* Category Links */}
+            <nav className="space-y-1">
+              <Link
+                to="/category/goggles"
+                className="block text-lg font-normal hover:text-gray-600 transition-colors duration-200 px-0 py-3"
+                onClick={() => setIsMobileMenuOpen(false)}
               >
                 Goggles
-              </a>
-              <a
-                href="/category/watches"
-                className="block px-0 py-3 text-gray-900 text-lg font-normal hover:text-gray-600 transition-colors duration-200"
-                onClick={() => setIsMenuOpen(false)}
+              </Link>
+              <Link
+                to="/category/watches"
+                className="block text-lg font-normal hover:text-gray-600 transition-colors duration-200 px-0 py-3"
+                onClick={() => setIsMobileMenuOpen(false)}
               >
                 Watches
-              </a>
-              <a
-                href="/category/belts"
-                className="block px-0 py-3 text-gray-900 text-lg font-normal hover:text-gray-600 transition-colors duration-200"
-                onClick={() => setIsMenuOpen(false)}
+              </Link>
+              <Link
+                to="/category/belts"
+                className="block text-lg font-normal hover:text-gray-600 transition-colors duration-200 px-0 py-3"
+                onClick={() => setIsMobileMenuOpen(false)}
               >
                 Belts
-              </a>
-              <a
-                href="/category/gift-box"
-                className="block px-0 py-3 text-gray-900 text-lg font-normal hover:text-gray-600 transition-colors duration-200"
-                onClick={() => setIsMenuOpen(false)}
+              </Link>
+              <Link
+                to="/category/giftbox"
+                className="block text-lg font-normal hover:text-gray-600 transition-colors duration-200 px-0 py-3"
+                onClick={() => setIsMobileMenuOpen(false)}
               >
                 Gift box
-              </a>
-              <a
-                href="/category/shop-by-brand"
-                className="block px-0 py-3 text-gray-900 text-lg font-normal hover:text-gray-600 transition-colors duration-200"
-                onClick={() => setIsMenuOpen(false)}
+              </Link>
+              <Link
+                to="/shop-by-brand"
+                className="block text-lg font-normal hover:text-gray-600 transition-colors duration-200 px-0 py-3"
+                onClick={() => setIsMobileMenuOpen(false)}
               >
                 Shop by brand
-              </a>
-            </div>
+              </Link>
+            </nav>
 
             {/* Instagram link at bottom */}
             <div className="mt-auto pt-6 border-t border-gray-200">
