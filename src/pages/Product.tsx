@@ -298,17 +298,19 @@ export default function ProductPage() {
               </p>
             )}
 
-            <div className="mt-4 flex items-center gap-3">
-              {product.originalPrice && (
-                <span className="text-white/50 line-through">
-                  ₹{product.originalPrice.toLocaleString()}
-                </span>
-              )}
-              <span className="text-2xl font-bold">
+            <div className="mt-4 flex items-center gap-3 flex-wrap">
+              <span className="text-3xl font-bold tracking-tight">
                 ₹{product.price.toLocaleString()}
               </span>
-              {product.originalPrice && product.originalPrice > product.price && (
-                <Badge className="bg-white text-black border border-white/20">Sale</Badge>
+              {product.originalPrice && (
+                <>
+                  <span className="text-lg text-white/40 line-through font-normal">
+                    ₹{product.originalPrice.toLocaleString()}
+                  </span>
+                  <span className="text-sm font-semibold text-emerald-400">
+                    ({Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF)
+                  </span>
+                </>
               )}
             </div>
 

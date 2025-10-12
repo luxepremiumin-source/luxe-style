@@ -258,15 +258,20 @@ export default function CategoryPage() {
                             {product.name}
                           </h3>
 
-                          <div className="flex items-center gap-2">
-                            {product.originalPrice && (
-                              <span className="text-base text-white/50 line-through font-semibold">
-                                ₹{product.originalPrice.toLocaleString()}
-                              </span>
-                            )}
-                            <span className="text-base text-white font-bold tracking-tight">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-lg text-white font-bold tracking-tight">
                               ₹{product.price.toLocaleString()}
                             </span>
+                            {product.originalPrice && (
+                              <>
+                                <span className="text-sm text-white/40 line-through font-normal">
+                                  ₹{product.originalPrice.toLocaleString()}
+                                </span>
+                                <span className="text-xs font-semibold text-emerald-400">
+                                  ({Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF)
+                                </span>
+                              </>
+                            )}
                           </div>
 
                           <div className="mt-3 flex gap-2">
