@@ -276,8 +276,7 @@ export default function CategoryPage() {
 
                           <div className="mt-3 flex gap-2">
                             <Button
-                              size="sm"
-                              className="rounded-full bg-white text-black hover:bg-white/90"
+                              className="h-9 px-4 text-sm rounded-full bg-white text-black hover:bg-white/90"
                               onClick={async (e) => {
                                 e.stopPropagation();
                                 if (typeof window !== "undefined") {
@@ -290,8 +289,7 @@ export default function CategoryPage() {
                             </Button>
 
                             <Button
-                              size="sm"
-                              className="rounded-full bg-[#25D366] text-white hover:bg-[#20bd5b]"
+                              className="h-9 px-3 text-sm rounded-full bg-[#25D366] text-white hover:bg-[#20bd5b]"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 const link = `${window.location.origin}/product/${product._id}`;
@@ -300,7 +298,7 @@ export default function CategoryPage() {
                                 window.location.href = url;
                               }}
                             >
-                              <MessageCircle className="h-4 w-4 mr-2" />
+                              <MessageCircle className="h-3.5 w-3.5 mr-1.5" />
                               Order on WhatsApp
                             </Button>
                           </div>
