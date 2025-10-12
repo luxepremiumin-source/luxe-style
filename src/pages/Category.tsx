@@ -162,7 +162,8 @@ export default function CategoryPage() {
                                 src={currentImage}
                                 alt={product.name}
                                 className="absolute inset-0 w-full h-full object-cover transition-opacity duration-300"
-                                loading={index < 3 ? "eager" : "lazy"}
+                                loading="eager"
+                                fetchPriority={index < 6 ? "high" : "auto"}
                                 decoding="async"
                                 onError={(e) => {
                                   const imgs: Array<string> = Array.isArray(product.images) ? product.images : [];

@@ -199,6 +199,7 @@ export default function ProductPage() {
                     className="absolute inset-0 w-full h-full object-cover rounded-2xl transition-opacity duration-300"
                     loading="eager"
                     fetchPriority="high"
+                    decoding="sync"
                   />
                   <ProductZoom images={images} productName={product.name} initialIndex={activeIndex} />
                   
