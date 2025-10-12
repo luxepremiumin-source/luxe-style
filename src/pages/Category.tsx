@@ -13,7 +13,7 @@ import { motion } from "framer-motion";
 import { MessageCircle, Heart, ChevronLeft, ChevronRight } from "lucide-react";
 import { useParams } from "react-router";
 import { useNavigate } from "react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const prettyName: Record<string, string> = {
   goggles: "Goggles",
@@ -33,6 +33,17 @@ export default function CategoryPage() {
 
   // Track active image index for each product
   const [activeImageIndices, setActiveImageIndices] = useState<Record<string, number>>({});
+
+  // Preload all product images for smooth transitions
+  useEffect(() => {
+    if (!products || products.length === 0) return;
+    
+    const imageUrls = products.flatMap(p => p.images ?? []);
+    imageUrls.forEach(url => {
+      const img = new Image();
+      img.src = url;
+    });
+  }, [products]);
 
   const wishlistProductIds = new Set(
     (wishlistItems ?? []).map((item) => item.productId)
