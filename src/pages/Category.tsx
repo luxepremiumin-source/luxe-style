@@ -128,7 +128,7 @@ export default function CategoryPage() {
 
             {!products ? (
               // Loading skeleton
-              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
                 {[1, 2, 3, 4, 5, 6].map((i) => (
                   <div key={i} className="space-y-3">
                     <Skeleton className="aspect-square rounded-2xl bg-white/10" />
@@ -253,30 +253,30 @@ export default function CategoryPage() {
                           </Button>
                         </div>
 
-                        <div className="px-1 sm:px-0 pt-3">
-                          <h3 className="font-extrabold tracking-tight text-white text-base md:text-lg mb-1 line-clamp-1">
+                        <div className="px-0 pt-2 sm:pt-3">
+                          <h3 className="font-extrabold tracking-tight text-white text-xs sm:text-base md:text-lg mb-1 line-clamp-1">
                             {product.name}
                           </h3>
 
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-lg text-white font-bold tracking-tight">
+                          <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+                            <span className="text-sm sm:text-lg text-white font-bold tracking-tight">
                               ₹{product.price.toLocaleString()}
                             </span>
                             {product.originalPrice && (
                               <>
-                                <span className="text-sm text-white/40 line-through font-normal">
+                                <span className="text-xs sm:text-sm text-white/40 line-through font-normal">
                                   ₹{product.originalPrice.toLocaleString()}
                                 </span>
-                                <span className="text-xs font-semibold text-emerald-400">
+                                <span className="text-[10px] sm:text-xs font-semibold text-emerald-400">
                                   ({Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF)
                                 </span>
                               </>
                             )}
                           </div>
 
-                          <div className="mt-3 flex gap-2">
+                          <div className="mt-2 sm:mt-3 flex flex-col sm:flex-row gap-2">
                             <Button
-                              className="h-9 px-4 text-sm rounded-full bg-white text-black hover:bg-white/90"
+                              className="h-8 sm:h-9 px-3 sm:px-4 text-xs sm:text-sm rounded-full bg-white text-black hover:bg-white/90"
                               onClick={async (e) => {
                                 e.stopPropagation();
                                 if (typeof window !== "undefined") {
@@ -289,7 +289,7 @@ export default function CategoryPage() {
                             </Button>
 
                             <Button
-                              className="h-9 px-3 text-sm rounded-full bg-[#25D366] text-white hover:bg-[#20bd5b]"
+                              className="h-8 sm:h-9 px-2 sm:px-3 text-xs sm:text-sm rounded-full bg-[#25D366] text-white hover:bg-[#20bd5b]"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 const link = `${window.location.origin}/product/${product._id}`;
@@ -298,8 +298,9 @@ export default function CategoryPage() {
                                 window.location.href = url;
                               }}
                             >
-                              <MessageCircle className="h-3.5 w-3.5 mr-1.5" />
-                              Order on WhatsApp
+                              <MessageCircle className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1 sm:mr-1.5" />
+                              <span className="hidden sm:inline">Order on WhatsApp</span>
+                              <span className="sm:hidden">WhatsApp</span>
                             </Button>
                           </div>
                         </div>
