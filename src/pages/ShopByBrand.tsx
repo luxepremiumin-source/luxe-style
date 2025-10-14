@@ -122,6 +122,42 @@ const BRAND_LOGOS: Record<string, { name: string; logo: string }> = {
   "rayban": {
     name: "Ray-Ban",
     logo: "https://logos-world.net/wp-content/uploads/2020/12/Ray-Ban-Logo.png"
+  },
+  "ray-ban": {
+    name: "Ray-Ban",
+    logo: "https://logos-world.net/wp-content/uploads/2020/12/Ray-Ban-Logo.png"
+  },
+  "breitling": {
+    name: "Breitling",
+    logo: "https://logos-world.net/wp-content/uploads/2020/11/Breitling-Logo.png"
+  },
+  "fossil": {
+    name: "Fossil",
+    logo: "https://logos-world.net/wp-content/uploads/2020/09/Fossil-Logo.png"
+  },
+  "audemars piguet": {
+    name: "Audemars Piguet",
+    logo: "https://logos-world.net/wp-content/uploads/2021/09/Audemars-Piguet-Logo.png"
+  },
+  "longines": {
+    name: "Longines",
+    logo: "https://logos-world.net/wp-content/uploads/2020/09/Longines-Logo.png"
+  },
+  "casio": {
+    name: "Casio",
+    logo: "https://logos-world.net/wp-content/uploads/2020/05/Casio-Logo.png"
+  },
+  "bvlgari": {
+    name: "Bvlgari",
+    logo: "https://logos-world.net/wp-content/uploads/2020/11/Bvlgari-Logo.png"
+  },
+  "bulgari": {
+    name: "Bvlgari",
+    logo: "https://logos-world.net/wp-content/uploads/2020/11/Bvlgari-Logo.png"
+  },
+  "rolex": {
+    name: "Rolex",
+    logo: "https://logos-world.net/wp-content/uploads/2020/09/Rolex-Logo.png"
   }
 };
 
