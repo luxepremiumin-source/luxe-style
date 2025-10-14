@@ -32,6 +32,7 @@ export default function Checkout() {
   const [appliedDiscount, setAppliedDiscount] = useState<number>(0);
   const [discountPercentage, setDiscountPercentage] = useState<number>(0);
   const [appliedCouponCode, setAppliedCouponCode] = useState<string>("");
+  const [showCoupons, setShowCoupons] = useState(false);
 
   const cartItems = useQuery(
     api.cart.getCartItems,
@@ -236,6 +237,7 @@ export default function Checkout() {
       const discount = Math.round(subtotalWithPackaging * 0.15);
       setAppliedDiscount(discount);
       setAppliedCouponCode("COMBO15");
+      setShowCoupons(false);
       toast.success("Coupon applied successfully!");
     } else if (code === "WATCH15") {
       const hasWatches = cartItems?.some((item) => item.product.category === "watches");
@@ -247,6 +249,7 @@ export default function Checkout() {
       const discount = Math.round(subtotalWithPackaging * 0.15);
       setAppliedDiscount(discount);
       setAppliedCouponCode("WATCH15");
+      setShowCoupons(false);
       toast.success("Watch discount applied!");
     } else if (code === "FREESHIP") {
       if (subtotalWithPackaging < 799) {
@@ -254,6 +257,7 @@ export default function Checkout() {
         return;
       }
       setAppliedCouponCode("FREESHIP");
+      setShowCoupons(false);
       toast.success("Free delivery unlocked!");
     } else {
       toast.error("Invalid coupon code");
@@ -376,8 +380,12 @@ export default function Checkout() {
                     type="tel"
                     placeholder="Contact number"
                     inputMode="tel"
+                    maxLength={10}
                     value={details.phone}
-                    onChange={(e) => setDetails((d) => ({ ...d, phone: e.target.value }))}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, '');
+                      setDetails((d) => ({ ...d, phone: value }));
+                    }}
                     className="w-full bg-white/10 border-white/20 text-white placeholder:text-white/50 h-12 text-base"
                   />
                 </div>
@@ -492,8 +500,12 @@ export default function Checkout() {
                   <Input
                     placeholder="PIN code"
                     inputMode="numeric"
+                    maxLength={6}
                     value={details.pin}
-                    onChange={(e) => setDetails((d) => ({ ...d, pin: e.target.value }))}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, '');
+                      setDetails((d) => ({ ...d, pin: value }));
+                    }}
                     className="bg-white/10 border-white/20 text-white placeholder:text-white/50 h-12 text-base"
                   />
                 </div>
@@ -551,21 +563,164 @@ export default function Checkout() {
 
               {/* Discount Code */}
               <div className="mb-8">
-                <div className="flex gap-3">
-                  <Input
-                    placeholder="Discount code"
-                    value={promoCode}
-                    onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
-                    className="flex-1 bg-white/10 border-white/20 text-white placeholder:text-white/50 h-12 text-base"
-                  />
-                  <Button
-                    onClick={applyPromoCode}
-                    variant="outline"
-                    className="border-white/20 bg-white/10 text-white hover:bg-white/20 h-12 px-6"
-                  >
-                    Apply
-                  </Button>
-                </div>
+                {appliedCouponCode ? (
+                  <div className="bg-emerald-500/20 border border-emerald-500/30 rounded-lg p-4 mb-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-semibold text-emerald-400">
+                          {appliedCouponCode} Applied
+                        </p>
+                        <p className="text-sm text-white/70">
+                          {appliedCouponCode === "COMBO15" && `15% off - ₹${finalDiscount.toLocaleString()} saved`}
+                          {appliedCouponCode === "WATCH15" && `15% off on watches - ₹${finalDiscount.toLocaleString()} saved`}
+                          {appliedCouponCode === "FREESHIP" && "Free delivery unlocked"}
+                        </p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setAppliedDiscount(0);
+                          setDiscountPercentage(0);
+                          setAppliedCouponCode("");
+                          setPromoCode("");
+                          toast.success("Coupon removed");
+                        }}
+                        className="text-white/70 hover:text-white hover:bg-white/10"
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <Button
+                      onClick={() => setShowCoupons(!showCoupons)}
+                      variant="outline"
+                      className="w-full mb-4 border-white/20 bg-white/10 text-white hover:bg-white/20 h-12 justify-between"
+                    >
+                      <span>Apply coupon</span>
+                      <svg
+                        className={`h-5 w-5 transition-transform ${showCoupons ? 'rotate-180' : ''}`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </Button>
+
+                    {showCoupons && (
+                      <div className="space-y-4 mb-4">
+                        {/* Manual Code Entry */}
+                        <div className="flex gap-3">
+                          <Input
+                            placeholder="Enter coupon code"
+                            value={promoCode}
+                            onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                            className="flex-1 bg-white/10 border-white/20 text-white placeholder:text-white/50 h-10 text-sm"
+                          />
+                          <Button
+                            onClick={applyPromoCode}
+                            variant="outline"
+                            className="border-white/20 bg-white/10 text-white hover:bg-white/20 h-10 px-4 text-sm"
+                          >
+                            Apply
+                          </Button>
+                        </div>
+
+                        <div className="text-xs text-white/50 text-center">Other Offers</div>
+
+                        {/* COMBO15 Card */}
+                        <div className="bg-white/5 border border-white/20 rounded-lg p-4">
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="text-xs font-bold text-emerald-400 bg-emerald-400/20 px-2 py-0.5 rounded">
+                                  SAVE 15%
+                                </span>
+                              </div>
+                              <p className="text-sm font-semibold text-white mb-1">Get 15% OFF on 2+ items</p>
+                              <p className="text-xs text-white/60">Code: COMBO15</p>
+                            </div>
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                setPromoCode("COMBO15");
+                                applyPromoCode();
+                              }}
+                              disabled={cartItemCount < 2}
+                              className={`h-8 px-4 text-xs ${
+                                cartItemCount >= 2
+                                  ? 'bg-white text-black hover:bg-white/90'
+                                  : 'bg-white/10 text-white/40 cursor-not-allowed'
+                              }`}
+                            >
+                              {cartItemCount >= 2 ? 'APPLY' : 'Add 2+ items'}
+                            </Button>
+                          </div>
+                        </div>
+
+                        {/* WATCH15 Card */}
+                        <div className="bg-white/5 border border-white/20 rounded-lg p-4">
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="text-xs font-bold text-emerald-400 bg-emerald-400/20 px-2 py-0.5 rounded">
+                                  SAVE 15%
+                                </span>
+                              </div>
+                              <p className="text-sm font-semibold text-white mb-1">Watch Special</p>
+                              <p className="text-xs text-white/70 mb-1">15% off on watches</p>
+                              <p className="text-xs text-white/60">Code: WATCH15</p>
+                            </div>
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                setPromoCode("WATCH15");
+                                applyPromoCode();
+                              }}
+                              disabled={!cartItems?.some((item) => item.product.category === "watches")}
+                              className={`h-8 px-4 text-xs ${
+                                cartItems?.some((item) => item.product.category === "watches")
+                                  ? 'bg-white text-black hover:bg-white/90'
+                                  : 'bg-white/10 text-white/40 cursor-not-allowed'
+                              }`}
+                            >
+                              {cartItems?.some((item) => item.product.category === "watches") ? 'APPLY' : 'Add a watch'}
+                            </Button>
+                          </div>
+                        </div>
+
+                        {/* FREESHIP Card */}
+                        <div className="bg-white/5 border border-white/20 rounded-lg p-4">
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex-1">
+                              <p className="text-sm font-semibold text-white mb-1">Free Delivery</p>
+                              <p className="text-xs text-white/70 mb-1">On orders above ₹799</p>
+                              <p className="text-xs text-white/60">Code: FREESHIP</p>
+                            </div>
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                setPromoCode("FREESHIP");
+                                applyPromoCode();
+                              }}
+                              disabled={subtotalWithPackaging < 799}
+                              className={`h-8 px-4 text-xs ${
+                                subtotalWithPackaging >= 799
+                                  ? 'bg-white text-black hover:bg-white/90'
+                                  : 'bg-white/10 text-white/40 cursor-not-allowed'
+                              }`}
+                            >
+                              {subtotalWithPackaging >= 799 ? 'APPLY' : `Add ₹${(799 - subtotalWithPackaging).toLocaleString()} more`}
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
 
               {/* Pricing Breakdown */}
