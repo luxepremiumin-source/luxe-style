@@ -24,7 +24,7 @@ type NewProduct = {
   description: string;
   price: string;
   originalPrice: string;
-  category: "goggles" | "watches" | "belts";
+  category: "goggles" | "watches" | "belts" | "gift box";
   images: string; // comma separated
   colors: string[];
   featured: boolean;
@@ -67,7 +67,7 @@ export default function Admin() {
   const [editUploadedUrls, setEditUploadedUrls] = useState<string[]>([]);
 
   // NEW: category filter for existing products
-  const [selectedCategory, setSelectedCategory] = useState<"all" | "goggles" | "watches" | "belts">("all");
+  const [selectedCategory, setSelectedCategory] = useState<"all" | "goggles" | "watches" | "belts" | "gift box">("all");
 
   // Add: Convex storage upload action
   const generateUploadUrl = useAction((api as any).storage.generateUploadUrl);
@@ -320,7 +320,7 @@ export default function Admin() {
     description: string;
     price: string;
     originalPrice: string;
-    category: "goggles" | "watches" | "belts";
+    category: "goggles" | "watches" | "belts" | "gift box";
     images: string;
     colors: string[];
     featured: boolean;
@@ -346,7 +346,7 @@ export default function Admin() {
       description: p.description ?? "",
       price: String(p.price ?? ""),
       originalPrice: p.originalPrice ? String(p.originalPrice) : "",
-      category: (p.category as "goggles" | "watches" | "belts") ?? "goggles",
+      category: (p.category as "goggles" | "watches" | "belts" | "gift box") ?? "goggles",
       images: Array.isArray(p.images) ? p.images.join(", ") : "",
       colors: Array.isArray(p.colors) ? p.colors : [],
       featured: !!p.featured,
@@ -529,6 +529,7 @@ export default function Admin() {
                       <SelectItem value="goggles">Goggles</SelectItem>
                       <SelectItem value="watches">Watches</SelectItem>
                       <SelectItem value="belts">Belts</SelectItem>
+                      <SelectItem value="gift box">Gift Box</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -713,6 +714,7 @@ export default function Admin() {
                     <SelectItem value="goggles">Goggles</SelectItem>
                     <SelectItem value="watches">Watches</SelectItem>
                     <SelectItem value="belts">Belts</SelectItem>
+                    <SelectItem value="gift box">Gift Box</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
