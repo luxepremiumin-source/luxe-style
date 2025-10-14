@@ -556,7 +556,7 @@ export default function Navbar() {
                               <p className="text-sm font-semibold text-green-800">{appliedCouponCode} Applied</p>
                               <p className="text-xs text-green-600">
                                 {appliedCouponCode === "COMBO15" && `15% off - ₹${finalDiscount.toLocaleString()} saved`}
-                                {appliedCouponCode === "FIRSTLUXE" && `₹150 off - First order special`}
+                                {appliedCouponCode === "WATCH15" && `15% off on watches - ₹${finalDiscount.toLocaleString()} saved`}
                                 {appliedCouponCode === "FREESHIP" && `Free delivery unlocked`}
                               </p>
                             </div>
@@ -625,22 +625,28 @@ export default function Navbar() {
                                 onClick={() => {
                                   const code = promoCode.trim().toUpperCase();
                                   
-                                  if (code === "COMBO15") {
-                                    if (cartItemCount < 2) {
-                                      toast("Add at least 2 products to use COMBO15");
-                                      return;
-                                    }
-                                    setDiscountPercentage(15);
-                                    const discount = Math.round(subtotalWithPackaging * 0.15);
-                                    setAppliedDiscount(discount);
-                                    setAppliedCouponCode("COMBO15");
-                                    toast("Coupon applied successfully!");
-                                  } else if (code === "FIRSTLUXE") {
-                                    setAppliedDiscount(150);
-                                    setDiscountPercentage(0);
-                                    setAppliedCouponCode("FIRSTLUXE");
-                                    toast("First order discount applied!");
-                                  } else if (code === "FREESHIP") {
+                              if (code === "COMBO15") {
+                                if (cartItemCount < 2) {
+                                  toast("Add at least 2 products to use COMBO15");
+                                  return;
+                                }
+                                setDiscountPercentage(15);
+                                const discount = Math.round(subtotalWithPackaging * 0.15);
+                                setAppliedDiscount(discount);
+                                setAppliedCouponCode("COMBO15");
+                                toast("Coupon applied successfully!");
+                              } else if (code === "WATCH15") {
+                                const hasWatches = cartItems?.some(item => item.product.category === "watches");
+                                if (!hasWatches) {
+                                  toast("Add a watch to use WATCH15");
+                                  return;
+                                }
+                                setDiscountPercentage(15);
+                                const discount = Math.round(subtotalWithPackaging * 0.15);
+                                setAppliedDiscount(discount);
+                                setAppliedCouponCode("WATCH15");
+                                toast("Watch discount applied!");
+                              } else if (code === "FREESHIP") {
                                     if (subtotalWithPackaging < 799) {
                                       toast("Add items worth ₹799 or more to use FREESHIP");
                                       return;
@@ -713,35 +719,52 @@ export default function Navbar() {
                             </div>
                           )}
 
-                          {/* FIRSTLUXE coupon card */}
-                          <div className="p-3 bg-white border border-gray-200 rounded-lg shadow-sm">
-                            <div className="flex items-start gap-3">
-                              <div className="h-14 w-14 rounded-lg bg-gradient-to-br from-blue-600 to-blue-800 flex flex-col items-center justify-center flex-shrink-0">
-                                <span className="text-[11px] font-bold text-white leading-none">SAVE</span>
-                                <span className="text-xl font-bold text-white leading-none mt-1">₹150</span>
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-semibold text-gray-900 mb-1">First Order Special</p>
-                                <p className="text-xs text-gray-600 mb-2">₹150 off on your first purchase</p>
-                                <div className="flex items-center justify-between">
-                                  <p className="text-xs font-medium text-gray-700">Code: <span className="font-bold text-gray-900">FIRSTLUXE</span></p>
-                                  <Button
-                                    size="sm"
-                                    onClick={() => {
-                                      setPromoCode("FIRSTLUXE");
-                                      setAppliedDiscount(150);
-                                      setDiscountPercentage(0);
-                                      setAppliedCouponCode("FIRSTLUXE");
-                                      toast("First order discount applied!");
-                                    }}
-                                    className="bg-blue-600 text-white hover:bg-blue-700 h-7 px-4 text-xs font-semibold"
-                                  >
-                                    APPLY
-                                  </Button>
+                          {/* WATCH15 coupon card */}
+                          {cartItems?.some(item => item.product.category === "watches") ? (
+                            <div className="p-3 bg-white border border-gray-200 rounded-lg shadow-sm">
+                              <div className="flex items-start gap-3">
+                                <div className="h-14 w-14 rounded-lg bg-gradient-to-br from-blue-600 to-blue-800 flex flex-col items-center justify-center flex-shrink-0">
+                                  <span className="text-[11px] font-bold text-white leading-none">SAVE</span>
+                                  <span className="text-xl font-bold text-white leading-none mt-1">15%</span>
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-semibold text-gray-900 mb-1">Watch Special</p>
+                                  <p className="text-xs text-gray-600 mb-2">15% off on watches</p>
+                                  <div className="flex items-center justify-between">
+                                    <p className="text-xs font-medium text-gray-700">Code: <span className="font-bold text-gray-900">WATCH15</span></p>
+                                    <Button
+                                      size="sm"
+                                      onClick={() => {
+                                        setPromoCode("WATCH15");
+                                        setDiscountPercentage(15);
+                                        const discount = Math.round(subtotalWithPackaging * 0.15);
+                                        setAppliedDiscount(discount);
+                                        setAppliedCouponCode("WATCH15");
+                                        toast("Watch discount applied!");
+                                      }}
+                                      className="bg-blue-600 text-white hover:bg-blue-700 h-7 px-4 text-xs font-semibold"
+                                    >
+                                      APPLY
+                                    </Button>
+                                  </div>
                                 </div>
                               </div>
                             </div>
-                          </div>
+                          ) : (
+                            <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg opacity-60">
+                              <div className="flex items-start gap-3">
+                                <div className="h-14 w-14 rounded-lg bg-gray-300 flex flex-col items-center justify-center flex-shrink-0">
+                                  <span className="text-[11px] font-bold text-gray-600 leading-none">SAVE</span>
+                                  <span className="text-xl font-bold text-gray-600 leading-none mt-1">15%</span>
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-semibold text-gray-700 mb-1">Watch Special</p>
+                                  <p className="text-xs text-gray-500 mb-2">Add a watch to unlock</p>
+                                  <p className="text-xs font-medium text-gray-600">Code: <span className="font-bold">WATCH15</span></p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
 
                           {/* FREESHIP coupon card */}
                           {subtotalWithPackaging >= 799 ? (
@@ -1154,8 +1177,8 @@ export default function Navbar() {
                           lines.push("");
                           if (appliedCouponCode === "COMBO15") {
                             lines.push(`Discount code applied: COMBO15 - 15% off (₹${finalDiscount.toLocaleString()} saved)`);
-                          } else if (appliedCouponCode === "FIRSTLUXE") {
-                            lines.push(`Discount code applied: FIRSTLUXE - ₹150 off (First order special)`);
+                          } else if (appliedCouponCode === "WATCH15") {
+                            lines.push(`Discount code applied: WATCH15 - 15% off on watches (₹${finalDiscount.toLocaleString()} saved)`);
                           }
                           finalTotal = Math.max(0, finalTotal - finalDiscount);
                         }
