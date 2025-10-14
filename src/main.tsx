@@ -22,6 +22,7 @@ import RefundPolicy from "@/pages/RefundPolicy.tsx";
 import AdminCustomers from "./pages/AdminCustomers";
 import ShopByBrand from "./pages/ShopByBrand.tsx";
 import BrandProducts from "./pages/BrandProducts.tsx";
+import Checkout from "@/pages/Checkout.tsx";
 import "./types/global.d.ts";
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
@@ -42,6 +43,10 @@ const router = createBrowserRouter([
   {
     path: "/admin/customers",
     element: <AdminCustomers />,
+  },
+  {
+    path: "/checkout",
+    element: <Checkout />,
   },
   {
     path: "/category/:category",

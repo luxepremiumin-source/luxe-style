@@ -862,7 +862,10 @@ export default function Navbar() {
                   <div className="pt-2">
                     <Button
                       className="w-full h-12 rounded-full bg-black text-white hover:bg-black/90"
-                      onClick={() => setCheckoutStep("details")}
+                      onClick={() => {
+                        setIsCartOpen(false);
+                        navigate("/checkout");
+                      }}
                     >
                       Checkout
                     </Button>

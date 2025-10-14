@@ -1,0 +1,647 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router";
+import { useAuth } from "@/hooks/use-auth";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "sonner";
+import { motion } from "framer-motion";
+
+export default function Checkout() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const [showPayment, setShowPayment] = useState(false);
+  const [qrCodeUrl, setQrCodeUrl] = useState<string>("");
+
+  const [details, setDetails] = useState({
+    email: "",
+    firstName: "",
+    lastName: "",
+    address1: "",
+    address2: "",
+    city: "",
+    state: "",
+    pin: "",
+    phone: "",
+  });
+
+  const [promoCode, setPromoCode] = useState("");
+  const [appliedDiscount, setAppliedDiscount] = useState<number>(0);
+  const [discountPercentage, setDiscountPercentage] = useState<number>(0);
+  const [appliedCouponCode, setAppliedCouponCode] = useState<string>("");
+
+  const cartItems = useQuery(
+    api.cart.getCartItems,
+    user?._id ? { userId: user._id } : "skip"
+  );
+
+  const createOrder = useMutation(api.orders.createOrder);
+  const setCartItemQuantity = useMutation(api.cart.setCartItemQuantity);
+
+  const cartItemCount = (cartItems ?? []).reduce(
+    (sum, item) => sum + (item.quantity ?? 0),
+    0
+  );
+
+  // Calculate totals
+  const estimatedTotal = (cartItems ?? []).reduce(
+    (sum, item) => sum + (item.product.price ?? 0) * (item.quantity ?? 1),
+    0
+  );
+
+  const packagingCharges = (cartItems ?? []).reduce((sum, item) => {
+    const packaging = (item as any).packaging;
+    const quantity = item.quantity ?? 1;
+    if (!packaging || packaging === "without") return sum;
+    if (packaging === "indian") return sum + 70 * quantity;
+    if (packaging === "imported") return sum + 250 * quantity;
+    return sum;
+  }, 0);
+
+  const subtotalWithPackaging = estimatedTotal + packagingCharges;
+  const finalDiscount =
+    discountPercentage > 0
+      ? Math.round(subtotalWithPackaging * (discountPercentage / 100))
+      : appliedDiscount;
+  const discountedTotal = Math.max(0, subtotalWithPackaging - finalDiscount);
+
+  // Redirect if cart is empty
+  useEffect(() => {
+    if (cartItems && cartItems.length === 0) {
+      navigate("/");
+    }
+  }, [cartItems, navigate]);
+
+  // Generate UPI QR code
+  const generateQRCode = () => {
+    const upiId = "9302559917@jio";
+    const payeeName = "Tanmay Agrawal";
+    const amount = discountedTotal.toFixed(2);
+    const transactionNote = `LUXE Order - ${details.firstName} ${details.lastName}`;
+
+    const upiUrl = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&tn=${encodeURIComponent(transactionNote)}`;
+    const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(upiUrl)}`;
+
+    setQrCodeUrl(qrApiUrl);
+  };
+
+  const handleProceedToPayment = () => {
+    const required = [
+      details.firstName,
+      details.lastName,
+      details.address1,
+      details.city,
+      details.state,
+      details.pin,
+      details.phone,
+    ].every((v) => String(v || "").trim().length > 0);
+
+    if (!required) {
+      toast.error("Please fill all required delivery details");
+      return;
+    }
+
+    generateQRCode();
+    setShowPayment(true);
+  };
+
+  const handlePaymentConfirmation = async () => {
+    if (!cartItems || cartItems.length === 0 || !user?._id) {
+      window.location.href = "https://wa.me/9871629699";
+      return;
+    }
+
+    // Save order to database
+    try {
+      const orderItems = cartItems.map((item) => ({
+        productId: item.productId,
+        quantity: item.quantity ?? 1,
+        price: item.product.price,
+        color: (item as any).color,
+        packaging: (item as any).packaging,
+      }));
+
+      await createOrder({
+        userId: user._id as any,
+        items: orderItems as any,
+        total: discountedTotal,
+        shippingAddress: {
+          firstName: details.firstName,
+          lastName: details.lastName,
+          address1: details.address1,
+          address2: details.address2,
+          city: details.city,
+          state: details.state,
+          pin: details.pin,
+          phone: details.phone,
+        },
+        paymentMethod: "UPI",
+        discountApplied: finalDiscount,
+      });
+    } catch (error) {
+      console.error("Failed to save order:", error);
+    }
+
+    // Generate WhatsApp message
+    const lines: Array<string> = [];
+    lines.push("✅ PAYMENT COMPLETED");
+    lines.push("");
+    lines.push("Order Details:");
+    lines.push("");
+
+    let grandTotal = 0;
+    let totalPackagingCharges = 0;
+
+    for (const item of cartItems) {
+      const name = item.product.name;
+      const qty = item.quantity ?? 1;
+      const priceNum = item.product.price ?? 0;
+      grandTotal += priceNum * qty;
+      const price = `₹${priceNum.toLocaleString()}`;
+
+      lines.push(`- ${name} | Qty: ${qty} | Price: ${price}`);
+      if ((item as any).color) {
+        const c = String((item as any).color);
+        const cap = c.charAt(0).toUpperCase() + c.slice(1);
+        lines.push(`  Color: ${cap}`);
+      }
+      if ((item as any).packaging) {
+        const p = String((item as any).packaging);
+        const packText =
+          p === "indian"
+            ? "Indian Box (+₹70)"
+            : p === "imported"
+            ? "Imported Box (Premium) (+₹250)"
+            : "Without Box";
+        lines.push(`  Packaging: ${packText}`);
+
+        if (p === "indian") totalPackagingCharges += 70 * qty;
+        else if (p === "imported") totalPackagingCharges += 250 * qty;
+      }
+      const productLink = `${window.location.origin}/product/${item.product._id}`;
+      lines.push(`  Link: ${productLink}`);
+    }
+
+    if (totalPackagingCharges > 0) {
+      lines.push("");
+      lines.push(`Packaging charges: ₹${totalPackagingCharges.toLocaleString()}`);
+    }
+
+    let finalTotal = grandTotal + totalPackagingCharges;
+    if (finalDiscount > 0) {
+      lines.push("");
+      if (appliedCouponCode === "COMBO15") {
+        lines.push(`Discount code applied: COMBO15 - 15% off (₹${finalDiscount.toLocaleString()} saved)`);
+      } else if (appliedCouponCode === "WATCH15") {
+        lines.push(`Discount code applied: WATCH15 - 15% off on watches (₹${finalDiscount.toLocaleString()} saved)`);
+      }
+      finalTotal = Math.max(0, finalTotal - finalDiscount);
+    }
+
+    if (appliedCouponCode === "FREESHIP" && subtotalWithPackaging >= 799) {
+      lines.push("");
+      lines.push(`Free delivery applied: FREESHIP code`);
+    }
+
+    lines.push("");
+    lines.push("Delivery Address:");
+    lines.push(`${details.firstName} ${details.lastName}`);
+    lines.push(`Contact number: ${details.phone}`);
+    lines.push(`${details.address1}`);
+    if (String(details.address2 || "").trim().length > 0) {
+      lines.push(`${details.address2}`);
+    }
+    lines.push(`${details.city}, ${details.state} - ${details.pin}`);
+
+    lines.push("");
+    lines.push(`💰 Amount Paid: ₹${finalTotal.toLocaleString()}`);
+
+    const message = lines.join("\n");
+    const url = `https://wa.me/9871629699?text=${encodeURIComponent(message)}`;
+    window.location.href = url;
+  };
+
+  const applyPromoCode = () => {
+    const code = promoCode.trim().toUpperCase();
+
+    if (code === "COMBO15") {
+      if (cartItemCount < 2) {
+        toast.error("Add at least 2 products to use COMBO15");
+        return;
+      }
+      setDiscountPercentage(15);
+      const discount = Math.round(subtotalWithPackaging * 0.15);
+      setAppliedDiscount(discount);
+      setAppliedCouponCode("COMBO15");
+      toast.success("Coupon applied successfully!");
+    } else if (code === "WATCH15") {
+      const hasWatches = cartItems?.some((item) => item.product.category === "watches");
+      if (!hasWatches) {
+        toast.error("Add a watch to use WATCH15");
+        return;
+      }
+      setDiscountPercentage(15);
+      const discount = Math.round(subtotalWithPackaging * 0.15);
+      setAppliedDiscount(discount);
+      setAppliedCouponCode("WATCH15");
+      toast.success("Watch discount applied!");
+    } else if (code === "FREESHIP") {
+      if (subtotalWithPackaging < 799) {
+        toast.error("Add items worth ₹799 or more to use FREESHIP");
+        return;
+      }
+      setAppliedCouponCode("FREESHIP");
+      toast.success("Free delivery unlocked!");
+    } else {
+      toast.error("Invalid coupon code");
+    }
+  };
+
+  if (!cartItems || cartItems.length === 0) {
+    return null;
+  }
+
+  if (showPayment) {
+    return (
+      <div className="min-h-screen bg-[#f2f2f2] text-[#111111]">
+        <div className="max-w-2xl mx-auto px-4 py-12">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white rounded-lg p-8 shadow-sm"
+          >
+            <div className="text-center mb-8">
+              <h1 className="text-3xl font-bold mb-2">Scan to Pay</h1>
+              <p className="text-lg text-gray-600">
+                Amount: ₹{discountedTotal.toLocaleString()}
+              </p>
+            </div>
+
+            {qrCodeUrl && (
+              <div className="bg-white p-6 rounded-lg inline-block shadow-md mx-auto block">
+                <img
+                  src={qrCodeUrl}
+                  alt="UPI Payment QR Code"
+                  className="w-80 h-80 mx-auto"
+                />
+              </div>
+            )}
+
+            <p className="text-sm text-gray-500 mt-4 text-center">
+              Scan this QR code with any UPI app to pay ₹{discountedTotal.toLocaleString()}
+            </p>
+            <p className="text-sm text-gray-500 text-center">
+              The amount is locked and cannot be changed
+            </p>
+
+            <div className="mt-8 pt-6 border-t border-gray-200 space-y-3">
+              <div className="flex justify-between text-base">
+                <span className="font-medium">Subtotal</span>
+                <span className="font-medium">₹{estimatedTotal.toLocaleString()}</span>
+              </div>
+
+              {packagingCharges > 0 && (
+                <div className="flex justify-between text-base">
+                  <span className="font-medium">Packaging charges</span>
+                  <span className="font-medium">₹{packagingCharges.toLocaleString()}</span>
+                </div>
+              )}
+
+              {finalDiscount > 0 && (
+                <div className="flex justify-between text-base text-green-700">
+                  <span className="font-medium">Discount ({appliedCouponCode})</span>
+                  <span className="font-medium">-₹{finalDiscount.toLocaleString()}</span>
+                </div>
+              )}
+
+              {appliedCouponCode === "FREESHIP" && subtotalWithPackaging >= 799 && (
+                <div className="flex justify-between text-base text-green-700">
+                  <span className="font-medium">Free Delivery</span>
+                  <span className="font-medium">₹0</span>
+                </div>
+              )}
+
+              <div className="flex justify-between text-xl font-bold pt-3 border-t border-gray-200">
+                <span>Total</span>
+                <span>₹{discountedTotal.toLocaleString()}</span>
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-8">
+              <Button
+                variant="outline"
+                className="flex-1 h-12"
+                onClick={() => setShowPayment(false)}
+              >
+                Back
+              </Button>
+              <Button
+                className="flex-1 h-12 bg-[#25D366] text-white hover:bg-[#20bd5b]"
+                onClick={handlePaymentConfirmation}
+              >
+                Payment Done - Send Confirmation
+              </Button>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-[#f2f2f2] text-[#111111]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <button
+            onClick={() => navigate("/")}
+            className="text-3xl font-extrabold tracking-widest font-['Abril_Fatface',serif] text-black"
+          >
+            LUXE
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Left Column - Contact & Delivery Form */}
+          <div className="space-y-6">
+            {/* Contact Section */}
+            <div className="bg-white rounded-lg p-6 shadow-sm">
+              <h2 className="text-xl font-bold mb-4">Contact</h2>
+              <div className="space-y-4">
+                <div>
+                  <Input
+                    type="email"
+                    placeholder="Email"
+                    value={details.email}
+                    onChange={(e) => setDetails((d) => ({ ...d, email: e.target.value }))}
+                    className="w-full bg-white border-gray-300"
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <input type="checkbox" id="newsletter" className="h-4 w-4" />
+                  <label htmlFor="newsletter" className="text-sm">
+                    Email me with news and offers
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            {/* Delivery Section */}
+            <div className="bg-white rounded-lg p-6 shadow-sm">
+              <h2 className="text-xl font-bold mb-4">Delivery</h2>
+              <div className="space-y-4">
+                <div>
+                  <Select value="India" disabled>
+                    <SelectTrigger className="w-full bg-white border-gray-300">
+                      <SelectValue placeholder="Country/Region" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="India">India</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <Input
+                    placeholder="First name"
+                    value={details.firstName}
+                    onChange={(e) => setDetails((d) => ({ ...d, firstName: e.target.value }))}
+                    className="bg-white border-gray-300"
+                  />
+                  <Input
+                    placeholder="Last name"
+                    value={details.lastName}
+                    onChange={(e) => setDetails((d) => ({ ...d, lastName: e.target.value }))}
+                    className="bg-white border-gray-300"
+                  />
+                </div>
+
+                <div className="relative">
+                  <Input
+                    placeholder="Address"
+                    value={details.address1}
+                    onChange={(e) => setDetails((d) => ({ ...d, address1: e.target.value }))}
+                    className="bg-white border-gray-300 pr-10"
+                  />
+                  <svg
+                    className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
+                  </svg>
+                </div>
+
+                <Input
+                  placeholder="Apartment, suite, etc. (optional)"
+                  value={details.address2}
+                  onChange={(e) => setDetails((d) => ({ ...d, address2: e.target.value }))}
+                  className="bg-white border-gray-300"
+                />
+
+                <div className="grid grid-cols-3 gap-4">
+                  <Input
+                    placeholder="City"
+                    value={details.city}
+                    onChange={(e) => setDetails((d) => ({ ...d, city: e.target.value }))}
+                    className="bg-white border-gray-300"
+                  />
+                  <Select
+                    value={details.state}
+                    onValueChange={(v) => setDetails((d) => ({ ...d, state: v }))}
+                  >
+                    <SelectTrigger className="bg-white border-gray-300">
+                      <SelectValue placeholder="State" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Andhra Pradesh">Andhra Pradesh</SelectItem>
+                      <SelectItem value="Arunachal Pradesh">Arunachal Pradesh</SelectItem>
+                      <SelectItem value="Assam">Assam</SelectItem>
+                      <SelectItem value="Bihar">Bihar</SelectItem>
+                      <SelectItem value="Chhattisgarh">Chhattisgarh</SelectItem>
+                      <SelectItem value="Goa">Goa</SelectItem>
+                      <SelectItem value="Gujarat">Gujarat</SelectItem>
+                      <SelectItem value="Haryana">Haryana</SelectItem>
+                      <SelectItem value="Himachal Pradesh">Himachal Pradesh</SelectItem>
+                      <SelectItem value="Jharkhand">Jharkhand</SelectItem>
+                      <SelectItem value="Karnataka">Karnataka</SelectItem>
+                      <SelectItem value="Kerala">Kerala</SelectItem>
+                      <SelectItem value="Madhya Pradesh">Madhya Pradesh</SelectItem>
+                      <SelectItem value="Maharashtra">Maharashtra</SelectItem>
+                      <SelectItem value="Manipur">Manipur</SelectItem>
+                      <SelectItem value="Meghalaya">Meghalaya</SelectItem>
+                      <SelectItem value="Mizoram">Mizoram</SelectItem>
+                      <SelectItem value="Nagaland">Nagaland</SelectItem>
+                      <SelectItem value="Odisha">Odisha</SelectItem>
+                      <SelectItem value="Punjab">Punjab</SelectItem>
+                      <SelectItem value="Rajasthan">Rajasthan</SelectItem>
+                      <SelectItem value="Sikkim">Sikkim</SelectItem>
+                      <SelectItem value="Tamil Nadu">Tamil Nadu</SelectItem>
+                      <SelectItem value="Telangana">Telangana</SelectItem>
+                      <SelectItem value="Tripura">Tripura</SelectItem>
+                      <SelectItem value="Uttar Pradesh">Uttar Pradesh</SelectItem>
+                      <SelectItem value="Uttarakhand">Uttarakhand</SelectItem>
+                      <SelectItem value="West Bengal">West Bengal</SelectItem>
+                      <SelectItem value="Delhi">Delhi</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Input
+                    placeholder="PIN code"
+                    inputMode="numeric"
+                    value={details.pin}
+                    onChange={(e) => setDetails((d) => ({ ...d, pin: e.target.value }))}
+                    className="bg-white border-gray-300"
+                  />
+                </div>
+
+                <div className="relative">
+                  <Input
+                    placeholder="Phone"
+                    inputMode="tel"
+                    value={details.phone}
+                    onChange={(e) => setDetails((d) => ({ ...d, phone: e.target.value }))}
+                    className="bg-white border-gray-300 pr-10"
+                  />
+                  <svg
+                    className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column - Order Summary */}
+          <div>
+            <div className="bg-white rounded-lg p-6 shadow-sm sticky top-8">
+              <h2 className="text-xl font-bold mb-4">Order Summary</h2>
+
+              {/* Product List */}
+              <div className="space-y-4 mb-6">
+                {cartItems.map((item) => (
+                  <div key={item._id} className="flex gap-4">
+                    <div className="relative h-20 w-20 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                      {item.product.images?.[0] && (
+                        <img
+                          src={item.product.images[0]}
+                          alt={item.product.name}
+                          className="h-full w-full object-cover"
+                        />
+                      )}
+                      <div className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-gray-700 text-white text-xs flex items-center justify-center font-medium">
+                        {item.quantity}
+                      </div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm truncate">{item.product.name}</p>
+                      {(item as any).color && (
+                        <p className="text-xs text-gray-600">
+                          {String((item as any).color).charAt(0).toUpperCase() +
+                            String((item as any).color).slice(1)}
+                        </p>
+                      )}
+                      {(item as any).packaging && (
+                        <p className="text-xs text-gray-600">
+                          {(item as any).packaging === "indian"
+                            ? "Indian Box"
+                            : (item as any).packaging === "imported"
+                            ? "Premium Box"
+                            : "Without Box"}
+                        </p>
+                      )}
+                    </div>
+                    <div className="text-right">
+                      <p className="font-medium">
+                        ₹{(item.product.price * item.quantity).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Discount Code */}
+              <div className="mb-6">
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Discount code"
+                    value={promoCode}
+                    onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                    className="flex-1 bg-white border-gray-300"
+                  />
+                  <Button
+                    onClick={applyPromoCode}
+                    variant="outline"
+                    className="border-gray-300"
+                  >
+                    Apply
+                  </Button>
+                </div>
+              </div>
+
+              {/* Pricing Breakdown */}
+              <div className="space-y-3 pb-4 border-b border-gray-200">
+                <div className="flex justify-between text-sm">
+                  <span>Subtotal</span>
+                  <span>₹{estimatedTotal.toLocaleString()}</span>
+                </div>
+
+                {packagingCharges > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span>Packaging charges</span>
+                    <span>₹{packagingCharges.toLocaleString()}</span>
+                  </div>
+                )}
+
+                {finalDiscount > 0 && (
+                  <div className="flex justify-between text-sm text-green-700">
+                    <span>Discount ({appliedCouponCode})</span>
+                    <span>-₹{finalDiscount.toLocaleString()}</span>
+                  </div>
+                )}
+
+                <div className="flex justify-between text-sm">
+                  <span>Shipping</span>
+                  <span className="text-gray-500">
+                    {details.address1 ? "Calculated at next step" : "Enter shipping address"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Total */}
+              <div className="flex justify-between text-xl font-bold pt-4 mb-6">
+                <span>Total</span>
+                <span>INR ₹{discountedTotal.toLocaleString()}</span>
+              </div>
+
+              {/* Proceed to Payment Button */}
+              <Button
+                onClick={handleProceedToPayment}
+                className="w-full h-12 bg-black text-white hover:bg-black/90 text-base font-medium"
+              >
+                Proceed to Payment
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
