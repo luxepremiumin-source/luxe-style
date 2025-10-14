@@ -462,10 +462,9 @@ export default function Checkout() {
                     value={details.state}
                     onValueChange={(v) => setDetails((d) => ({ ...d, state: v }))}
                   >
-                    <SelectTrigger className="w-full bg-white/10 border-white/20 text-white h-12 text-base flex items-center">
+                    <SelectTrigger className="w-full bg-white/10 border-white/20 text-white h-12 text-base">
                       <SelectValue placeholder="State" />
                     </SelectTrigger>
-=======
                     <SelectContent>
                       <SelectItem value="Andhra Pradesh">Andhra Pradesh</SelectItem>
                       <SelectItem value="Arunachal Pradesh">Arunachal Pradesh</SelectItem>
@@ -504,7 +503,7 @@ export default function Checkout() {
                     maxLength={6}
                     value={details.pin}
                     onChange={(e) => {
-                      const value = e.target.value.replace(/\D/g, '');
+                      const value = e.target.value.replace(/\D/g, "");
                       setDetails((d) => ({ ...d, pin: value }));
                     }}
                     className="bg-white/10 border-white/20 text-white placeholder:text-white/50 h-12 text-base"
