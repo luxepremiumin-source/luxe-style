@@ -369,38 +369,38 @@ export default function Navbar() {
             </div>
 
             {/* Category Links */}
-            <nav className="space-y-1">
+            <nav className="space-y-0">
               <Link
                 to="/category/goggles"
-                className="text-lg font-normal hover:text-gray-600 transition-colors duration-200 px-0 py-3 text-gray-900"
+                className="block text-lg font-normal hover:text-gray-600 transition-colors duration-200 px-0 py-3 text-gray-900"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Goggles
               </Link>
               <Link
                 to="/category/watches"
-                className="text-lg font-normal hover:text-gray-600 transition-colors duration-200 px-0 py-3 text-gray-900"
+                className="block text-lg font-normal hover:text-gray-600 transition-colors duration-200 px-0 py-3 text-gray-900"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Watches
               </Link>
               <Link
                 to="/category/belts"
-                className="text-lg font-normal hover:text-gray-600 transition-colors duration-200 px-0 py-3 text-gray-900"
+                className="block text-lg font-normal hover:text-gray-600 transition-colors duration-200 px-0 py-3 text-gray-900"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Belts
               </Link>
               <Link
                 to="/category/gift box"
-                className="text-lg font-normal hover:text-gray-600 transition-colors duration-200 px-0 py-3 text-gray-900"
+                className="block text-lg font-normal hover:text-gray-600 transition-colors duration-200 px-0 py-3 text-gray-900"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Gift box
               </Link>
               <Link
                 to="/shop-by-brand"
-                className="block text-lg font-normal text-gray-900 hover:text-gray-600 transition-colors duration-200 px-0 py-3"
+                className="block text-lg font-normal hover:text-gray-600 transition-colors duration-200 px-0 py-3 text-gray-900"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Shop by brand
