@@ -462,9 +462,10 @@ export default function Checkout() {
                     value={details.state}
                     onValueChange={(v) => setDetails((d) => ({ ...d, state: v }))}
                   >
-                    <SelectTrigger className="w-full bg-white/10 border-white/20 text-white h-12 text-base">
+                    <SelectTrigger className="w-full bg-white/10 border-white/20 text-white h-12 text-base flex items-center">
                       <SelectValue placeholder="State" />
                     </SelectTrigger>
+=======
                     <SelectContent>
                       <SelectItem value="Andhra Pradesh">Andhra Pradesh</SelectItem>
                       <SelectItem value="Arunachal Pradesh">Arunachal Pradesh</SelectItem>
