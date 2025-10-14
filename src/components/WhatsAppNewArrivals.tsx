@@ -5,9 +5,8 @@ import { MessageCircle, Sparkles } from "lucide-react";
 
 export default function WhatsAppNewArrivals() {
   const handleWhatsAppClick = () => {
-    const message = "Hi! I'd like to see your latest new arrivals and fresh designs.";
-    const url = `https://wa.me/9871629699?text=${encodeURIComponent(message)}`;
-    window.location.href = url;
+    const communityUrl = "https://chat.whatsapp.com/DBdZEP66bVk2NRcFoumLLx";
+    window.location.href = communityUrl;
   };
 
   return (
