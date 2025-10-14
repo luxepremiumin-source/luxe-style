@@ -285,12 +285,14 @@ export default function Checkout() {
             </div>
 
             {qrCodeUrl && (
-              <div className="bg-white p-6 rounded-lg inline-block shadow-md mx-auto block">
-                <img
-                  src={qrCodeUrl}
-                  alt="UPI Payment QR Code"
-                  className="w-80 h-80 mx-auto"
-                />
+              <div className="flex justify-center mb-6">
+                <div className="bg-white p-6 rounded-lg shadow-md">
+                  <img
+                    src={qrCodeUrl}
+                    alt="UPI Payment QR Code"
+                    className="w-80 h-80"
+                  />
+                </div>
               </div>
             )}
 
