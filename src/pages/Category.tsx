@@ -147,7 +147,7 @@ export default function CategoryPage() {
                 <p className="text-gray-300">No products found in this category.</p>
               </div>
             ) : (
-              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
                 {products.map((product, index) => {
                   const isInWishlist = wishlistProductIds.has(product._id);
                   const images = product.images ?? [];
