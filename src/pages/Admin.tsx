@@ -87,8 +87,10 @@ export default function Admin() {
     try {
       const res = await fetch(url, { method: "HEAD", cache: "no-store" });
       if (res.ok) return;
-    } catch {
+    } catch (err) {
+      // Silently handle browser extension interference or network issues
       // File will be available shortly, continue anyway
+      console.debug("File availability check skipped:", err);
     }
   };
 
@@ -110,7 +112,7 @@ export default function Admin() {
     // Upload in background without blocking
     setUploadingInBackground(true);
     
-    // Process uploads asynchronously
+    // Process uploads asynchronously with better error handling
     Promise.all(files.map(async (file, i) => {
       const blobUrl = blobItems[i].url;
       const mediaType = blobItems[i].type;
@@ -137,10 +139,12 @@ export default function Admin() {
           return newArr;
         });
       } catch (err) {
-        console.error(err);
+        // Handle errors gracefully - could be browser extension interference
+        console.error("Media upload error (may be browser extension):", err);
         const updateFn = isEdit ? setEditUploadedMedia : setUploadedMedia;
         updateFn((prev) => prev.filter(item => item.url !== blobUrl));
         URL.revokeObjectURL(blobUrl);
+        toast.error("Upload interrupted. Please try again or disable browser extensions.");
       }
     })).finally(() => {
       setUploadingInBackground(false);
