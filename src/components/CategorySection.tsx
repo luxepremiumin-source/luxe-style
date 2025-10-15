@@ -272,6 +272,7 @@ export default function CategorySection() {
                         alt={category.name}
                         className="absolute inset-0 h-full w-full object-cover"
                         loading="eager"
+                        fetchPriority="high"
                         initial={transitionVariants[currentImageIndex].initial}
                         animate={transitionVariants[currentImageIndex].animate}
                         exit={transitionVariants[currentImageIndex].exit}
@@ -287,6 +288,7 @@ export default function CategorySection() {
                         alt={category.name}
                         className="absolute inset-0 h-full w-full object-cover"
                         loading="eager"
+                        fetchPriority="high"
                         initial={watchTransitionVariants[currentWatchIndex].initial}
                         animate={watchTransitionVariants[currentWatchIndex].animate}
                         exit={watchTransitionVariants[currentWatchIndex].exit}
@@ -302,6 +304,7 @@ export default function CategorySection() {
                         alt={category.name}
                         className="absolute inset-0 h-full w-full object-cover"
                         loading="eager"
+                        fetchPriority="high"
                         initial={beltTransitionVariants[currentBeltIndex].initial}
                         animate={beltTransitionVariants[currentBeltIndex].animate}
                         exit={beltTransitionVariants[currentBeltIndex].exit}

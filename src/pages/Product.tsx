@@ -199,7 +199,7 @@ export default function ProductPage() {
                     className={`absolute inset-0 w-full h-full object-cover rounded-2xl transition-opacity duration-300 ${!product.inStock ? 'brightness-50' : ''}`}
                     loading="eager"
                     fetchPriority="high"
-                    decoding="sync"
+                    decoding="async"
                   />
                   {!product.inStock && (
                     <div className="absolute inset-0 flex items-center justify-center z-10">
