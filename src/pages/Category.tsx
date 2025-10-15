@@ -230,23 +230,52 @@ export default function CategoryPage() {
                                 }}
                               />
 
-                              {product.originalPrice && product.originalPrice > product.price ? (
-                                <Badge className="absolute top-3 left-3 z-10 bg-white text-black">Sale</Badge>
-                              ) : product.featured ? (
-                                <Badge className="absolute top-3 left-3 z-10 bg-white text-black">Featured</Badge>
-                              ) : null}
-                              
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className={`absolute top-3 right-3 z-10 rounded-full bg-black/60 hover:bg-black/80 transition-colors duration-200 ${
-                                  isInWishlist ? "text-red-500" : "text-white"
-                                }`}
-                                onClick={(e) => handleWishlistToggle(e, product._id)}
-                                aria-label={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
-                              >
-                                <Heart className={`h-5 w-5 ${isInWishlist ? "fill-current" : ""}`} />
-                              </Button>
+                              {!product.inStock && (
+                                <div className="absolute inset-0 flex items-center justify-center z-10">
+                                  <span className="text-red-500 text-xs sm:text-sm font-semibold tracking-wider" style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+                                    OUT OF STOCK
+                                  </span>
+                                </div>
+                              )}
+
+                              {/* Image navigation arrows - only show if multiple images */}
+                              {hasMultipleImages && (
+                                <>
+                                  <button
+                                    onClick={(e) => handleImageNavigation(e, product._id, 'prev', images.length)}
+                                    className="absolute left-2 top-1/2 -translate-y-1/2 z-20 bg-black/60 hover:bg-black/80 rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                                    aria-label="Previous image"
+                                  >
+                                    <ChevronLeft className="h-4 w-4 text-white" />
+                                  </button>
+                                  <button
+                                    onClick={(e) => handleImageNavigation(e, product._id, 'next', images.length)}
+                                    className="absolute right-2 top-1/2 -translate-y-1/2 z-20 bg-black/60 hover:bg-black/80 rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                                    aria-label="Next image"
+                                  >
+                                    <ChevronRight className="h-4 w-4 text-white" />
+                                  </button>
+
+                                  {/* Image indicator dots */}
+                                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex gap-1.5">
+                                    {images.map((_, idx) => (
+                                      <button
+                                        key={idx}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setActiveImageIndices(prev => ({ ...prev, [product._id]: idx }));
+                                        }}
+                                        className={`h-1.5 rounded-full transition-all duration-200 ${
+                                          idx === activeIndex 
+                                            ? 'w-6 bg-white' 
+                                            : 'w-1.5 bg-white/50 hover:bg-white/70'
+                                        }`}
+                                        aria-label={`View image ${idx + 1}`}
+                                      />
+                                    ))}
+                                  </div>
+                                </>
+                              )}
                             </>
                           ) : (
                             <div className="absolute inset-0 bg-gray-200 flex items-center justify-center">
@@ -255,63 +284,75 @@ export default function CategoryPage() {
                               </span>
                             </div>
                           )}
+                          {product.originalPrice && product.originalPrice > product.price ? (
+                            <Badge className="absolute top-3 left-3 z-10 bg-white text-black">Sale</Badge>
+                          ) : product.featured ? (
+                            <Badge className="absolute top-3 left-3 z-10 bg-white text-black">Featured</Badge>
+                          ) : null}
                           
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className={`absolute top-3 right-3 z-10 rounded-full bg-black/60 hover:bg-black/80 transition-colors duration-200 ${
+                              isInWishlist ? "text-red-500" : "text-white"
+                            }`}
+                            onClick={(e) => handleWishlistToggle(e, product._id)}
+                            aria-label={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
+                          >
+                            <Heart className={`h-5 w-5 ${isInWishlist ? "fill-current" : ""}`} />
+                          </Button>
+                        </div>
+
                         <div className="px-0 pt-2 sm:pt-3">
-                          {!product.inStock && (
-                            <p className="text-red-500 text-[10px] sm:text-xs font-medium tracking-wide mb-1" style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
-                              OUT OF STOCK
-                            </p>
-                          )}
                           <h3 className="font-extrabold tracking-tight text-white text-xs sm:text-base md:text-lg mb-1 line-clamp-1">
                             {product.name}
                           </h3>
 
-                            <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-                              <span className="text-sm sm:text-lg text-white font-bold tracking-tight">
-                                ₹{product.price.toLocaleString()}
-                              </span>
-                              {product.originalPrice && (
-                                <>
-                                  <span className="text-xs sm:text-sm text-white/40 line-through font-normal">
-                                    ₹{product.originalPrice.toLocaleString()}
-                                  </span>
-                                  <span className="text-[10px] sm:text-xs font-semibold text-emerald-400">
-                                    ({Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF)
-                                  </span>
-                                </>
-                              )}
-                            </div>
+                          <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+                            <span className="text-sm sm:text-lg text-white font-bold tracking-tight">
+                              ₹{product.price.toLocaleString()}
+                            </span>
+                            {product.originalPrice && (
+                              <>
+                                <span className="text-xs sm:text-sm text-white/40 line-through font-normal">
+                                  ₹{product.originalPrice.toLocaleString()}
+                                </span>
+                                <span className="text-[10px] sm:text-xs font-semibold text-emerald-400">
+                                  ({Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF)
+                                </span>
+                              </>
+                            )}
+                          </div>
 
-                            <div className="mt-2 sm:mt-3 flex flex-col sm:flex-row gap-2">
-                              <Button
-                                className="h-8 sm:h-9 px-3 sm:px-4 text-xs sm:text-sm rounded-full bg-white text-black hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed"
-                                onClick={async (e) => {
-                                  e.stopPropagation();
-                                  if (typeof window !== "undefined") {
-                                    (window as any).__luxeUserId = user?._id;
-                                  }
-                                  await handleAddToCart(product._id as any);
-                                }}
-                                disabled={!product.inStock}
-                              >
-                                {product.inStock ? "Add to Cart" : "Out of Stock"}
-                              </Button>
+                          <div className="mt-2 sm:mt-3 flex flex-col sm:flex-row gap-2">
+                            <Button
+                              className="h-8 sm:h-9 px-3 sm:px-4 text-xs sm:text-sm rounded-full bg-white text-black hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                if (typeof window !== "undefined") {
+                                  (window as any).__luxeUserId = user?._id;
+                                }
+                                await handleAddToCart(product._id as any);
+                              }}
+                              disabled={!product.inStock}
+                            >
+                              {product.inStock ? "Add to Cart" : "Out of Stock"}
+                            </Button>
 
-                              <Button
-                                className="h-8 sm:h-9 px-2 sm:px-3 text-xs sm:text-sm rounded-full bg-[#25D366] text-white hover:bg-[#20bd5b]"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  const link = `${window.location.origin}/product/${product._id}`;
-                                  const message = `Hi! I'm interested in "${product.name}" (${prettyName[product.category] ?? product.category}). Price: ₹${product.price.toLocaleString()}${product.originalPrice ? ` (MRP ₹${product.originalPrice.toLocaleString()})` : ""}. Link: ${link}`;
-                                  const url = `https://wa.me/9871629699?text=${encodeURIComponent(message)}`;
-                                  window.location.href = url;
-                                }}
-                              >
-                                <MessageCircle className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1 sm:mr-1.5" />
-                                <span className="hidden sm:inline">Order on WhatsApp</span>
-                                <span className="sm:hidden">WhatsApp</span>
-                              </Button>
-                            </div>
+                            <Button
+                              className="h-8 sm:h-9 px-2 sm:px-3 text-xs sm:text-sm rounded-full bg-[#25D366] text-white hover:bg-[#20bd5b]"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const link = `${window.location.origin}/product/${product._id}`;
+                                const message = `Hi! I'm interested in "${product.name}" (${prettyName[product.category] ?? product.category}). Price: ₹${product.price.toLocaleString()}${product.originalPrice ? ` (MRP ₹${product.originalPrice.toLocaleString()})` : ""}. Link: ${link}`;
+                                const url = `https://wa.me/9871629699?text=${encodeURIComponent(message)}`;
+                                window.location.href = url;
+                              }}
+                            >
+                              <MessageCircle className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1 sm:mr-1.5" />
+                              <span className="hidden sm:inline">Order on WhatsApp</span>
+                              <span className="sm:hidden">WhatsApp</span>
+                            </Button>
                           </div>
                         </div>
                       </Card>
