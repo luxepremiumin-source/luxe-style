@@ -18,6 +18,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { GripVertical } from "lucide-react";
 
 type NewProduct = {
   name: string;
@@ -82,10 +83,10 @@ export default function Admin() {
   // Add: Convex storage URL resolver action (returns a canonical public URL)
   const resolvePublicUrl = useAction((api as any).storage.resolvePublicUrl);
 
-  // Add: wait until the uploaded file is publicly readable (handles brief propagation delay)
+  // Optimized: wait until the uploaded file is publicly readable (reduced delays)
   const ensureFileAvailable = async (url: string) => {
-    // Extended delay schedule to handle slower propagation and avoid negative caching
-    const delays = [0, 200, 400, 800, 1500, 2500, 4000, 6000]; // ms
+    // Reduced to just 2 quick attempts instead of 8 long ones
+    const delays = [0, 200]; // ms
     for (let i = 0; i < delays.length; i++) {
       if (delays[i]) await new Promise((r) => setTimeout(r, delays[i]));
       try {
@@ -95,104 +96,165 @@ export default function Admin() {
         // try next
       }
     }
-    // Final attempt using GET as a fallback; ignore body
-    try {
-      const res = await fetch(url, { method: "GET", cache: "no-store" });
-      if (res.ok) return;
-    } catch {
-      // swallow
-    }
   };
 
-  // Update: helper to upload an array of image files/blobs — resolve via Convex and wait for availability
+  // Optimized: helper to upload an array of image files/blobs with instant preview
   const uploadImageFiles = async (files: Array<File>) => {
     if (!files || files.length === 0) return;
+    
+    // Show instant preview using blob URLs
+    const blobUrls = files.map(file => URL.createObjectURL(file));
+    setUploadedUrls((prev) => [...prev, ...blobUrls]);
+    
     const newUrls: Array<string> = [];
-    for (const file of files) {
-      const postUrl: string = await generateUploadUrl({});
-      const res = await fetch(postUrl, {
-        method: "POST",
-        headers: { "Content-Type": file.type || "application/octet-stream" },
-        body: file,
-      });
-      if (!res.ok) throw new Error("Upload failed");
-      const json = (await res.json()) as { storageId: string };
-      // Ask backend for the canonical public URL for this storageId
-      const publicUrl: string = await resolvePublicUrl({ storageId: json.storageId as any });
-      await ensureFileAvailable(publicUrl);
-      // Build preview URL with proper cache-busting whether or not publicUrl already has query params
-      const previewUrl =
-        publicUrl + (publicUrl.includes("?") ? "&" : "?") + "v=" + Date.now();
-      newUrls.push(previewUrl);
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      try {
+        const postUrl: string = await generateUploadUrl({});
+        const res = await fetch(postUrl, {
+          method: "POST",
+          headers: { "Content-Type": file.type || "application/octet-stream" },
+          body: file,
+        });
+        if (!res.ok) throw new Error("Upload failed");
+        const json = (await res.json()) as { storageId: string };
+        const publicUrl: string = await resolvePublicUrl({ storageId: json.storageId as any });
+        await ensureFileAvailable(publicUrl);
+        
+        // Replace blob URL with actual URL
+        setUploadedUrls((prev) => {
+          const newArr = [...prev];
+          const blobIndex = newArr.indexOf(blobUrls[i]);
+          if (blobIndex !== -1) {
+            newArr[blobIndex] = publicUrl;
+            URL.revokeObjectURL(blobUrls[i]); // Clean up blob URL
+          }
+          return newArr;
+        });
+        newUrls.push(publicUrl);
+      } catch (err) {
+        console.error(err);
+        // Remove failed blob URL
+        setUploadedUrls((prev) => prev.filter(u => u !== blobUrls[i]));
+        URL.revokeObjectURL(blobUrls[i]);
+      }
     }
-    setUploadedUrls((prev) => [...prev, ...newUrls]);
   };
 
-  // Update: helper for edit dialog uploads — resolve via Convex and wait for availability
+  // Optimized: helper for edit dialog uploads with instant preview
   const uploadImageFilesForEdit = async (files: Array<File>) => {
     if (!files || files.length === 0) return;
+    
+    const blobUrls = files.map(file => URL.createObjectURL(file));
+    setEditUploadedUrls((prev) => [...prev, ...blobUrls]);
+    
     const newUrls: Array<string> = [];
-    for (const file of files) {
-      const postUrl: string = await generateUploadUrl({});
-      const res = await fetch(postUrl, {
-        method: "POST",
-        headers: { "Content-Type": file.type || "application/octet-stream" },
-        body: file,
-      });
-      if (!res.ok) throw new Error("Upload failed");
-      const json = (await res.json()) as { storageId: string };
-      const publicUrl: string = await resolvePublicUrl({ storageId: json.storageId as any });
-      await ensureFileAvailable(publicUrl);
-      // Build preview URL with proper cache-busting whether or not publicUrl already has query params
-      const previewUrl =
-        publicUrl + (publicUrl.includes("?") ? "&" : "?") + "v=" + Date.now();
-      newUrls.push(previewUrl);
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      try {
+        const postUrl: string = await generateUploadUrl({});
+        const res = await fetch(postUrl, {
+          method: "POST",
+          headers: { "Content-Type": file.type || "application/octet-stream" },
+          body: file,
+        });
+        if (!res.ok) throw new Error("Upload failed");
+        const json = (await res.json()) as { storageId: string };
+        const publicUrl: string = await resolvePublicUrl({ storageId: json.storageId as any });
+        await ensureFileAvailable(publicUrl);
+        
+        setEditUploadedUrls((prev) => {
+          const newArr = [...prev];
+          const blobIndex = newArr.indexOf(blobUrls[i]);
+          if (blobIndex !== -1) {
+            newArr[blobIndex] = publicUrl;
+            URL.revokeObjectURL(blobUrls[i]);
+          }
+          return newArr;
+        });
+        newUrls.push(publicUrl);
+      } catch (err) {
+        console.error(err);
+        setEditUploadedUrls((prev) => prev.filter(u => u !== blobUrls[i]));
+        URL.revokeObjectURL(blobUrls[i]);
+      }
     }
-    setEditUploadedUrls((prev) => [...prev, ...newUrls]);
   };
 
-  // Add: helper to upload video files — resolve via Convex and wait for availability
+  // Optimized: video uploads with instant preview
   const uploadVideoFiles = async (files: Array<File>) => {
     if (!files || files.length === 0) return;
-    const newUrls: Array<string> = [];
-    for (const file of files) {
-      const postUrl: string = await generateUploadUrl({});
-      const res = await fetch(postUrl, {
-        method: "POST",
-        headers: { "Content-Type": file.type || "application/octet-stream" },
-        body: file,
-      });
-      if (!res.ok) throw new Error("Upload failed");
-      const json = (await res.json()) as { storageId: string };
-      const publicUrl: string = await resolvePublicUrl({ storageId: json.storageId as any });
-      await ensureFileAvailable(publicUrl);
-      const previewUrl =
-        publicUrl + (publicUrl.includes("?") ? "&" : "?") + "v=" + Date.now();
-      newUrls.push(previewUrl);
+    
+    const blobUrls = files.map(file => URL.createObjectURL(file));
+    setUploadedVideoUrls((prev) => [...prev, ...blobUrls]);
+    
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      try {
+        const postUrl: string = await generateUploadUrl({});
+        const res = await fetch(postUrl, {
+          method: "POST",
+          headers: { "Content-Type": file.type || "application/octet-stream" },
+          body: file,
+        });
+        if (!res.ok) throw new Error("Upload failed");
+        const json = (await res.json()) as { storageId: string };
+        const publicUrl: string = await resolvePublicUrl({ storageId: json.storageId as any });
+        await ensureFileAvailable(publicUrl);
+        
+        setUploadedVideoUrls((prev) => {
+          const newArr = [...prev];
+          const blobIndex = newArr.indexOf(blobUrls[i]);
+          if (blobIndex !== -1) {
+            newArr[blobIndex] = publicUrl;
+            URL.revokeObjectURL(blobUrls[i]);
+          }
+          return newArr;
+        });
+      } catch (err) {
+        console.error(err);
+        setUploadedVideoUrls((prev) => prev.filter(u => u !== blobUrls[i]));
+        URL.revokeObjectURL(blobUrls[i]);
+      }
     }
-    setUploadedVideoUrls((prev) => [...prev, ...newUrls]);
   };
 
-  // Add: helper for edit dialog video uploads
+  // Optimized: edit dialog video uploads
   const uploadVideoFilesForEdit = async (files: Array<File>) => {
     if (!files || files.length === 0) return;
-    const newUrls: Array<string> = [];
-    for (const file of files) {
-      const postUrl: string = await generateUploadUrl({});
-      const res = await fetch(postUrl, {
-        method: "POST",
-        headers: { "Content-Type": file.type || "application/octet-stream" },
-        body: file,
-      });
-      if (!res.ok) throw new Error("Upload failed");
-      const json = (await res.json()) as { storageId: string };
-      const publicUrl: string = await resolvePublicUrl({ storageId: json.storageId as any });
-      await ensureFileAvailable(publicUrl);
-      const previewUrl =
-        publicUrl + (publicUrl.includes("?") ? "&" : "?") + "v=" + Date.now();
-      newUrls.push(previewUrl);
+    
+    const blobUrls = files.map(file => URL.createObjectURL(file));
+    setEditUploadedVideoUrls((prev) => [...prev, ...blobUrls]);
+    
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      try {
+        const postUrl: string = await generateUploadUrl({});
+        const res = await fetch(postUrl, {
+          method: "POST",
+          headers: { "Content-Type": file.type || "application/octet-stream" },
+          body: file,
+        });
+        if (!res.ok) throw new Error("Upload failed");
+        const json = (await res.json()) as { storageId: string };
+        const publicUrl: string = await resolvePublicUrl({ storageId: json.storageId as any });
+        await ensureFileAvailable(publicUrl);
+        
+        setEditUploadedVideoUrls((prev) => {
+          const newArr = [...prev];
+          const blobIndex = newArr.indexOf(blobUrls[i]);
+          if (blobIndex !== -1) {
+            newArr[blobIndex] = publicUrl;
+            URL.revokeObjectURL(blobUrls[i]);
+          }
+          return newArr;
+        });
+      } catch (err) {
+        console.error(err);
+        setEditUploadedVideoUrls((prev) => prev.filter(u => u !== blobUrls[i]));
+        URL.revokeObjectURL(blobUrls[i]);
+      }
     }
-    setEditUploadedVideoUrls((prev) => [...prev, ...newUrls]);
   };
 
   // Update: reuse helper for input[type=file] uploads
@@ -359,6 +421,56 @@ export default function Admin() {
     }
   };
 
+  // NEW: Drag and drop handlers for image reordering
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+
+  const handleDragStart = (index: number) => {
+    setDraggedIndex(index);
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === index) return;
+    
+    setUploadedUrls((prev) => {
+      const newArr = [...prev];
+      const draggedItem = newArr[draggedIndex];
+      newArr.splice(draggedIndex, 1);
+      newArr.splice(index, 0, draggedItem);
+      setDraggedIndex(index);
+      return newArr;
+    });
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+  };
+
+  // NEW: Drag handlers for edit dialog
+  const [editDraggedIndex, setEditDraggedIndex] = useState<number | null>(null);
+
+  const handleEditDragStart = (index: number) => {
+    setEditDraggedIndex(index);
+  };
+
+  const handleEditDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    if (editDraggedIndex === null || editDraggedIndex === index) return;
+    
+    setEditUploadedUrls((prev) => {
+      const newArr = [...prev];
+      const draggedItem = newArr[editDraggedIndex];
+      newArr.splice(editDraggedIndex, 1);
+      newArr.splice(index, 0, draggedItem);
+      setEditDraggedIndex(index);
+      return newArr;
+    });
+  };
+
+  const handleEditDragEnd = () => {
+    setEditDraggedIndex(null);
+  };
+
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       navigate("/auth");
@@ -382,7 +494,6 @@ export default function Admin() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Basic validation
     if (!form.name.trim()) {
       toast("Please enter a product name.");
       return;
@@ -413,8 +524,13 @@ export default function Admin() {
 
     try {
       setIsSubmitting(true);
-      const cleanedUploaded = uploadedUrls.map((u) => u.split("?")[0]);
-      const cleanedVideoUploaded = uploadedVideoUrls.map((u) => u.split("?")[0]);
+      // Clean URLs by removing query params and blob URLs
+      const cleanedUploaded = uploadedUrls
+        .filter(u => !u.startsWith('blob:'))
+        .map((u) => u.split("?")[0]);
+      const cleanedVideoUploaded = uploadedVideoUrls
+        .filter(u => !u.startsWith('blob:'))
+        .map((u) => u.split("?")[0]);
       
       await createProduct({
         name: form.name.trim(),
@@ -433,7 +549,6 @@ export default function Admin() {
         inStock: form.inStock,
       });
       toast("Product added successfully!");
-      // Reset minimal fields; keep category for speed. Clear uploads as well.
       setForm((prev) => ({
         ...prev,
         name: "",
@@ -529,8 +644,12 @@ export default function Admin() {
       .map((s) => s.trim())
       .filter(Boolean);
 
-    const cleanedEditUploaded = editUploadedUrls.map((u) => u.split("?")[0]);
-    const cleanedEditVideoUploaded = editUploadedVideoUrls.map((u) => u.split("?")[0]);
+    const cleanedEditUploaded = editUploadedUrls
+      .filter(u => !u.startsWith('blob:'))
+      .map((u) => u.split("?")[0]);
+    const cleanedEditVideoUploaded = editUploadedVideoUrls
+      .filter(u => !u.startsWith('blob:'))
+      .map((u) => u.split("?")[0]);
     const combinedImages: Array<string> = [...cleanedEditUploaded, ...imagesArray];
     const combinedVideos: Array<string> = [...cleanedEditVideoUploaded, ...videosArray];
 
@@ -719,7 +838,7 @@ export default function Admin() {
                   </Select>
                 </div>
 
-                {/* Add: Device upload section */}
+                {/* Updated: Device upload section with drag-and-drop */}
                 <div className="space-y-2">
                   <Label htmlFor="upload">Upload Images (multiple)</Label>
                   <Input
@@ -732,12 +851,29 @@ export default function Admin() {
                   {uploadedUrls.length > 0 && (
                     <div className="mt-2 grid grid-cols-3 gap-2">
                       {uploadedUrls.map((url, idx) => (
-                        <div key={url + idx} className="relative">
+                        <div
+                          key={url + idx}
+                          draggable
+                          onDragStart={() => handleDragStart(idx)}
+                          onDragOver={(e) => handleDragOver(e, idx)}
+                          onDragEnd={handleDragEnd}
+                          className={`relative cursor-move group ${
+                            draggedIndex === idx ? 'opacity-50' : ''
+                          }`}
+                        >
                           <img
                             src={url}
                             alt={`uploaded-${idx}`}
                             className="h-20 w-full object-cover rounded-md border"
                           />
+                          {/* Number badge */}
+                          <div className="absolute top-1 left-1 bg-black/80 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                            {idx + 1}
+                          </div>
+                          {/* Drag handle */}
+                          <div className="absolute top-1 left-7 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <GripVertical className="h-4 w-4 text-white drop-shadow-lg" />
+                          </div>
                           <button
                             type="button"
                             className="absolute top-1 right-1 text-[10px] px-2 py-0.5 rounded bg-black/70 text-white"
@@ -752,6 +888,9 @@ export default function Admin() {
                       ))}
                     </div>
                   )}
+                  <p className="text-xs text-gray-500">
+                    Drag images to reorder them. First image will be the main product image.
+                  </p>
                 </div>
 
                 {/* Add: Video upload section */}
@@ -1032,7 +1171,7 @@ export default function Admin() {
         </div>
       </div>
 
-      {/* Edit Dialog */}
+      {/* Edit Dialog with drag-and-drop */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
         <DialogContent className="sm:max-w-lg max-h-[90vh] flex flex-col">
           <DialogHeader>
