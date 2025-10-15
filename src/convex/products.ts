@@ -182,6 +182,30 @@ export const getAllBrands = query({
   },
 });
 
+export const getProductCountByCategory = query({
+  args: {},
+  handler: async (ctx) => {
+    const allProducts = await ctx.db.query("products").collect();
+    
+    const categoryCounts: Record<string, number> = {};
+    
+    allProducts.forEach(product => {
+      const category = product.category || "uncategorized";
+      categoryCounts[category] = (categoryCounts[category] || 0) + 1;
+    });
+    
+    return {
+      total: allProducts.length,
+      byCategory: categoryCounts,
+      products: allProducts.map(p => ({
+        name: p.name,
+        category: p.category,
+        brand: p.brand
+      }))
+    };
+  },
+});
+
 export const deleteProduct = mutation({
   args: { id: v.id("products") },
   handler: async (ctx, args) => {
