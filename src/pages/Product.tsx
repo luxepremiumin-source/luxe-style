@@ -374,8 +374,9 @@ export default function ProductPage() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 hover:bg-white/10 transition-colors duration-200"
+                  className="h-8 w-8 hover:bg-white/10 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={() => setQty((q) => Math.max(0, q - 1))}
+                  disabled={!product.inStock}
                 >
                   <Minus className="h-4 w-4" />
                 </Button>
@@ -383,8 +384,9 @@ export default function ProductPage() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 hover:bg-white/10 transition-colors duration-200"
+                  className="h-8 w-8 hover:bg-white/10 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={() => setQty((q) => Math.min(10, q + 1))}
+                  disabled={!product.inStock}
                 >
                   <Plus className="h-4 w-4" />
                 </Button>
@@ -394,9 +396,10 @@ export default function ProductPage() {
             <div className="mt-6 space-y-3">
               <Button
                 onClick={handleAddToCart}
-                className="w-full h-12 rounded-full bg-white text-black hover:bg-white/90 transition-colors duration-200"
+                className="w-full h-12 rounded-full bg-white text-black hover:bg-white/90 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={!product.inStock}
               >
-                Add to cart
+                {product.inStock ? "Add to cart" : "Out of Stock"}
               </Button>
               <Button
                 className="w-full h-12 rounded-full bg-[#25D366] text-white hover:bg-[#20bd5b] transition-colors duration-200"
@@ -432,9 +435,10 @@ export default function ProductPage() {
             </div>
             <Button
               onClick={handleAddToCart}
-              className="h-12 px-6 rounded-full bg-white text-black hover:bg-white/90 transition-colors duration-200"
+              className="h-12 px-6 rounded-full bg-white text-black hover:bg-white/90 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={!product.inStock}
             >
-              Add to cart
+              {product.inStock ? "Add to cart" : "Out of Stock"}
             </Button>
             <Button
               onClick={handleWhatsAppOrder}

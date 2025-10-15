@@ -277,7 +277,7 @@ export default function CategoryPage() {
 
                           <div className="mt-2 sm:mt-3 flex flex-col sm:flex-row gap-2">
                             <Button
-                              className="h-8 sm:h-9 px-3 sm:px-4 text-xs sm:text-sm rounded-full bg-white text-black hover:bg-white/90"
+                              className="h-8 sm:h-9 px-3 sm:px-4 text-xs sm:text-sm rounded-full bg-white text-black hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed"
                               onClick={async (e) => {
                                 e.stopPropagation();
                                 if (typeof window !== "undefined") {
@@ -285,8 +285,9 @@ export default function CategoryPage() {
                                 }
                                 await handleAddToCart(product._id as any);
                               }}
+                              disabled={!product.inStock}
                             >
-                              Add to Cart
+                              {product.inStock ? "Add to Cart" : "Out of Stock"}
                             </Button>
 
                             <Button
