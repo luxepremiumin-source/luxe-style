@@ -201,13 +201,7 @@ export default function ProductPage() {
                     fetchPriority="high"
                     decoding="sync"
                   />
-                  {!product.inStock && (
-                    <div className="absolute inset-0 flex items-center justify-center z-10">
-                      <span className="text-red-500 text-sm font-semibold tracking-wider" style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
-                        OUT OF STOCK
-                      </span>
-                    </div>
-                  )}
+                  
                   <ProductZoom images={images} productName={product.name} initialIndex={activeIndex} />
                   
                   {/* Navigation overlays - only show if multiple images */}
@@ -278,6 +272,11 @@ export default function ProductPage() {
           </Card>
 
           <div>
+            {!product.inStock && (
+              <p className="text-red-500 text-xs font-medium tracking-wide mb-2" style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+                OUT OF STOCK
+              </p>
+            )}
             <div className="flex items-start justify-between">
               <p className="uppercase tracking-wide text-sm text-white/60 mb-2">
                 {prettyName[product.category] ?? product.category}
