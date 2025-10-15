@@ -146,14 +146,11 @@ export default function Admin() {
   const handleFilesUpload = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
     try {
-      setIsSubmitting(true);
       await uploadMediaFiles(Array.from(files), false);
       toast("Media uploaded");
     } catch (err) {
       console.error(err);
       toast("Failed to upload media. Please try again.");
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -161,14 +158,11 @@ export default function Admin() {
   const handleEditFilesUpload = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
     try {
-      setIsSubmitting(true);
       await uploadMediaFiles(Array.from(files), true);
       toast("Media uploaded");
     } catch (err) {
       console.error(err);
       toast("Failed to upload media. Please try again.");
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -329,6 +323,10 @@ export default function Admin() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Prevent double submission
+    if (isSubmitting) return;
+    
     if (!form.name.trim()) {
       toast("Please enter a product name.");
       return;
@@ -843,7 +841,7 @@ export default function Admin() {
                 </div>
 
                 <div className="flex justify-end">
-                  <Button type="submit" disabled={isSubmitting || submitting}>
+                  <Button type="submit" disabled={isSubmitting}>
                     {isSubmitting ? "Adding..." : "Add Product"}
                   </Button>
                 </div>
