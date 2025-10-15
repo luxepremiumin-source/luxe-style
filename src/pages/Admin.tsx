@@ -356,9 +356,15 @@ export default function Admin() {
 
     // Check if any media is still uploading
     const hasBlobUrls = uploadedMedia.some(item => item.url.startsWith('blob:'));
-    if (hasBlobUrls && uploadingInBackground) {
-      toast("Media is still uploading. Please wait a moment...");
-      return;
+    if (hasBlobUrls) {
+      if (uploadingInBackground) {
+        toast("Media is still uploading. Please wait a moment...");
+        return;
+      } else {
+        // Blob URLs present but not uploading - likely an error occurred
+        toast("Some media failed to upload. Please remove and re-upload them.");
+        return;
+      }
     }
 
     try {
