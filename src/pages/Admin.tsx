@@ -332,9 +332,9 @@ export default function Admin() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (isSubmitting) return;
-    
+
+    // Validate text fields
     if (!form.name.trim()) {
       toast("Please enter a product name.");
       return;
@@ -354,41 +354,47 @@ export default function Admin() {
       return;
     }
 
-    // Check if any media is still uploading
-    const hasBlobUrls = uploadedMedia.some(item => item.url.startsWith('blob:'));
-    if (hasBlobUrls) {
-      if (uploadingInBackground) {
-        toast("Media is still uploading. Please wait a moment...");
-        return;
-      } else {
-        // Blob URLs present but not uploading - likely an error occurred
-        toast("Some media failed to upload. Please remove and re-upload them.");
-        return;
-      }
+    // Block submit while any media is still uploading
+    if (uploadingInBackground) {
+      toast.error("Media is still uploading. Please wait a moment and try again.");
+      return;
+    }
+    // Block submit if any media preview still points to a blob URL
+    if (uploadedMedia.some(item => item.url.startsWith("blob:"))) {
+      toast.error("Please wait for all media to finish uploading before submitting.");
+      return;
     }
 
+    setIsSubmitting(true);
+
     try {
-      setIsSubmitting(true);
-      
       const cleanedMedia = uploadedMedia
-        .filter(item => !item.url.startsWith('blob:'))
+        .filter(item => !item.url.startsWith("blob:"))
         .map(item => ({ ...item, url: item.url.split("?")[0] }));
-      
-      const images = cleanedMedia.filter(item => item.type === 'image').map(item => item.url);
-      const videos = cleanedMedia.filter(item => item.type === 'video').map(item => item.url);
-      
+
+      const images = cleanedMedia.filter(item => item.type === "image").map(item => item.url);
+      const videos = cleanedMedia.filter(item => item.type === "video").map(item => item.url);
+
+      // Require at least one real image to avoid placeholder saves
+      if (images.length === 0) {
+        toast.error("Please upload at least one product image before submitting.");
+        setIsSubmitting(false);
+        return;
+      }
+
       await createProduct({
         name: form.name.trim(),
         description: form.description.trim(),
         price: priceNum,
         originalPrice: originalPriceNum,
         category: form.category,
-        images: images.length > 0 ? images : ["/api/placeholder/400/400"],
+        images, // no placeholder fallback
         videos: videos.length > 0 ? videos : undefined,
         colors: form.colors.length > 0 ? form.colors : undefined,
         featured: form.featured,
         inStock: form.inStock,
       });
+
       toast("Product added successfully!");
       setForm((prev) => ({
         ...prev,
@@ -468,9 +474,15 @@ export default function Admin() {
     setIsEditOpen(true);
   };
 
-  // Update submitEdit to use unified reorder list when available and avoid duplications
   const submitEdit = async () => {
     if (!editId) return;
+
+    // Prevent saving while media is still uploading
+    if (uploadingInBackground && editUploadedMedia.some(item => item.url.startsWith("blob:"))) {
+      toast.error("Please wait for media uploads to finish before saving changes.");
+      return;
+    }
+
     const priceNum = Number(editForm.price);
     if (Number.isNaN(priceNum) || priceNum <= 0) {
       toast("Please enter a valid price.");
