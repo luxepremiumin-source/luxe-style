@@ -953,7 +953,6 @@ export default function Admin() {
                   {filteredProducts
                     .slice()
                     .reverse()
-                    .slice(0, 12)
                     .map((p) => (
                       <div
                         key={p._id}
