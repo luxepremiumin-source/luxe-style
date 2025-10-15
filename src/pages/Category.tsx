@@ -36,15 +36,37 @@ export default function CategoryPage() {
   const [activeImageIndices, setActiveImageIndices] = useState<Record<string, number>>({});
   const [hoverIntervals, setHoverIntervals] = useState<Record<string, NodeJS.Timeout>>({});
 
-  // Preload all product images for smooth transitions
+  // Aggressively preload all product images for instant display
   useEffect(() => {
     if (!products || products.length === 0) return;
     
     const imageUrls = products.flatMap(p => p.images ?? []);
+    
+    // Create link preload tags for critical images
+    const fragment = document.createDocumentFragment();
+    imageUrls.slice(0, 12).forEach(url => {
+      const link = document.createElement('link');
+      link.rel = 'preload';
+      link.as = 'image';
+      link.href = url;
+      fragment.appendChild(link);
+    });
+    document.head.appendChild(fragment);
+    
+    // Preload remaining images
     imageUrls.forEach(url => {
       const img = new Image();
       img.src = url;
     });
+    
+    return () => {
+      // Cleanup preload links on unmount
+      document.querySelectorAll('link[rel="preload"][as="image"]').forEach(link => {
+        if (imageUrls.includes(link.getAttribute('href') || '')) {
+          link.remove();
+        }
+      });
+    };
   }, [products]);
 
   // Cleanup intervals on unmount
@@ -215,10 +237,10 @@ export default function CategoryPage() {
                                 key={`${product._id}-${activeIndex}`}
                                 src={currentImage}
                                 alt={product.name}
-                                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${!product.inStock ? 'brightness-50' : ''}`}
-                                loading={index < 4 ? "eager" : "lazy"}
-                                fetchPriority={index < 2 ? "high" : "auto"}
-                                decoding="async"
+                                className={`absolute inset-0 w-full h-full object-cover ${!product.inStock ? 'brightness-50' : ''}`}
+                                loading="eager"
+                                fetchPriority="high"
+                                decoding="sync"
                                 onError={(e) => {
                                   const imgs: Array<string> = Array.isArray(product.images) ? product.images : [];
                                   const current = e.currentTarget.getAttribute("src") || "";

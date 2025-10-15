@@ -13,6 +13,7 @@ export default function HeroSection() {
           className="absolute inset-0 h-full w-full object-cover touch-none"
           loading="eager"
           fetchPriority="high"
+          decoding="sync"
           initial={{ scale: 1.06 }}
           animate={{ scale: [1.06, 1.14, 1.06] }}
           transition={{ duration: 9, ease: "easeInOut", repeat: Infinity }}

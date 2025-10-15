@@ -117,70 +117,55 @@ export default function CategorySection() {
   const [watchesLoaded, setWatchesLoaded] = useState(false);
   const [beltsLoaded, setBeltsLoaded] = useState(false);
 
-  // Preload all images for smooth transitions - Goggles
+  // Aggressively preload all carousel images with link preload tags
   useEffect(() => {
+    const allImages = categories.flatMap(c => c.images || []);
+    
+    // Create link preload tags for instant loading
+    const fragment = document.createDocumentFragment();
+    allImages.forEach(url => {
+      const link = document.createElement('link');
+      link.rel = 'preload';
+      link.as = 'image';
+      link.href = url;
+      fragment.appendChild(link);
+    });
+    document.head.appendChild(fragment);
+    
+    // Preload images in parallel
     const gogglesCategory = categories.find(c => c.name === "Premium Goggles");
-    if (gogglesCategory?.images) {
-      const imagePromises = gogglesCategory.images.map((src) => {
-        return new Promise((resolve, reject) => {
-          const img = new Image();
-          img.src = src;
-          img.onload = resolve;
-          img.onerror = reject;
-        });
-      });
-
-      Promise.all(imagePromises)
-        .then(() => setImagesLoaded(true))
-        .catch((err) => {
-          console.error("Error preloading images:", err);
-          setImagesLoaded(true);
-        });
-    }
-  }, []);
-
-  // Preload watch images
-  useEffect(() => {
     const watchesCategory = categories.find(c => c.name === "Designer Watches");
-    if (watchesCategory?.images) {
-      const imagePromises = watchesCategory.images.map((src) => {
-        return new Promise((resolve, reject) => {
-          const img = new Image();
-          img.src = src;
-          img.onload = resolve;
-          img.onerror = reject;
-        });
-      });
-
-      Promise.all(imagePromises)
-        .then(() => setWatchesLoaded(true))
-        .catch((err) => {
-          console.error("Error preloading watch images:", err);
-          setWatchesLoaded(true);
-        });
-    }
-  }, []);
-
-  // Preload belt images
-  useEffect(() => {
     const beltsCategory = categories.find(c => c.name === "Luxury Belts");
-    if (beltsCategory?.images) {
-      const imagePromises = beltsCategory.images.map((src) => {
-        return new Promise((resolve, reject) => {
+    
+    const loadImages = (images: string[]) => {
+      return Promise.all(images.map(src => {
+        return new Promise((resolve) => {
           const img = new Image();
           img.src = src;
           img.onload = resolve;
-          img.onerror = reject;
+          img.onerror = resolve; // Resolve even on error to not block
         });
+      }));
+    };
+    
+    Promise.all([
+      gogglesCategory?.images ? loadImages(gogglesCategory.images) : Promise.resolve(),
+      watchesCategory?.images ? loadImages(watchesCategory.images) : Promise.resolve(),
+      beltsCategory?.images ? loadImages(beltsCategory.images) : Promise.resolve(),
+    ]).then(() => {
+      setImagesLoaded(true);
+      setWatchesLoaded(true);
+      setBeltsLoaded(true);
+    });
+    
+    return () => {
+      // Cleanup preload links
+      document.querySelectorAll('link[rel="preload"][as="image"]').forEach(link => {
+        if (allImages.includes(link.getAttribute('href') || '')) {
+          link.remove();
+        }
       });
-
-      Promise.all(imagePromises)
-        .then(() => setBeltsLoaded(true))
-        .catch((err) => {
-          console.error("Error preloading belt images:", err);
-          setBeltsLoaded(true);
-        });
-    }
+    };
   }, []);
 
   // Auto-slide effect for Premium Goggles - only start after images are loaded
