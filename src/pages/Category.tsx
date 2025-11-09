@@ -253,7 +253,7 @@ export default function CategoryPage() {
                                       const imgs: Array<string> = Array.isArray(product.images) ? product.images : [];
                                       const current = e.currentTarget.getAttribute("src") || "";
                                       const idx = Math.max(0, imgs.findIndex((u) => u === current));
-                                      const next = imgs[idx + 1] || "/api/placeholder/400/400";
+                                      const next = imgs[idx + 1] || "https://picsum.photos/seed/luxe-400/400";
                                       if (current !== next) {
                                         e.currentTarget.src = next;
                                       }

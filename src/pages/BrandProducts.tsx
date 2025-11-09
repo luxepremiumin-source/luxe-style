@@ -181,6 +181,9 @@ export default function BrandProducts() {
                                 loading="eager"
                                 fetchPriority={index < 6 ? "high" : "auto"}
                                 decoding="async"
+                                onError={(e) => {
+                                  e.currentTarget.src = "https://picsum.photos/seed/luxe-400/400";
+                                }}
                               />
 
                               {hasMultipleImages && (

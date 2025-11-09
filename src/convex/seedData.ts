@@ -1,4 +1,5 @@
 import { mutation } from "./_generated/server";
+import { v } from "convex/values";
 
 export const seedProducts = mutation({
   args: {},
@@ -229,263 +230,145 @@ export const addTomfordGoggles = mutation({
 export const seedAllProducts = mutation({
   args: {},
   handler: async (ctx) => {
-    type P = {
+    const toSlug = (s: string) =>
+      s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+
+    const items: Array<{
       name: string;
       description: string;
       price: number;
       originalPrice?: number;
-      category: string;
-      images: Array<string>;
-      videos?: Array<string>;
-      colors?: Array<string>;
+      category: "goggles" | "watches" | "belts" | "gift box";
       brand?: string;
+      images: string[];
+      colors?: string[];
       featured: boolean;
       inStock: boolean;
+    }> = [];
+
+    const add = (p: Omit<(typeof items)[number], "images"> & { images?: string[] }) => {
+      const slug = toSlug(`${p.category}-${p.name}`);
+      const image = p.images?.[0] ?? `https://picsum.photos/seed/${slug}/600/600`;
+      const image2 = `https://picsum.photos/seed/${slug}-2/600/600`;
+      items.push({
+        ...p,
+        images: [image, image2],
+      });
     };
 
-    const items: Array<P> = [
-      // Goggles
-      {
-        name: "Tomford premium",
-        description: "Tomford premium eyewear with elegant acetate frame.",
-        price: 999,
-        originalPrice: 2250,
+    // Goggles (8+)
+    [
+      { name: "Tomford Premium", brand: "Tomford", price: 3499, featured: true },
+      { name: "Rayban Classic", brand: "Rayban", price: 2999, featured: true },
+      { name: "Oakley Sport", brand: "Oakley", price: 2799, featured: false },
+      { name: "Gucci Vintage", brand: "Gucci", price: 3999, featured: false },
+      { name: "Prada Square", brand: "Prada", price: 3699, featured: false },
+      { name: "Versace Bold", brand: "Versace", price: 4299, featured: false },
+      { name: "Dior Minimal", brand: "Dior", price: 3899, featured: false },
+      { name: "Armani Pilot", brand: "Armani", price: 3199, featured: false },
+    ].forEach(({ name, brand, price, featured }) =>
+      add({
+        name,
+        description: `${name} premium sunglasses with UV protection`,
+        price,
+        originalPrice: Math.round(price * 1.25),
         category: "goggles",
-        images: [
-          "https://images.unsplash.com/photo-1511497584788-876760111969?w=800&q=80&auto=format&fit=crop",
-          "https://images.unsplash.com/photo-1516822003754-cca485356ecb?w=800&q=80&auto=format&fit=crop",
-        ],
-        brand: "Tom Ford",
-        featured: true,
+        brand,
+        colors: ["black", "gold", "silver"],
+        featured,
         inStock: true,
-      },
-      {
-        name: "Aviator Pro Goggles",
-        description: "Premium aviator-style goggles with UV protection and anti-glare coating.",
-        price: 2999,
-        originalPrice: 4999,
-        category: "goggles",
-        images: [
-          "https://images.unsplash.com/photo-1514846160150-2cfbfb2d2f66?w=800&q=80&auto=format&fit=crop",
-        ],
-        brand: "Ray-Ban",
-        featured: true,
-        inStock: true,
-      },
-      {
-        name: "Sport Edition Goggles",
-        description: "High-performance sports goggles with impact-resistant lenses.",
-        price: 3499,
-        originalPrice: 5499,
-        category: "goggles",
-        images: [
-          "https://images.unsplash.com/photo-1511497584788-876760111969?w=800&q=80&auto=format&fit=crop",
-        ],
-        brand: "Oakley",
-        featured: true,
-        inStock: true,
-      },
-      {
-        name: "Classic Round Goggles",
-        description: "Timeless round-frame goggles with modern tech and superior comfort.",
-        price: 2499,
-        originalPrice: 3999,
-        category: "goggles",
-        images: [
-          "https://images.unsplash.com/photo-1509347528160-9a9e33742cdb?w=800&q=80&auto=format&fit=crop",
-        ],
-        brand: "Ray-Ban",
-        featured: false,
-        inStock: true,
-      },
+      })
+    );
 
-      // Watches
-      {
-        name: "Guess watch",
-        description: "Stylish Guess watch with a premium steel bracelet and minimalist dial.",
-        price: 2249,
-        originalPrice: 4999,
+    // Watches (8+)
+    [
+      { name: "Guess Watch", brand: "Guess", price: 4999, featured: true },
+      { name: "Fossil Chrono", brand: "Fossil", price: 5499, featured: true },
+      { name: "Casio Edifice", brand: "Casio", price: 3799, featured: false },
+      { name: "Seiko 5", brand: "Seiko", price: 5699, featured: false },
+      { name: "Citizen Eco", brand: "Citizen", price: 5899, featured: false },
+      { name: "Tissot PRX", brand: "Tissot", price: 7499, featured: false },
+      { name: "Timex Expedition", brand: "Timex", price: 2999, featured: false },
+      { name: "Michael Kors", brand: "MichaelKors", price: 6299, featured: false },
+    ].forEach(({ name, brand, price, featured }) =>
+      add({
+        name,
+        description: `${name} luxury timepiece`,
+        price,
+        originalPrice: Math.round(price * 1.2),
         category: "watches",
-        images: [
-          "https://images.unsplash.com/photo-1518546305927-5a555bb7020d?w=800&q=80&auto=format&fit=crop",
-          "https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=800&q=80&auto=format&fit=crop",
-        ],
-        brand: "Guess",
-        featured: true,
+        brand,
+        colors: ["black", "brown", "blue"],
+        featured,
         inStock: true,
-      },
-      {
-        name: "Classic Chronograph",
-        description: "Elegant chronograph with precision movement and leather strap.",
-        price: 5999,
-        originalPrice: 8999,
-        category: "watches",
-        images: [
-          "https://images.unsplash.com/photo-1517249361621-f11084eb8bd0?w=800&q=80&auto=format&fit=crop",
-        ],
-        brand: "Fossil",
-        featured: true,
-        inStock: true,
-      },
-      {
-        name: "Digital Smart Watch",
-        description: "Modern smartwatch with fitness tracking and notifications.",
-        price: 4499,
-        originalPrice: 6999,
-        category: "watches",
-        images: [
-          "https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=800&q=80&auto=format&fit=crop",
-        ],
-        brand: "Amazfit",
-        featured: false,
-        inStock: true,
-      },
-      {
-        name: "Luxury Dress Watch",
-        description: "Sophisticated dress watch with minimalist design.",
-        price: 7999,
-        originalPrice: 12999,
-        category: "watches",
-        images: [
-          "https://images.unsplash.com/photo-1518546305927-5a555bb7020d?w=800&q=80&auto=format&fit=crop",
-        ],
-        brand: "Tissot",
-        featured: true,
-        inStock: true,
-      },
-      {
-        name: "Casio Edifice",
-        description: "Sporty chronograph with stainless steel case.",
-        price: 6999,
-        originalPrice: 9999,
-        category: "watches",
-        images: [
-          "https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=800&q=80&auto=format&fit=crop",
-        ],
-        brand: "Casio",
-        featured: false,
-        inStock: true,
-      },
+      })
+    );
 
-      // Belts
-      {
-        name: "Coach belt",
-        description: "Coach belt with premium finish.",
-        price: 849,
-        originalPrice: 2000,
+    // Belts (8+)
+    [
+      { name: "Coach Belt", brand: "Coach", price: 3199, featured: true },
+      { name: "Gucci Leather Belt", brand: "Gucci", price: 5299, featured: true },
+      { name: "Hermes H Belt", brand: "Hermes", price: 8999, featured: false },
+      { name: "Louis Vuitton Damier Belt", brand: "LouisVuitton", price: 8299, featured: false },
+      { name: "Calvin Klein Formal Belt", brand: "CalvinKlein", price: 2799, featured: false },
+      { name: "Tommy Hilfiger Casual Belt", brand: "TommyHilfiger", price: 2599, featured: false },
+      { name: "Armani Exchange Belt", brand: "Armani", price: 3499, featured: false },
+      { name: "Hugo Boss Reversible Belt", brand: "HugoBoss", price: 3899, featured: false },
+    ].forEach(({ name, brand, price, featured }) =>
+      add({
+        name,
+        description: `${name} premium leather belt`,
+        price,
+        originalPrice: Math.round(price * 1.15),
         category: "belts",
-        images: [
-          "https://images.unsplash.com/photo-1518544881480-67e1d6b1e64e?w=800&q=80&auto=format&fit=crop",
-          "https://images.unsplash.com/photo-1585386959984-a41552231681?w=800&q=80&auto=format&fit=crop",
-        ],
-        brand: "Coach",
-        featured: true,
+        brand,
+        colors: ["black", "brown"],
+        featured,
         inStock: true,
-      },
-      {
-        name: "Executive Leather Belt",
-        description: "Premium genuine leather belt with polished buckle.",
-        price: 1999,
-        originalPrice: 2999,
-        category: "belts",
-        images: [
-          "https://images.unsplash.com/photo-1520975964732-35ce1b6b140b?w=800&q=80&auto=format&fit=crop",
-        ],
-        brand: "Hidesign",
-        featured: true,
-        inStock: true,
-      },
-      {
-        name: "Casual Canvas Belt",
-        description: "Durable canvas belt ideal for casual wear.",
-        price: 1299,
-        originalPrice: 1999,
-        category: "belts",
-        images: [
-          "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=800&q=80&auto=format&fit=crop",
-        ],
-        brand: "Woodland",
-        featured: false,
-        inStock: true,
-      },
-      {
-        name: "Designer Chain Belt",
-        description: "Stylish chain belt with unique design elements.",
-        price: 2499,
-        originalPrice: 3999,
-        category: "belts",
-        images: [
-          "https://images.unsplash.com/photo-1518544881480-67e1d6b1e64e?w=800&q=80&auto=format&fit=crop",
-        ],
-        brand: "Gucci",
-        featured: false,
-        inStock: true,
-      },
+      })
+    );
 
-      // Gift box
-      {
-        name: "Rose Gift Box",
-        description: "Elegant rose-themed gift box perfect for special occasions.",
-        price: 1499,
-        originalPrice: 2499,
+    // Gift Box (8+)
+    [
+      { name: "Luxury Gift Box Small", price: 999, featured: true },
+      { name: "Luxury Gift Box Medium", price: 1499, featured: true },
+      { name: "Luxury Gift Box Large", price: 1999, featured: false },
+      { name: "Couple Watch Gift Box", price: 4499, featured: false },
+      { name: "Sunglasses Gift Box", price: 2999, featured: false },
+      { name: "Premium Wallet Gift Box", price: 2199, featured: false },
+      { name: "Belt Gift Combo", price: 3599, featured: false },
+      { name: "Ultimate Accessory Hamper", price: 6999, featured: false },
+    ].forEach(({ name, price, featured }) =>
+      add({
+        name,
+        description: `${name} curated for special occasions`,
+        price,
+        originalPrice: Math.round(price * 1.2),
         category: "gift box",
-        images: [
-          "https://images.unsplash.com/photo-1513791051634-e8952db8bed3?w=800&q=80&auto=format&fit=crop",
-        ],
         brand: "Luxe",
-        featured: true,
+        colors: ["black", "gold"],
+        featured,
         inStock: true,
-      },
-      {
-        name: "Deluxe Gift Box",
-        description: "Premium curated gift box with multiple accessories.",
-        price: 1999,
-        originalPrice: 3299,
-        category: "gift box",
-        images: [
-          "https://images.unsplash.com/photo-1512909006721-3d6018887383?w=800&q=80&auto=format&fit=crop",
-        ],
-        brand: "Luxe",
-        featured: true,
-        inStock: true,
-      },
-      {
-        name: "Classic Gift Box",
-        description: "Timeless gift box with elegant packaging.",
-        price: 1299,
-        originalPrice: 1999,
-        category: "gift box",
-        images: [
-          "https://images.unsplash.com/photo-1489648022183-2f6a1a7a8b19?w=800&q=80&auto=format&fit=crop",
-        ],
-        brand: "Luxe",
-        featured: false,
-        inStock: true,
-      },
-    ];
+      })
+    );
 
+    // Upsert by (category + name)
     let inserted = 0;
     let updated = 0;
 
     for (const p of items) {
-      const inCategory = await ctx.db
+      const existing = await ctx.db
         .query("products")
         .withIndex("by_category", (q) => q.eq("category", p.category))
         .collect();
 
-      const match = inCategory.find(
-        (x) => x.name.toLowerCase() === p.name.toLowerCase()
-      );
-
+      const match = existing.find((e) => e.name.toLowerCase() === p.name.toLowerCase());
       if (match) {
         await ctx.db.patch(match._id, {
-          name: p.name,
           description: p.description,
           price: p.price,
           originalPrice: p.originalPrice,
-          category: p.category,
           images: p.images,
-          videos: p.videos,
           colors: p.colors,
           brand: p.brand,
           featured: p.featured,

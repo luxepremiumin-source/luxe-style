@@ -149,6 +149,9 @@ export default function SearchResults() {
                               alt={product.name}
                               className="absolute inset-0 w-full h-full object-cover"
                               loading="lazy"
+                              onError={(e) => {
+                                e.currentTarget.src = "https://picsum.photos/seed/luxe-300/300";
+                              }}
                             />
                           ) : (
                             <div className="absolute inset-0 bg-gray-200 flex items-center justify-center">
