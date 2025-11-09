@@ -80,9 +80,18 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
     } catch (error) {
       console.error("OTP verification error:", error);
 
-      setError("The verification code you entered is incorrect.");
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      
+      // Provide more specific error messages
+      if (errorMsg.includes("expired")) {
+        setError("The verification code has expired. Please request a new one.");
+      } else if (errorMsg.includes("invalid") || errorMsg.includes("incorrect")) {
+        setError("The verification code you entered is incorrect. Please try again.");
+      } else {
+        setError("Verification failed. Please try again or request a new code.");
+      }
+      
       setIsLoading(false);
-
       setOtp("");
     }
   };
