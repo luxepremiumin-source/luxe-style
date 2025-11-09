@@ -18,6 +18,8 @@ const prettyName: Record<string, string> = {
   goggles: "Goggles",
   watches: "Watches",
   belts: "Belts",
+  // Add: support for Gift Box mapping
+  "gift box": "Gift Box",
 };
 
 export default function ProductPage() {
@@ -34,12 +36,12 @@ export default function ProductPage() {
     productId: id as any,
   });
   
-  const [qty, setQty] = useState(0);
+  const [qty, setQty] = useState(1);
   const supportsColors = product?.colors && product.colors.length > 0;
   const [color, setColor] = useState<string>("");
   
   const supportsPackaging = (product?.category ?? "").toLowerCase() === "goggles";
-  const [packaging, setPackaging] = useState<"indian" | "imported" | "without">("indian");
+  const [packaging, setPackaging] = useState<"indian" | "imported" | "without">("without");
   const [activeIndex, setActiveIndex] = useState(0);
   const [showStickyBar, setShowStickyBar] = useState(false);
 
@@ -65,10 +67,10 @@ export default function ProductPage() {
     }
   }, [color, product?.colors, product?.images, supportsColors]);
   
-  // Reset packaging when product changes
+  // Reset packaging when product changes (use "without" as default where supported)
   useEffect(() => {
     if (supportsPackaging) {
-      setPackaging("indian");
+      setPackaging("without");
     }
   }, [product?._id, supportsPackaging]);
 
@@ -113,6 +115,11 @@ export default function ProductPage() {
 
   const handleAddToCart = async () => {
     try {
+      if (qty < 1) {
+        setQty(1);
+        toast("Quantity set to 1");
+        // continue with adding after correcting qty
+      }
       let currentUserId = user?._id;
 
       if (!isAuthenticated || !currentUserId) {
@@ -219,6 +226,14 @@ export default function ProductPage() {
                         loading="eager"
                         fetchPriority="high"
                         decoding="async"
+                        // Add: fallback image to avoid broken images
+                        onError={(e) => {
+                          const img = e.currentTarget as HTMLImageElement;
+                          if (img.dataset.fallback !== "1") {
+                            img.src = "/logo_bg.png";
+                            img.dataset.fallback = "1";
+                          }
+                        }}
                       />
                       <ProductZoom images={images} productName={product.name} initialIndex={activeIndex} />
                     </>
@@ -291,6 +306,14 @@ export default function ProductPage() {
                         alt={`${product.name} ${idx + 1}`}
                         className="h-full w-full object-cover"
                         loading="lazy"
+                        // Add: fallback for thumbnails
+                        onError={(e) => {
+                          const img = e.currentTarget as HTMLImageElement;
+                          if (img.dataset.fallback !== "1") {
+                            img.src = "/logo_bg.png";
+                            img.dataset.fallback = "1";
+                          }
+                        }}
                       />
                     </button>
                   ))}
@@ -427,7 +450,7 @@ export default function ProductPage() {
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8 hover:bg-white/10 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                  onClick={() => setQty((q) => Math.max(0, q - 1))}
+                  onClick={() => setQty((q) => Math.max(1, q - 1))}
                   disabled={!product.inStock}
                 >
                   <Minus className="h-4 w-4" />
