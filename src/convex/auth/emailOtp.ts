@@ -4,13 +4,16 @@ import { alphabet, generateRandomString } from "oslo/crypto";
 
 export const emailOtp = Email({
   id: "email-otp",
-  maxAge: 60 * 30, // Increased from 15 to 30 minutes for better UX
-  // This function can be asynchronous
+  maxAge: 60 * 30, // 30 minutes for OTP validity
   generateVerificationToken() {
-    return generateRandomString(6, alphabet("0-9"));
+    const token = generateRandomString(6, alphabet("0-9"));
+    console.log(`Generated OTP token: ${token}`);
+    return token;
   },
   async sendVerificationRequest({ identifier: email, provider, token }) {
     try {
+      console.log(`Attempting to send OTP to ${email} with token: ${token}`);
+      
       const response = await axios.post(
         "https://email.vly.ai/send_otp",
         {
@@ -22,14 +25,17 @@ export const emailOtp = Email({
           headers: {
             "x-api-key": "vlytothemoon2025",
           },
-          timeout: 10000, // Add timeout to prevent hanging
+          timeout: 15000,
         },
       );
       
-      // Log for debugging
-      console.log(`OTP sent to ${email}:`, response.status);
+      console.log(`OTP successfully sent to ${email}. Response status: ${response.status}`);
+      console.log(`Response data:`, response.data);
     } catch (error) {
-      console.error(`Failed to send OTP to ${email}:`, error);
+      console.error(`Failed to send OTP to ${email}:`, error instanceof Error ? error.message : String(error));
+      if (axios.isAxiosError(error)) {
+        console.error(`Axios error details:`, error.response?.data);
+      }
       throw new Error(`Failed to send OTP: ${error instanceof Error ? error.message : String(error)}`);
     }
   },
