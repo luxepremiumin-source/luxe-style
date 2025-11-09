@@ -4,6 +4,7 @@ import HeroSection from "@/components/HeroSection";
 import WhatsAppNewArrivals from "@/components/WhatsAppNewArrivals";
 import CategorySection from "@/components/CategorySection";
 import Footer from "@/components/Footer";
+import FeaturedProducts from "@/components/FeaturedProducts";
 
 export default function Landing() {
   return (
@@ -17,6 +18,7 @@ export default function Landing() {
       <main className="pt-4">
         <HeroSection />
         <CategorySection />
+        <FeaturedProducts />
         <WhatsAppNewArrivals />
       </main>
       <Footer />
