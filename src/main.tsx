@@ -26,7 +26,10 @@ import Checkout from "@/pages/Checkout.tsx";
 import SearchResults from "./pages/SearchResults.tsx";
 import "./types/global.d.ts";
 
-const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
+const convexUrl =
+  (import.meta.env.VITE_CONVEX_URL as string) ||
+  "https://amiable-wombat-157.convex.cloud";
+const convex = new ConvexReactClient(convexUrl);
 
 const router = createBrowserRouter([
   {
