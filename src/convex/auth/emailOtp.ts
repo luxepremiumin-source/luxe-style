@@ -7,12 +7,12 @@ export const emailOtp = Email({
   maxAge: 60 * 30, // 30 minutes for OTP validity
   generateVerificationToken() {
     const token = generateRandomString(6, alphabet("0-9"));
-    console.log(`Generated OTP token: ${token}`);
+    console.log(`[OTP] Generated token: ${token}`);
     return token;
   },
   async sendVerificationRequest({ identifier: email, provider, token }) {
     try {
-      console.log(`Attempting to send OTP to ${email} with token: ${token}`);
+      console.log(`[OTP] Sending OTP to ${email}, token: ${token}`);
       
       const response = await axios.post(
         "https://email.vly.ai/send_otp",
@@ -24,17 +24,20 @@ export const emailOtp = Email({
         {
           headers: {
             "x-api-key": "vlytothemoon2025",
+            "Content-Type": "application/json",
           },
-          timeout: 15000,
+          timeout: 20000,
         },
       );
       
-      console.log(`OTP successfully sent to ${email}. Response status: ${response.status}`);
-      console.log(`Response data:`, response.data);
+      console.log(`[OTP] Successfully sent to ${email}. Status: ${response.status}`);
+      if (response.data) {
+        console.log(`[OTP] Response:`, JSON.stringify(response.data));
+      }
     } catch (error) {
-      console.error(`Failed to send OTP to ${email}:`, error instanceof Error ? error.message : String(error));
+      console.error(`[OTP] Failed to send to ${email}:`, error instanceof Error ? error.message : String(error));
       if (axios.isAxiosError(error)) {
-        console.error(`Axios error details:`, error.response?.data);
+        console.error(`[OTP] HTTP Error:`, error.response?.status, error.response?.data);
       }
       throw new Error(`Failed to send OTP: ${error instanceof Error ? error.message : String(error)}`);
     }
