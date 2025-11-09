@@ -64,9 +64,11 @@ export const getFilteredProducts = query({
 export const getFeaturedProducts = query({
   args: {},
   handler: async (ctx) => {
+    // Use index instead of filter for efficiency
     return await ctx.db
       .query("products")
-      .filter((q) => q.eq(q.field("featured"), true))
+      .withIndex("by_featured", (q) => q.eq("featured", true))
+      .order("desc")
       .collect();
   },
 });
