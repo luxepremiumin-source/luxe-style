@@ -53,7 +53,7 @@ export default function Landing() {
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
                 {featured.map((p) => {
-                  const img = Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : "/api/placeholder/400/400";
+                  const img = Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : "https://picsum.photos/seed/luxe-400/400";
                   return (
                     <div
                       key={p._id}
@@ -69,8 +69,8 @@ export default function Landing() {
                           fetchPriority="high"
                           decoding="async"
                           onError={(e) => {
-                            if (e.currentTarget.src !== "/api/placeholder/400/400") {
-                              e.currentTarget.src = "/api/placeholder/400/400";
+                            if (e.currentTarget.src !== "https://picsum.photos/seed/luxe-400/400") {
+                              e.currentTarget.src = "https://picsum.photos/seed/luxe-400/400";
                             }
                           }}
                         />

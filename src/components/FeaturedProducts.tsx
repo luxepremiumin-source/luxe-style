@@ -68,7 +68,7 @@ export default function FeaturedProducts() {
           {products.map((product, index) => {
             const image =
               (Array.isArray(product.images) && product.images[0]) ||
-              "/api/placeholder/300/300";
+              "https://picsum.photos/seed/luxe-300/300";
 
             return (
               <motion.div
