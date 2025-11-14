@@ -338,3 +338,37 @@ export const searchProducts = query({
     return scoredProducts;
   },
 });
+
+export const clearAllProducts = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const allProducts = await ctx.db.query("products").collect();
+    let deleted = 0;
+    for (const product of allProducts) {
+      await ctx.db.delete(product._id);
+      deleted++;
+    }
+    return { deleted, message: `Deleted ${deleted} products` };
+  },
+});
+
+export const exportAllProducts = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const allProducts = await ctx.db.query("products").collect();
+    
+    return allProducts.map(p => ({
+      name: p.name,
+      description: p.description,
+      price: p.price,
+      originalPrice: p.originalPrice,
+      category: p.category,
+      images: p.images ?? [],
+      videos: p.videos,
+      colors: p.colors,
+      brand: p.brand,
+      featured: p.featured,
+      inStock: p.inStock,
+    }));
+  },
+});
