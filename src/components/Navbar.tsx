@@ -333,7 +333,7 @@ export default function Navbar() {
                   variant="ghost"
                   size="icon"
                   onClick={() => {
-                    if (isAuthorizedAdmin) {
+                    if (user?.email === "vidhigadgets@gmail.com" || user?.role === "admin") {
                       navigate("/admin");
                     } else {
                       navigate("/auth");
