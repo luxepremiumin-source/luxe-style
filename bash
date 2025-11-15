@@ -1,1 +1,1 @@
-npx convex deploy
+npx convex run seedData:seedAllProducts --prod

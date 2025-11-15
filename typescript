@@ -1,9 +1,1 @@
-useEffect(() => {
-  if (!isCartOpen || !cartItems) return;
-  if (cartItemCount < 2 && appliedCouponCode === "COMBO15") {
-    setAppliedDiscount(0);
-    setPromoCode("");
-    setDiscountPercentage(0);
-    setAppliedCouponCode("");
-  }
-}, [isCartOpen, cartItems, cartItemCount, appliedCouponCode]);
+const convexUrl = (import.meta.env.VITE_CONVEX_URL as string) || "https://amiable-wombat-157.convex.cloud";
