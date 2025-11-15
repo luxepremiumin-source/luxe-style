@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
 import WhatsAppNewArrivals from "@/components/WhatsAppNewArrivals";
 import CategorySection from "@/components/CategorySection";
+import FeaturedProducts from "@/components/FeaturedProducts";
 import Footer from "@/components/Footer";
 
 export default function Landing() {
@@ -19,6 +20,7 @@ export default function Landing() {
       <main className="pt-4">
         <HeroSection />
         <CategorySection />
+        <FeaturedProducts />
         <WhatsAppNewArrivals />
       </main>
       <Footer />
