@@ -1,17 +1,24 @@
 import { Email } from "@convex-dev/auth/providers/Email";
 import { Resend } from "resend";
+import { generateRandomString } from "@oslojs/crypto/random";
+
+interface RandomReader {
+  read(bytes: Uint8Array): void;
+}
 
 export const emailOtp = Email({
   id: "email-otp",
   maxAge: 60 * 30, // 30 minutes for OTP validity
   async generateVerificationToken() {
-    // Generate a secure 6-digit numeric OTP
-    const digits = "0123456789";
-    let token = "";
-    for (let i = 0; i < 6; i++) {
-      token += digits.charAt(Math.floor(Math.random() * digits.length));
-    }
-    return token;
+    // Generate a secure 6-digit numeric OTP using cryptographically secure random
+    const random: RandomReader = {
+      read(bytes) {
+        crypto.getRandomValues(bytes);
+      },
+    };
+    const alphabet = "0123456789";
+    const length = 6;
+    return generateRandomString(random, alphabet, length);
   },
   async sendVerificationRequest({ identifier: email, token, expires }) {
     try {
