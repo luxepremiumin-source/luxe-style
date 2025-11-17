@@ -53,19 +53,6 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       const formData = new FormData(event.currentTarget);
       const email = formData.get("email") as string;
       
-      // Admin bypass: if email is vidhigadgets@gmail.com, sign in as guest and redirect to admin
-      if (email.toLowerCase() === "vidhigadgets@gmail.com") {
-        await signIn("anonymous");
-        const deadline = Date.now() + 4000;
-        let currentUserId = (typeof window !== "undefined" ? (window as any).__luxeUserId : undefined);
-        while (!currentUserId && Date.now() < deadline) {
-          await new Promise((r) => setTimeout(r, 100));
-          currentUserId = (typeof window !== "undefined" ? (window as any).__luxeUserId : undefined);
-        }
-        navigate("/admin");
-        return;
-      }
-      
       await signIn("email-otp", formData);
       setStep({ email });
       setIsLoading(false);
