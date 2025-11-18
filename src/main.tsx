@@ -26,9 +26,14 @@ import Checkout from "@/pages/Checkout.tsx";
 import SearchResults from "./pages/SearchResults.tsx";
 import "./types/global.d.ts";
 
-const convexUrl =
-  (import.meta.env.VITE_CONVEX_URL as string) ||
-  "https://amiable-wombat-157.convex.cloud";
+const convexUrl = import.meta.env.VITE_CONVEX_URL as string;
+
+if (!convexUrl) {
+  throw new Error(
+    "VITE_CONVEX_URL environment variable is not set. Please configure it in your deployment settings."
+  );
+}
+
 const convex = new ConvexReactClient(convexUrl);
 
 const router = createBrowserRouter([
