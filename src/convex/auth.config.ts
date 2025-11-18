@@ -5,9 +5,11 @@ const providers: Array<{ domain: string | undefined; applicationID: string }> = 
 console.log(`[AUTH CONFIG] SITE_URL: ${site}`);
 
 if (site) {
+  // Add primary domain
   providers.push({ domain: site, applicationID: "convex" });
   console.log(`[AUTH CONFIG] Added primary domain: ${site}`);
   
+  // Add alternate domain (www variant)
   try {
     const u = new URL(site);
     const host = u.hostname;

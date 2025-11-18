@@ -1,2 +1,1 @@
-# This will copy all products from dev to production
-npx convex run seedData:seedAllProducts --prod
+npx convex env set SITE_URL https://luxepremium.in --prod
