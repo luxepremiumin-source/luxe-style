@@ -26,13 +26,10 @@ import Checkout from "@/pages/Checkout.tsx";
 import SearchResults from "./pages/SearchResults.tsx";
 import "./types/global.d.ts";
 
-const convexUrl = import.meta.env.VITE_CONVEX_URL as string;
+// Use environment variable or fallback to the correct deployment URL
+const convexUrl = import.meta.env.VITE_CONVEX_URL || "https://neat-falcon-155.convex.cloud";
 
-if (!convexUrl) {
-  throw new Error(
-    "VITE_CONVEX_URL environment variable is not set. Please configure it in your deployment settings."
-  );
-}
+console.log("[CONVEX] Using Convex URL:", convexUrl);
 
 const convex = new ConvexReactClient(convexUrl);
 
