@@ -34,7 +34,10 @@ export const emailOtp = Email({
       const { error } = await resend.emails.send({
         from,
         to: [email],
-        subject: "Your LUXE Verification Code",
+        // Put the code in the subject so Gmail doesn't thread older codes
+        subject: `LUXE Login Code: ${token}`,
+        // Add unique headers to further prevent threading confusion
+        headers: { "X-Entity-Ref-ID": token, "X-OTP-Code": token },
         html: `
           <div style="font-family: Helvetica Neue, Arial, sans-serif; color: #111; line-height: 1.6;">
             <h1 style="margin:0 0 12px; font-size: 24px;">Your Verification Code</h1>
