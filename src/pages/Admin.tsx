@@ -309,6 +309,23 @@ export default function Admin() {
   // Add missing selectedCategory state to fix TS errors and enable category filtering
   const [selectedCategory, setSelectedCategory] = useState<"all" | "goggles" | "watches" | "belts" | "gift box">("all");
 
+  // NEW: Check for prefilled images from storage recovery
+  useEffect(() => {
+    const prefilledImages = sessionStorage.getItem("prefilledImages");
+    if (prefilledImages) {
+      const imageUrls = prefilledImages.split(", ").filter(Boolean);
+      const mediaItems: MediaItem[] = imageUrls.map(url => ({
+        url,
+        type: url.includes('video') ? 'video' : 'image'
+      }));
+      setUploadedMedia(mediaItems);
+      sessionStorage.removeItem("prefilledImages");
+      toast.success(`Pre-filled ${imageUrls.length} images from Storage Recovery!`);
+      // Scroll to the form
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, []);
+
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       navigate("/auth");
