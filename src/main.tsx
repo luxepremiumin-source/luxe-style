@@ -20,6 +20,7 @@ import TermsOfService from "@/pages/TermsOfService.tsx";
 import ShippingPolicy from "@/pages/ShippingPolicy.tsx";
 import RefundPolicy from "@/pages/RefundPolicy.tsx";
 import AdminCustomers from "./pages/AdminCustomers";
+import AdminStorageRecovery from "./pages/AdminStorageRecovery";
 import ShopByBrand from "./pages/ShopByBrand.tsx";
 import BrandProducts from "./pages/BrandProducts.tsx";
 import Checkout from "@/pages/Checkout.tsx";
@@ -49,6 +50,10 @@ const router = createBrowserRouter([
   {
     path: "/admin/customers",
     element: <AdminCustomers />,
+  },
+  {
+    path: "/admin/storage-recovery",
+    element: <AdminStorageRecovery />,
   },
   {
     path: "/checkout",

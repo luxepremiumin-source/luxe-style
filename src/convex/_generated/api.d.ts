@@ -19,6 +19,7 @@ import type * as products from "../products.js";
 import type * as recentlyViewed from "../recentlyViewed.js";
 import type * as seedData from "../seedData.js";
 import type * as storage from "../storage.js";
+import type * as storageUtils from "../storageUtils.js";
 import type * as subscribers from "../subscribers.js";
 import type * as updateProductImages from "../updateProductImages.js";
 import type * as users from "../users.js";
@@ -50,6 +51,7 @@ declare const fullApi: ApiFromModules<{
   recentlyViewed: typeof recentlyViewed;
   seedData: typeof seedData;
   storage: typeof storage;
+  storageUtils: typeof storageUtils;
   subscribers: typeof subscribers;
   updateProductImages: typeof updateProductImages;
   users: typeof users;
