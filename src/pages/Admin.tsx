@@ -591,12 +591,21 @@ export default function Admin() {
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
             <p className="text-gray-600">Manage products and view analytics</p>
           </div>
-          <Button
-            onClick={() => navigate("/admin/customers")}
-            className="bg-blue-600 hover:bg-blue-700 text-white"
-          >
-            View Customer Analytics
-          </Button>
+          <div className="flex gap-3">
+            <Button
+              onClick={() => navigate("/admin/storage-recovery")}
+              variant="outline"
+              className="bg-white hover:bg-gray-50 text-gray-900 border-gray-300"
+            >
+              Storage Recovery
+            </Button>
+            <Button
+              onClick={() => navigate("/admin/customers")}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              View Customer Analytics
+            </Button>
+          </div>
         </div>
 
         {/* Product Statistics Card */}
