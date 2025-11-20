@@ -53,7 +53,9 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       const formData = new FormData(event.currentTarget);
       const email = formData.get("email") as string;
       
+      console.log("Sending OTP to:", email);
       await signIn("email-otp", formData);
+      console.log("OTP sent successfully");
       setStep({ email });
       setIsLoading(false);
     } catch (error) {
@@ -73,9 +75,13 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
     setError(null);
     try {
       const formData = new FormData(event.currentTarget);
+      
+      // Ensure both email and code are present
+      console.log("Verifying OTP - Email:", formData.get("email"), "Code length:", formData.get("code")?.toString().length);
+      
       await signIn("email-otp", formData);
 
-      console.log("signed in");
+      console.log("OTP verified, signed in successfully");
 
       const redirect = redirectAfterAuth || "/";
       navigate(redirect);

@@ -45,9 +45,9 @@ export const addToCart = mutation({
 });
 
 export const getCartCount = query({
-  args: { userId: v.union(v.id("users"), v.null()) },
+  args: { userId: v.optional(v.union(v.id("users"), v.null())) },
   handler: async (ctx, args) => {
-    if (args.userId === null) return 0;
+    if (!args.userId || args.userId === null) return 0;
     const items = await ctx.db
       .query("cart")
       .withIndex("by_user", (q) => q.eq("userId", args.userId!))
@@ -57,9 +57,9 @@ export const getCartCount = query({
 });
 
 export const getCartItems = query({
-  args: { userId: v.union(v.id("users"), v.null()) },
+  args: { userId: v.optional(v.union(v.id("users"), v.null())) },
   handler: async (ctx, args) => {
-    if (args.userId === null) return [];
+    if (!args.userId || args.userId === null) return [];
     const items = await ctx.db
       .query("cart")
       .withIndex("by_user", (q) => q.eq("userId", args.userId!))

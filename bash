@@ -1,1 +1,1 @@
-npx convex env set SITE_URL https://luxepremium.in --prod
+curl -sL "https://luxepremium.in" | grep -o "amiable-wombat-157"
