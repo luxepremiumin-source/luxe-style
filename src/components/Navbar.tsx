@@ -333,7 +333,7 @@ export default function Navbar() {
                   variant="ghost"
                   size="icon"
                   onClick={() => {
-                    if (user?.email === "luxe.premium.in@gmail.com" || user?.role === "admin") {
+                    if (isAuthorizedAdmin) {
                       navigate("/admin");
                     } else {
                       navigate("/auth");
