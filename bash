@@ -1,1 +1,1 @@
-curl -sL "https://luxepremium.in" | grep -o "amiable-wombat-157"
+npx convex run products:exportAllProducts
