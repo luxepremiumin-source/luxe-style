@@ -30,7 +30,7 @@ export default function AdminCustomers() {
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedAddressId, setExpandedAddressId] = useState<string | null>(null);
 
-  const allowedEmails = new Set<string>(["vidhigadgets@gmail.com"]);
+  const allowedEmails = new Set<string>(["luxe.premium.in@gmail.com"]);
   const isAuthorizedAdmin =
     !!isAuthenticated &&
     !!user &&

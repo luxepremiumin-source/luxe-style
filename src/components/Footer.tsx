@@ -10,7 +10,7 @@ export default function Footer() {
   const location = useLocation();
   const isHomePage = location.pathname === "/";
   const { isAuthenticated, user } = useAuth();
-  const allowedEmails = new Set<string>(["vidhigadgets@gmail.com"]);
+  const allowedEmails = new Set<string>(["luxe.premium.in@gmail.com"]);
   const isAdmin =
     !!isAuthenticated &&
     !!user &&

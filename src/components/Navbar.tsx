@@ -100,7 +100,7 @@ export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   // Add: admin visibility check
-  const allowedEmails = new Set<string>(["vidhigadgets@gmail.com"]);
+  const allowedEmails = new Set<string>(["luxe.premium.in@gmail.com"]);
   const isAuthorizedAdmin =
     !!isAuthenticated &&
     !!user &&
@@ -333,7 +333,7 @@ export default function Navbar() {
                   variant="ghost"
                   size="icon"
                   onClick={() => {
-                    if (user?.email === "vidhigadgets@gmail.com" || user?.role === "admin") {
+                    if (user?.email === "luxe.premium.in@gmail.com" || user?.role === "admin") {
                       navigate("/admin");
                     } else {
                       navigate("/auth");

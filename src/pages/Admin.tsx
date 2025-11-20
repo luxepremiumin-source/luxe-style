@@ -49,7 +49,7 @@ export default function Admin() {
   const productStats = useQuery(api.products.getProductCountByCategory);
 
   // Add: strict admin access (by email and/or role)
-  const allowedEmails = new Set<string>(["vidhigadgets@gmail.com"]);
+  const allowedEmails = new Set<string>(["luxe.premium.in@gmail.com"]);
   const isAuthorized =
     !!isAuthenticated &&
     !!user &&
