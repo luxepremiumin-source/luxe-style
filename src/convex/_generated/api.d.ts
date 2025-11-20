@@ -20,6 +20,7 @@ import type * as recentlyViewed from "../recentlyViewed.js";
 import type * as seedData from "../seedData.js";
 import type * as storage from "../storage.js";
 import type * as subscribers from "../subscribers.js";
+import type * as updateProductImages from "../updateProductImages.js";
 import type * as users from "../users.js";
 import type * as wishlist from "../wishlist.js";
 
@@ -50,6 +51,7 @@ declare const fullApi: ApiFromModules<{
   seedData: typeof seedData;
   storage: typeof storage;
   subscribers: typeof subscribers;
+  updateProductImages: typeof updateProductImages;
   users: typeof users;
   wishlist: typeof wishlist;
 }>;
