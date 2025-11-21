@@ -212,9 +212,11 @@ export default function Navbar() {
   }, []);
 
   // Add live cart count
-  const cartCount = useQuery(api.cart.getCartCount, {
-    userId: user?._id ?? null,
-  });
+  const cartCountResult = useQuery(
+    api.cart.getCartCount,
+    user?._id ? { userId: user._id } : "skip",
+  );
+  const cartCount = cartCountResult ?? 0;
 
   const profileData = useQuery(
     api.customerProfiles.getProfile,
@@ -458,7 +460,7 @@ export default function Navbar() {
             <Button variant="ghost" size="icon" className="relative hover:bg-white/10" onClick={() => setIsCartOpen(true)} aria-label="Open cart">
               <ShoppingBag className="h-6 w-6 text-white" />
               <Badge className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs bg-transparent border border-white/60 text-white">
-                {cartCount ?? 0}
+                {cartCount}
               </Badge>
             </Button>
 
@@ -663,13 +665,15 @@ export default function Navbar() {
                     >
                       Continue shopping
                     </Button>
-                    <p className="text-sm text-gray-600 mt-10">
-                      Have an account?{" "}
-                      <a href="/auth" className="underline font-medium text-gray-800">
-                        Log in
-                      </a>{" "}
-                      to check out faster.
-                    </p>
+                    {!isAuthenticated && (
+                      <p className="text-sm text-gray-600 mt-10">
+                        Have an account?{" "}
+                        <a href="/auth" className="underline font-medium text-gray-800">
+                          Log in
+                        </a>{" "}
+                        to check out faster.
+                      </p>
+                    )}
                   </div>
                 ) : checkoutStep === "review" ? (
                   <div className="space-y-4">
