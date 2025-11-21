@@ -180,8 +180,8 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                 <div className="mt-6">
                   <Button
                     type="button"
-                    variant="ghost"
-                    className="w-full mt-4 border border-white/40 text-white bg-transparent hover:bg-white/10 hover:text-white transition-colors"
+                    variant="default"
+                    className="w-full h-12 rounded-full border border-white/80 bg-white text-black font-semibold shadow-[0_20px_45px_rgba(255,255,255,0.25)] hover:bg-white/90 hover:text-black focus-visible:ring-white/70 focus-visible:ring-offset-0 transition-colors"
                     disabled={isLoading}
                   >
                     Continue with Google
