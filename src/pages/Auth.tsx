@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/input-otp";
 
 import { useAuth } from "@/hooks/use-auth";
-import { ArrowRight, Chrome, Loader2, Mail } from "lucide-react";
+import { ArrowRight, Loader2, Mail } from "lucide-react";
 import { Suspense, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 
@@ -33,7 +33,6 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
   const [otp, setOtp] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [googleLoading, setGoogleLoading] = useState(false);
 
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
@@ -105,26 +104,6 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       
       setIsLoading(false);
       setOtp("");
-    }
-  };
-
-  const handleGoogleLogin = async () => {
-    setIsLoading(true);
-    setGoogleLoading(true);
-    setError(null);
-    try {
-      await signIn("google");
-      const redirect = redirectAfterAuth || "/";
-      navigate(redirect);
-    } catch (error) {
-      console.error("Google login error:", error);
-      setError(
-        error instanceof Error
-          ? error.message
-          : "Failed to sign in with Google. Please try again.",
-      );
-      setIsLoading(false);
-      setGoogleLoading(false);
     }
   };
 
@@ -204,19 +183,8 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                     variant="ghost"
                     className="w-full mt-4 border border-white/40 text-white bg-transparent hover:bg-white/10 hover:text-white transition-colors"
                     disabled={isLoading}
-                    onClick={handleGoogleLogin}
                   >
-                    {googleLoading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Connecting...
-                      </>
-                    ) : (
-                      <>
-                        <Chrome className="mr-2 h-4 w-4" />
-                        Continue with Google
-                      </>
-                    )}
+                    Continue with Google
                   </Button>
                 </div>
               </>
