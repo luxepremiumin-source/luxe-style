@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/input-otp";
 
 import { useAuth } from "@/hooks/use-auth";
-import { ArrowRight, Loader2, Mail, UserX } from "lucide-react";
+import { ArrowRight, Chrome, Loader2, Mail } from "lucide-react";
 import { Suspense, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 
@@ -33,6 +33,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
   const [otp, setOtp] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
@@ -109,9 +110,9 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
 
   const handleGoogleLogin = async () => {
     setIsLoading(true);
+    setGoogleLoading(true);
     setError(null);
     try {
-      // Triggers Google OAuth via Convex Auth (ensure Google provider is configured)
       await signIn("google");
       const redirect = redirectAfterAuth || "/";
       navigate(redirect);
@@ -120,9 +121,10 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       setError(
         error instanceof Error
           ? error.message
-          : "Failed to sign in with Google. Please try again."
+          : "Failed to sign in with Google. Please try again.",
       );
       setIsLoading(false);
+      setGoogleLoading(false);
     }
   };
 
@@ -196,6 +198,27 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                     )}
                   </CardContent>
                 </form>
+                <div className="mt-6">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="w-full mt-4 border border-white/40 text-white bg-transparent hover:bg-white/10 hover:text-white transition-colors"
+                    disabled={isLoading}
+                    onClick={handleGoogleLogin}
+                  >
+                    {googleLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Connecting...
+                      </>
+                    ) : (
+                      <>
+                        <Chrome className="mr-2 h-4 w-4" />
+                        Continue with Google
+                      </>
+                    )}
+                  </Button>
+                </div>
               </>
             ) : (
               <>
