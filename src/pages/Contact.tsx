@@ -41,8 +41,8 @@ export default function Contact() {
               </p>
 
               <div className="mb-4">
-                <p>WhatsApp: +91 9871629699</p>
-                <p>Email: luxe.premium.in@gmail.com</p>
+                <p>WhatsApp: +91 8871880773</p>
+                <p>Email: vidhigadgets@gmail.com</p>
               </div>
 
               <p className="mb-4">
