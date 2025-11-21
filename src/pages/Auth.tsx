@@ -138,7 +138,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       <div className="flex-1 relative">
         <div className="absolute inset-0 bg-gradient-to-br from-black/85 via-black/70 to-black/80 backdrop-blur-sm" />
         <div className="relative flex-1 flex items-center justify-center px-4 py-12">
-          <Card className="min-w-[350px] pb-0 border border-white/10 bg-black/70 text-white shadow-[0_0_50px_rgba(255,255,255,0.2)] backdrop-blur-xl">
+          <Card className="mx-auto w-full max-w-md min-w-[350px] pb-0 border border-white/10 bg-black/70 text-white shadow-[0_0_50px_rgba(255,255,255,0.2)] backdrop-blur-xl">
             {step === "signIn" ? (
               <>
                 <CardHeader className="text-center space-y-3">
