@@ -182,11 +182,12 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                         variant="outline"
                         size="icon"
                         disabled={isLoading}
+                        className="size-11 rounded-full border-white/40 bg-black/70 text-white hover:bg-white/10 hover:text-white focus-visible:ring-white/60 focus-visible:ring-offset-0"
                       >
                         {isLoading ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <Loader2 className="h-4 w-4 animate-spin text-white" />
                         ) : (
-                          <ArrowRight className="h-4 w-4" />
+                          <ArrowRight className="h-4 w-4 text-white" />
                         )}
                       </Button>
                     </div>
