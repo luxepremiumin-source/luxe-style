@@ -11,6 +11,7 @@
 import type * as auth_emailOtp from "../auth/emailOtp.js";
 import type * as auth from "../auth.js";
 import type * as cart from "../cart.js";
+import type * as customerProfiles from "../customerProfiles.js";
 import type * as emails from "../emails.js";
 import type * as http from "../http.js";
 import type * as migrateData from "../migrateData.js";
@@ -43,6 +44,7 @@ declare const fullApi: ApiFromModules<{
   "auth/emailOtp": typeof auth_emailOtp;
   auth: typeof auth;
   cart: typeof cart;
+  customerProfiles: typeof customerProfiles;
   emails: typeof emails;
   http: typeof http;
   migrateData: typeof migrateData;

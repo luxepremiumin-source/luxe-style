@@ -104,6 +104,18 @@ const schema = defineSchema(
       subscribedAt: v.number(),
     })
       .index("by_email", ["email"]),
+
+    customerProfiles: defineTable({
+      userId: v.id("users"),
+      firstName: v.string(),
+      lastName: v.string(),
+      phone: v.string(),
+      address1: v.string(),
+      address2: v.optional(v.string()),
+      city: v.string(),
+      state: v.string(),
+      pin: v.string(),
+    }).index("by_user", ["userId"]),
   },
   {
     schemaValidation: false,

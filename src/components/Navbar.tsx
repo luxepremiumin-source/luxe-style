@@ -17,6 +17,60 @@ import { Link } from "react-router";
 // Add: thin announcement bar content text
 const ANNOUNCEMENT_TEXT = "Welcome to LUXE: Elevate Your Style with Today's Exclusive Deals!";
 
+const INDIA_STATES: Array<string> = [
+  "Andhra Pradesh",
+  "Arunachal Pradesh",
+  "Assam",
+  "Bihar",
+  "Chhattisgarh",
+  "Goa",
+  "Gujarat",
+  "Haryana",
+  "Himachal Pradesh",
+  "Jharkhand",
+  "Karnataka",
+  "Kerala",
+  "Madhya Pradesh",
+  "Maharashtra",
+  "Manipur",
+  "Meghalaya",
+  "Mizoram",
+  "Nagaland",
+  "Odisha",
+  "Punjab",
+  "Rajasthan",
+  "Sikkim",
+  "Tamil Nadu",
+  "Telangana",
+  "Tripura",
+  "Uttar Pradesh",
+  "Uttarakhand",
+  "West Bengal",
+  "Delhi",
+];
+
+type ProfileFormState = {
+  firstName: string;
+  lastName: string;
+  address1: string;
+  address2: string;
+  city: string;
+  state: string;
+  pin: string;
+  phone: string;
+};
+
+const getEmptyProfileForm = (): ProfileFormState => ({
+  firstName: "",
+  lastName: "",
+  address1: "",
+  address2: "",
+  city: "",
+  state: "",
+  pin: "",
+  phone: "",
+});
+
 // Helper: build repeating marquee-like row with centered white dot separators
 function AnnouncementRow() {
   // Increase horizontal padding and gap between segments so there's more space after "discount"
@@ -108,6 +162,8 @@ export default function Navbar() {
       (user.email ? allowedEmails.has(user.email) : false));
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [profileForm, setProfileForm] = useState<ProfileFormState>(() => getEmptyProfileForm());
   // Add: mounted flag to avoid portal DOM errors during route transitions
   const [mounted, setMounted] = useState(false);
   const [checkoutStep, setCheckoutStep] = useState<"review" | "details" | "payment">("review");
@@ -160,6 +216,11 @@ export default function Navbar() {
     userId: user?._id ?? null,
   });
 
+  const profileData = useQuery(
+    api.customerProfiles.getProfile,
+    user?._id ? { userId: user._id } : "skip",
+  );
+
   // Cart items for drawer - only fetch when cart is open
   const cartItems = useQuery(
     api.cart.getCartItems,
@@ -188,6 +249,7 @@ export default function Navbar() {
   // Add mutation for updating cart quantities
   const setCartItemQuantity = useMutation(api.cart.setCartItemQuantity);
   const createOrder = useMutation(api.orders.createOrder);
+  const upsertProfile = useMutation(api.customerProfiles.upsertProfile);
 
   // Calculate packaging charges (multiply by quantity for each item)
   const packagingCharges = (cartItems ?? []).reduce((sum, item) => {
@@ -230,11 +292,84 @@ export default function Navbar() {
     setQrCodeUrl(qrApiUrl);
   };
 
+  const handleProfileFieldChange = (field: keyof ProfileFormState, value: string) => {
+    setProfileForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleProfileSave = async () => {
+    if (!user?._id) {
+      navigate("/auth");
+      return;
+    }
+
+    const requiredFields: Array<keyof ProfileFormState> = [
+      "firstName",
+      "lastName",
+      "address1",
+      "city",
+      "state",
+      "pin",
+      "phone",
+    ];
+
+    const isValid = requiredFields.every(
+      (field) => String(profileForm[field]).trim().length > 0,
+    );
+
+    if (!isValid) {
+      toast("Please complete all required details.");
+      return;
+    }
+
+    const payload = {
+      firstName: profileForm.firstName.trim(),
+      lastName: profileForm.lastName.trim(),
+      address1: profileForm.address1.trim(),
+      address2: profileForm.address2.trim() ? profileForm.address2.trim() : undefined,
+      city: profileForm.city.trim(),
+      state: profileForm.state,
+      pin: profileForm.pin.trim(),
+      phone: profileForm.phone.trim(),
+    };
+
+    try {
+      await upsertProfile({
+        userId: user._id as any,
+        ...payload,
+      });
+      toast("Profile saved");
+      setIsProfileOpen(false);
+    } catch (error) {
+      console.error(error);
+      toast("Unable to save details. Please try again.");
+    }
+  };
+
   const categories = [
     { name: "Goggles", href: "/category/goggles" },
     { name: "Watches", href: "/category/watches" },
     { name: "Belts", href: "/category/belts" },
   ];
+
+  useEffect(() => {
+    if (profileData === undefined) return;
+
+    if (profileData === null) {
+      setProfileForm(getEmptyProfileForm());
+      return;
+    }
+
+    setProfileForm({
+      firstName: profileData.firstName,
+      lastName: profileData.lastName,
+      address1: profileData.address1,
+      address2: profileData.address2 ?? "",
+      city: profileData.city,
+      state: profileData.state,
+      pin: profileData.pin,
+      phone: profileData.phone,
+    });
+  }, [profileData]);
 
   return (
     <motion.nav
@@ -333,13 +468,14 @@ export default function Navbar() {
                   variant="ghost"
                   size="icon"
                   onClick={() => {
-                    if (isAuthorizedAdmin) {
-                      navigate("/admin");
-                    } else {
+                    if (!isAuthenticated) {
                       navigate("/auth");
+                      return;
                     }
+                    setIsProfileOpen(true);
                   }}
                   className="hover:bg-white/10"
+                  aria-label="Open profile"
                 >
                   <User className="h-6 w-6 text-white" />
                 </Button>
@@ -492,771 +628,952 @@ export default function Navbar() {
 
       {/* Cart Slide-over (Sheet) */}
       {mounted && (
-        <Sheet
-          open={isCartOpen}
-          onOpenChange={(open) => {
-            setIsCartOpen(open);
-            if (!open) {
-              setCheckoutStep("review");
-              setQrCodeUrl("");
-            }
-          }}
-        >
-          <SheetContent
-            side="right"
-            className="w-full sm:max-w-md p-0 h-full bg-gray-100 text-gray-900 border-l border-black/10 flex flex-col overflow-hidden"
+        <>
+          <Sheet
+            open={isCartOpen}
+            onOpenChange={(open) => {
+              setIsCartOpen(open);
+              if (!open) {
+                setCheckoutStep("review");
+                setQrCodeUrl("");
+              }
+            }}
           >
-            <SheetHeader className="px-6 pt-5">
-              <div className="flex items-center justify-between">
-                <SheetTitle className="text-2xl font-extrabold">
-                  {checkoutStep === "review" ? "Your cart" : checkoutStep === "details" ? "Checkout details" : "Payment"}
-                </SheetTitle>
-              </div>
-            </SheetHeader>
-            <div className="px-6">
-              <div className="border-t border-gray-300/60" />
-            </div>
-            <div className="flex-1 overflow-y-auto px-6 pb-6 pt-4">
-              {!cartItems || cartItems.length === 0 ? (
-                <div className="min-h-[40vh] flex flex-col items-center justify-center text-center">
-                  <h3 className="text-2xl font-extrabold mb-6 text-gray-900">Your cart is empty</h3>
-                  <Button
-                    className="rounded-full h-12 px-8 bg-black text-white hover:bg-black/90"
-                    onClick={() => setIsCartOpen(false)}
-                  >
-                    Continue shopping
-                  </Button>
-                  <p className="text-sm text-gray-600 mt-10">
-                    Have an account?{" "}
-                    <a href="/auth" className="underline font-medium text-gray-800">
-                      Log in
-                    </a>{" "}
-                    to check out faster.
-                  </p>
+            <SheetContent
+              side="right"
+              className="w-full sm:max-w-md p-0 h-full bg-gray-100 text-gray-900 border-l border-black/10 flex flex-col overflow-hidden"
+            >
+              <SheetHeader className="px-6 pt-5">
+                <div className="flex items-center justify-between">
+                  <SheetTitle className="text-2xl font-extrabold">
+                    {checkoutStep === "review" ? "Your cart" : checkoutStep === "details" ? "Checkout details" : "Payment"}
+                  </SheetTitle>
                 </div>
-              ) : checkoutStep === "review" ? (
-                <div className="space-y-4">
-                  <ul className="space-y-3">
-                    {cartItems.map((item) => (
-                      <li key={item._id} className="flex gap-3 border border-gray-200 rounded-md p-3">
-                        <div className="h-16 w-16 rounded-md overflow-hidden bg-gray-100 flex-shrink-0">
-                          {item.product.images?.[0] ? (
-                            <img src={item.product.images[0]} alt={item.product.name} className="h-full w-full object-cover" />
-                          ) : null}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="font-semibold truncate">{item.product.name}</p>
-                          <div className="mt-1 inline-flex items-center gap-2 rounded-full border border-gray-300 px-2 py-1">
-                            <button
-                              className="h-6 w-6 grid place-items-center rounded-full hover:bg-gray-200"
-                              aria-label="Decrease quantity"
-                              onClick={async () => {
-                                if (!user?._id) return;
-                                await setCartItemQuantity({
-                                  userId: user._id as any,
-                                  cartItemId: item._id as any,
-                                  quantity: Math.max(0, (item.quantity ?? 1) - 1),
-                                });
-                              }}
-                            >
-                              −
-                            </button>
-                            <span className="min-w-6 text-center text-sm">{item.quantity}</span>
-                            <button
-                              className="h-6 w-6 grid place-items-center rounded-full hover:bg-gray-200"
-                              aria-label="Increase quantity"
-                              onClick={async () => {
-                                if (!user?._id) return;
-                                await setCartItemQuantity({
-                                  userId: user._id as any,
-                                  cartItemId: item._id as any,
-                                  quantity: (item.quantity ?? 1) + 1,
-                                });
-                              }}
-                            >
-                              +
-                            </button>
+              </SheetHeader>
+              <div className="px-6">
+                <div className="border-t border-gray-300/60" />
+              </div>
+              <div className="flex-1 overflow-y-auto px-6 pb-6 pt-4">
+                {!cartItems || cartItems.length === 0 ? (
+                  <div className="min-h-[40vh] flex flex-col items-center justify-center text-center">
+                    <h3 className="text-2xl font-extrabold mb-6 text-gray-900">Your cart is empty</h3>
+                    <Button
+                      className="rounded-full h-12 px-8 bg-black text-white hover:bg-black/90"
+                      onClick={() => setIsCartOpen(false)}
+                    >
+                      Continue shopping
+                    </Button>
+                    <p className="text-sm text-gray-600 mt-10">
+                      Have an account?{" "}
+                      <a href="/auth" className="underline font-medium text-gray-800">
+                        Log in
+                      </a>{" "}
+                      to check out faster.
+                    </p>
+                  </div>
+                ) : checkoutStep === "review" ? (
+                  <div className="space-y-4">
+                    <ul className="space-y-3">
+                      {cartItems.map((item) => (
+                        <li key={item._id} className="flex gap-3 border border-gray-200 rounded-md p-3">
+                          <div className="h-16 w-16 rounded-md overflow-hidden bg-gray-100 flex-shrink-0">
+                            {item.product.images?.[0] ? (
+                              <img src={item.product.images[0]} alt={item.product.name} className="h-full w-full object-cover" />
+                            ) : null}
                           </div>
-                          <p className="text-sm font-semibold mt-1">₹{(item.product.price * item.quantity).toLocaleString()}</p>
-                          {(item as any).color ? (
-                            <p className="text-xs text-gray-600">Color: {`${String((item as any).color)[0].toUpperCase()}${String((item as any).color).slice(1)}`}</p>
-                          ) : null}
-                          {(item as any).packaging ? (
-                            <p className="text-xs text-gray-600">
-                              Packaging: {
-                                (item as any).packaging === "indian" ? "Indian Box" :
-                                (item as any).packaging === "imported" ? "Imported Box (Premium)" :
-                                "Without Box"
-                              }
-                            </p>
-                          ) : null}
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-
-                  {/* Promo code section - PharmEasy style */}
-                  <div className="mt-4">
-                    {appliedDiscount > 0 ? (
-                      <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <svg className="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <div>
-                              <p className="text-sm font-semibold text-green-800">{appliedCouponCode} Applied</p>
-                              <p className="text-xs text-green-600">
-                                {appliedCouponCode === "COMBO15" && `15% off - ₹${finalDiscount.toLocaleString()} saved`}
-                                {appliedCouponCode === "WATCH15" && `15% off on watches - ₹${finalDiscount.toLocaleString()} saved`}
-                                {appliedCouponCode === "FREESHIP" && `Free delivery - ₹99 saved`}
-                              </p>
-                            </div>
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              setAppliedDiscount(0);
-                              setPromoCode("");
-                              setDiscountPercentage(0);
-                              setAppliedCouponCode("");
-                            }}
-                            className="text-green-700 hover:text-green-800 hover:bg-green-100 h-8 px-2"
-                          >
-                            Remove
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="space-y-2.5">
-                        {/* Divider with text */}
-                        <div className="flex items-center gap-2">
-                          <div className="flex-1 h-px bg-gray-300" />
-                          <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Coupons & Offers</span>
-                          <div className="flex-1 h-px bg-gray-300" />
-                        </div>
-
-                        {/* Apply coupon button */}
-                        <button
-                          onClick={() => {
-                            const section = document.getElementById('available-coupons');
-                            if (section) {
-                              section.style.display = section.style.display === 'none' ? 'block' : 'none';
-                            }
-                          }}
-                          className="w-full p-2.5 bg-white border border-gray-200 rounded-md flex items-center justify-between hover:bg-gray-50 transition-all duration-200"
-                        >
-                          <div className="flex items-center gap-2">
-                            <div className="h-7 w-7 rounded-full bg-gray-100 flex items-center justify-center">
-                              <svg className="h-3.5 w-3.5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                              </svg>
-                            </div>
-                            <span className="text-xs font-medium text-gray-900">Apply coupon</span>
-                          </div>
-                          <svg className="h-3.5 w-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                          </svg>
-                        </button>
-
-                        {/* Available coupons - hidden by default */}
-                        <div id="available-coupons" style={{ display: 'none' }} className="space-y-3 pt-2">
-                          {/* Manual code entry at top */}
-                          <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
-                            <p className="text-xs font-medium text-gray-600 mb-2.5">Have a coupon code?</p>
-                            <div className="flex items-center gap-2">
-                              <Input
-                                value={promoCode}
-                                onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
-                                placeholder="Enter code"
-                                className="flex-1 h-10 text-sm bg-white border-gray-300 focus-visible:ring-gray-400 placeholder:text-gray-400"
-                              />
-                              <Button
-                                size="sm"
-                                onClick={() => {
-                                  const code = promoCode.trim().toUpperCase();
-                                  
-                              if (code === "COMBO15") {
-                                if (cartItemCount < 2) {
-                                  toast("Add at least 2 products to use COMBO15");
-                                  return;
-                                }
-                                setDiscountPercentage(15);
-                                const discount = Math.round(subtotalWithPackaging * 0.15);
-                                setAppliedDiscount(discount);
-                                setAppliedCouponCode("COMBO15");
-                                toast("Coupon applied successfully!");
-                              } else if (code === "WATCH15") {
-                                const hasWatches = cartItems?.some(item => item.product.category === "watches");
-                                if (!hasWatches) {
-                                  toast("Add a watch to use WATCH15");
-                                  return;
-                                }
-                                setDiscountPercentage(15);
-                                const discount = Math.round(subtotalWithPackaging * 0.15);
-                                setAppliedDiscount(discount);
-                                setAppliedCouponCode("WATCH15");
-                                toast("Watch discount applied!");
-                              } else if (code === "FREESHIP") {
-                                    // Free shipping - removes ₹99 delivery fee
-                                    setAppliedCouponCode("FREESHIP");
-                                    toast("Free delivery unlocked!");
-                                  } else {
-                                    toast("Invalid coupon code");
-                                  }
+                          <div className="min-w-0 flex-1">
+                            <p className="font-semibold truncate">{item.product.name}</p>
+                            <div className="mt-1 inline-flex items-center gap-2 rounded-full border border-gray-300 px-2 py-1">
+                              <button
+                                className="h-6 w-6 grid place-items-center rounded-full hover:bg-gray-200"
+                                aria-label="Decrease quantity"
+                                onClick={async () => {
+                                  if (!user?._id) return;
+                                  await setCartItemQuantity({
+                                    userId: user._id as any,
+                                    cartItemId: item._id as any,
+                                    quantity: Math.max(0, (item.quantity ?? 1) - 1),
+                                  });
                                 }}
-                                className="bg-gray-800 text-white hover:bg-gray-700 h-10 px-6 text-sm font-medium transition-colors duration-200"
                               >
-                                Apply
-                              </Button>
+                                −
+                              </button>
+                              <span className="min-w-6 text-center text-sm">{item.quantity}</span>
+                              <button
+                                className="h-6 w-6 grid place-items-center rounded-full hover:bg-gray-200"
+                                aria-label="Increase quantity"
+                                onClick={async () => {
+                                  if (!user?._id) return;
+                                  await setCartItemQuantity({
+                                    userId: user._id as any,
+                                    cartItemId: item._id as any,
+                                    quantity: (item.quantity ?? 1) + 1,
+                                  });
+                                }}
+                              >
+                                +
+                              </button>
                             </div>
+                            <p className="text-sm font-semibold mt-1">₹{(item.product.price * item.quantity).toLocaleString()}</p>
+                            {(item as any).color ? (
+                              <p className="text-xs text-gray-600">Color: {`${String((item as any).color)[0].toUpperCase()}${String((item as any).color).slice(1)}`}</p>
+                            ) : null}
+                            {(item as any).packaging ? (
+                              <p className="text-xs text-gray-600">
+                                Packaging: {
+                                  (item as any).packaging === "indian" ? "Indian Box" :
+                                  (item as any).packaging === "imported" ? "Imported Box (Premium)" :
+                                  "Without Box"
+                                }
+                              </p>
+                            ) : null}
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+
+                    {/* Promo code section - PharmEasy style */}
+                    <div className="mt-4">
+                      {appliedDiscount > 0 ? (
+                        <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <svg className="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              <div>
+                                <p className="text-sm font-semibold text-green-800">{appliedCouponCode} Applied</p>
+                                <p className="text-xs text-green-600">
+                                  {appliedCouponCode === "COMBO15" && `15% off - ₹${finalDiscount.toLocaleString()} saved`}
+                                  {appliedCouponCode === "WATCH15" && `15% off on watches - ₹${finalDiscount.toLocaleString()} saved`}
+                                  {appliedCouponCode === "FREESHIP" && `Free delivery - ₹99 saved`}
+                                </p>
+                              </div>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setAppliedDiscount(0);
+                                setPromoCode("");
+                                setDiscountPercentage(0);
+                                setAppliedCouponCode("");
+                              }}
+                              className="text-green-700 hover:text-green-800 hover:bg-green-100 h-8 px-2"
+                            >
+                              Remove
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="space-y-2.5">
+                          {/* Divider with text */}
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1 h-px bg-gray-300" />
+                            <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Coupons & Offers</span>
+                            <div className="flex-1 h-px bg-gray-300" />
                           </div>
 
-                          {/* Divider */}
-                          <div className="flex items-center gap-3 py-1">
-                            <div className="flex-1 h-px bg-gray-300" />
-                            <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Other Offers</span>
-                            <div className="flex-1 h-px bg-gray-300" />
-                          </div>
-
-                          {/* COMBO15 coupon card */}
-                          {cartItemCount >= 2 ? (
-                            <div className="p-3 bg-white border border-gray-200 rounded-lg shadow-sm">
-                              <div className="flex items-start gap-3">
-                                <div className="h-14 w-14 rounded-lg bg-gradient-to-br from-gray-900 to-gray-700 flex flex-col items-center justify-center flex-shrink-0">
-                                  <span className="text-[11px] font-bold text-white leading-none">SAVE</span>
-                                  <span className="text-xl font-bold text-white leading-none mt-1">15%</span>
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-semibold text-gray-900 mb-1">Get 15% OFF on 2+ items</p>
-                                  <p className="text-xs text-gray-600 mb-2">Save on combo purchases</p>
-                                  <div className="flex items-center justify-between">
-                                    <p className="text-xs font-medium text-gray-700">Code: <span className="font-bold text-gray-900">COMBO15</span></p>
-                                    <Button
-                                      size="sm"
-                                      onClick={() => {
-                                        setPromoCode("COMBO15");
-                                        setDiscountPercentage(15);
-                                        const discount = Math.round(subtotalWithPackaging * 0.15);
-                                        setAppliedDiscount(discount);
-                                        setAppliedCouponCode("COMBO15");
-                                        toast("Coupon applied successfully!");
-                                      }}
-                                      className="bg-gray-900 text-white hover:bg-gray-800 h-7 px-4 text-xs font-semibold"
-                                    >
-                                      APPLY
-                                    </Button>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg opacity-60">
-                              <div className="flex items-start gap-3">
-                                <div className="h-14 w-14 rounded-lg bg-gray-300 flex flex-col items-center justify-center flex-shrink-0">
-                                  <span className="text-[11px] font-bold text-gray-600 leading-none">SAVE</span>
-                                  <span className="text-xl font-bold text-gray-600 leading-none mt-1">15%</span>
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-semibold text-gray-700 mb-1">Get 15% OFF on 2+ items</p>
-                                  <p className="text-xs text-gray-500 mb-2">Add 2+ items to unlock</p>
-                                  <p className="text-xs font-medium text-gray-600">Code: <span className="font-bold">COMBO15</span></p>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* WATCH15 coupon card */}
-                          {cartItems?.some(item => item.product.category === "watches") ? (
-                            <div className="p-3 bg-white border border-gray-200 rounded-lg shadow-sm">
-                              <div className="flex items-start gap-3">
-                                <div className="h-14 w-14 rounded-lg bg-gradient-to-br from-blue-600 to-blue-800 flex flex-col items-center justify-center flex-shrink-0">
-                                  <span className="text-[11px] font-bold text-white leading-none">SAVE</span>
-                                  <span className="text-xl font-bold text-white leading-none mt-1">15%</span>
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-semibold text-gray-900 mb-1">Watch Special</p>
-                                  <p className="text-xs text-gray-600 mb-2">15% off on watches</p>
-                                  <div className="flex items-center justify-between">
-                                    <p className="text-xs font-medium text-gray-700">Code: <span className="font-bold text-gray-900">WATCH15</span></p>
-                                    <Button
-                                      size="sm"
-                                      onClick={() => {
-                                        setPromoCode("WATCH15");
-                                        setDiscountPercentage(15);
-                                        const discount = Math.round(subtotalWithPackaging * 0.15);
-                                        setAppliedDiscount(discount);
-                                        setAppliedCouponCode("WATCH15");
-                                        toast("Watch discount applied!");
-                                      }}
-                                      className="bg-blue-600 text-white hover:bg-blue-700 h-7 px-4 text-xs font-semibold"
-                                    >
-                                      APPLY
-                                    </Button>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg opacity-60">
-                              <div className="flex items-start gap-3">
-                                <div className="h-14 w-14 rounded-lg bg-gray-300 flex flex-col items-center justify-center flex-shrink-0">
-                                  <span className="text-[11px] font-bold text-gray-600 leading-none">SAVE</span>
-                                  <span className="text-xl font-bold text-gray-600 leading-none mt-1">15%</span>
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-semibold text-gray-700 mb-1">Watch Special</p>
-                                  <p className="text-xs text-gray-500 mb-2">Add a watch to unlock</p>
-                                  <p className="text-xs font-medium text-gray-600">Code: <span className="font-bold">WATCH15</span></p>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* FREESHIP coupon card */}
-                          <div className="p-3 bg-white border border-gray-200 rounded-lg shadow-sm">
-                            <div className="flex items-start gap-3">
-                              <div className="h-14 w-14 rounded-lg bg-gradient-to-br from-green-600 to-green-800 flex flex-col items-center justify-center flex-shrink-0">
-                                <svg className="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                          {/* Apply coupon button */}
+                          <button
+                            onClick={() => {
+                              const section = document.getElementById('available-coupons');
+                              if (section) {
+                                section.style.display = section.style.display === 'none' ? 'block' : 'none';
+                              }
+                            }}
+                            className="w-full p-2.5 bg-white border border-gray-200 rounded-md flex items-center justify-between hover:bg-gray-50 transition-all duration-200"
+                          >
+                            <div className="flex items-center gap-2">
+                              <div className="h-7 w-7 rounded-full bg-gray-100 flex items-center justify-center">
+                                <svg className="h-3.5 w-3.5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                                 </svg>
                               </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-semibold text-gray-900 mb-1">Free Delivery</p>
-                                <p className="text-xs text-gray-600 mb-2">Save ₹99 on delivery</p>
-                                <div className="flex items-center justify-between">
-                                  <p className="text-xs font-medium text-gray-700">Code: <span className="font-bold text-gray-900">FREESHIP</span></p>
-                                  <Button
-                                    size="sm"
-                                    onClick={() => {
-                                      setPromoCode("FREESHIP");
+                              <span className="text-xs font-medium text-gray-900">Apply coupon</span>
+                            </div>
+                            <svg className="h-3.5 w-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </button>
+
+                          {/* Available coupons - hidden by default */}
+                          <div id="available-coupons" style={{ display: 'none' }} className="space-y-3 pt-2">
+                            {/* Manual code entry at top */}
+                            <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                              <p className="text-xs font-medium text-gray-600 mb-2.5">Have a coupon code?</p>
+                              <div className="flex items-center gap-2">
+                                <Input
+                                  value={promoCode}
+                                  onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                                  placeholder="Enter code"
+                                  className="flex-1 h-10 text-sm bg-white border-gray-300 focus-visible:ring-gray-400 placeholder:text-gray-400"
+                                />
+                                <Button
+                                  size="sm"
+                                  onClick={() => {
+                                    const code = promoCode.trim().toUpperCase();
+                                    
+                                    if (code === "COMBO15") {
+                                      if (cartItemCount < 2) {
+                                        toast("Add at least 2 products to use COMBO15");
+                                        return;
+                                      }
+                                      setDiscountPercentage(15);
+                                      const discount = Math.round(subtotalWithPackaging * 0.15);
+                                      setAppliedDiscount(discount);
+                                      setAppliedCouponCode("COMBO15");
+                                      toast("Coupon applied successfully!");
+                                    } else if (code === "WATCH15") {
+                                      const hasWatches = cartItems?.some(item => item.product.category === "watches");
+                                      if (!hasWatches) {
+                                        toast("Add a watch to use WATCH15");
+                                        return;
+                                      }
+                                      setDiscountPercentage(15);
+                                      const discount = Math.round(subtotalWithPackaging * 0.15);
+                                      setAppliedDiscount(discount);
+                                      setAppliedCouponCode("WATCH15");
+                                      toast("Watch discount applied!");
+                                    } else if (code === "FREESHIP") {
+                                      // Free shipping - removes ₹99 delivery fee
                                       setAppliedCouponCode("FREESHIP");
                                       toast("Free delivery unlocked!");
-                                    }}
-                                    className="bg-green-600 text-white hover:bg-green-700 h-7 px-4 text-xs font-semibold"
-                                  >
-                                    APPLY
-                                  </Button>
+                                    } else {
+                                      toast("Invalid coupon code");
+                                    }
+                                  }}
+                                  className="bg-gray-800 text-white hover:bg-gray-700 h-10 px-6 text-sm font-medium transition-colors duration-200"
+                                >
+                                  Apply
+                                </Button>
+                              </div>
+                            </div>
+
+                            {/* Divider */}
+                            <div className="flex items-center gap-3 py-1">
+                              <div className="flex-1 h-px bg-gray-300" />
+                              <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Other Offers</span>
+                              <div className="flex-1 h-px bg-gray-300" />
+                            </div>
+
+                            {/* COMBO15 coupon card */}
+                            {cartItemCount >= 2 ? (
+                              <div className="p-3 bg-white border border-gray-200 rounded-lg shadow-sm">
+                                <div className="flex items-start gap-3">
+                                  <div className="h-14 w-14 rounded-lg bg-gradient-to-br from-gray-900 to-gray-700 flex flex-col items-center justify-center flex-shrink-0">
+                                    <span className="text-[11px] font-bold text-white leading-none">SAVE</span>
+                                    <span className="text-xl font-bold text-white leading-none mt-1">15%</span>
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-semibold text-gray-900 mb-1">Get 15% OFF on 2+ items</p>
+                                    <p className="text-xs text-gray-600 mb-2">Save on combo purchases</p>
+                                    <div className="flex items-center justify-between">
+                                      <p className="text-xs font-medium text-gray-700">Code: <span className="font-bold text-gray-900">COMBO15</span></p>
+                                      <Button
+                                        size="sm"
+                                        onClick={() => {
+                                          setPromoCode("COMBO15");
+                                          setDiscountPercentage(15);
+                                          const discount = Math.round(subtotalWithPackaging * 0.15);
+                                          setAppliedDiscount(discount);
+                                          setAppliedCouponCode("COMBO15");
+                                          toast("Coupon applied successfully!");
+                                        }}
+                                        className="bg-gray-900 text-white hover:bg-gray-800 h-7 px-4 text-xs font-semibold"
+                                      >
+                                        APPLY
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg opacity-60">
+                                <div className="flex items-start gap-3">
+                                  <div className="h-14 w-14 rounded-lg bg-gray-300 flex flex-col items-center justify-center flex-shrink-0">
+                                    <span className="text-[11px] font-bold text-gray-600 leading-none">SAVE</span>
+                                    <span className="text-xl font-bold text-gray-600 leading-none mt-1">15%</span>
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-semibold text-gray-700 mb-1">Get 15% OFF on 2+ items</p>
+                                    <p className="text-xs text-gray-500 mb-2">Add 2+ items to unlock</p>
+                                    <p className="text-xs font-medium text-gray-600">Code: <span className="font-bold">COMBO15</span></p>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* WATCH15 coupon card */}
+                            {cartItems?.some(item => item.product.category === "watches") ? (
+                              <div className="p-3 bg-white border border-gray-200 rounded-lg shadow-sm">
+                                <div className="flex items-start gap-3">
+                                  <div className="h-14 w-14 rounded-lg bg-gradient-to-br from-blue-600 to-blue-800 flex flex-col items-center justify-center flex-shrink-0">
+                                    <span className="text-[11px] font-bold text-white leading-none">SAVE</span>
+                                    <span className="text-xl font-bold text-white leading-none mt-1">15%</span>
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-semibold text-gray-900 mb-1">Watch Special</p>
+                                    <p className="text-xs text-gray-600 mb-2">15% off on watches</p>
+                                    <div className="flex items-center justify-between">
+                                      <p className="text-xs font-medium text-gray-700">Code: <span className="font-bold text-gray-900">WATCH15</span></p>
+                                      <Button
+                                        size="sm"
+                                        onClick={() => {
+                                          setPromoCode("WATCH15");
+                                          setDiscountPercentage(15);
+                                          const discount = Math.round(subtotalWithPackaging * 0.15);
+                                          setAppliedDiscount(discount);
+                                          setAppliedCouponCode("WATCH15");
+                                          toast("Watch discount applied!");
+                                        }}
+                                        className="bg-blue-600 text-white hover:bg-blue-700 h-7 px-4 text-xs font-semibold"
+                                      >
+                                        APPLY
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg opacity-60">
+                                <div className="flex items-start gap-3">
+                                  <div className="h-14 w-14 rounded-lg bg-gray-300 flex flex-col items-center justify-center flex-shrink-0">
+                                    <span className="text-[11px] font-bold text-gray-600 leading-none">SAVE</span>
+                                    <span className="text-xl font-bold text-gray-600 leading-none mt-1">15%</span>
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-semibold text-gray-700 mb-1">Watch Special</p>
+                                    <p className="text-xs text-gray-500 mb-2">Add a watch to unlock</p>
+                                    <p className="text-xs font-medium text-gray-600">Code: <span className="font-bold">WATCH15</span></p>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* FREESHIP coupon card */}
+                            <div className="p-3 bg-white border border-gray-200 rounded-lg shadow-sm">
+                              <div className="flex items-start gap-3">
+                                <div className="h-14 w-14 rounded-lg bg-gradient-to-br from-green-600 to-green-800 flex flex-col items-center justify-center flex-shrink-0">
+                                  <svg className="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                                  </svg>
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-semibold text-gray-900 mb-1">Free Delivery</p>
+                                  <p className="text-xs text-gray-600 mb-2">Save ₹99 on delivery</p>
+                                  <div className="flex items-center justify-between">
+                                    <p className="text-xs font-medium text-gray-700">Code: <span className="font-bold text-gray-900">FREESHIP</span></p>
+                                    <Button
+                                      size="sm"
+                                      onClick={() => {
+                                        setPromoCode("FREESHIP");
+                                        setAppliedCouponCode("FREESHIP");
+                                        toast("Free delivery unlocked!");
+                                      }}
+                                      className="bg-green-600 text-white hover:bg-green-700 h-7 px-4 text-xs font-semibold"
+                                    >
+                                      APPLY
+                                    </Button>
+                                  </div>
                                 </div>
                               </div>
                             </div>
                           </div>
                         </div>
+                      )}
+                    </div>
+
+                    <div className="pt-2 border-t border-gray-300/60" />
+
+                    {/* Totals section */}
+                    <div className="flex items-center justify-between text-gray-900">
+                      <p className="font-semibold">Subtotal</p>
+                      <p className="font-semibold">₹{estimatedTotal.toLocaleString()}</p>
+                    </div>
+                    {packagingCharges > 0 && (
+                      <div className="flex items-center justify-between text-gray-900">
+                        <p className="font-semibold">Packaging charges</p>
+                        <p className="font-semibold">₹{packagingCharges.toLocaleString()}</p>
                       </div>
                     )}
-                  </div>
-
-                  <div className="pt-2 border-t border-gray-300/60" />
-
-                  {/* Totals section */}
-                  <div className="flex items-center justify-between text-gray-900">
-                    <p className="font-semibold">Subtotal</p>
-                    <p className="font-semibold">₹{estimatedTotal.toLocaleString()}</p>
-                  </div>
-                  {packagingCharges > 0 && (
                     <div className="flex items-center justify-between text-gray-900">
-                      <p className="font-semibold">Packaging charges</p>
-                      <p className="font-semibold">₹{packagingCharges.toLocaleString()}</p>
+                      <p className="font-semibold">Delivery fee</p>
+                      <p className="font-semibold">₹{deliveryFee.toLocaleString()}</p>
                     </div>
-                  )}
-                  <div className="flex items-center justify-between text-gray-900">
-                    <p className="font-semibold">Delivery fee</p>
-                    <p className="font-semibold">₹{deliveryFee.toLocaleString()}</p>
-                  </div>
-                  {finalDiscount > 0 && (
+                    {finalDiscount > 0 && (
+                      <div className="flex items-center justify-between text-gray-900">
+                        <p className="font-semibold text-green-700">Discount ({appliedCouponCode})</p>
+                        <p className="font-semibold text-green-700">-₹{finalDiscount.toLocaleString()}</p>
+                      </div>
+                    )}
+                    {appliedCouponCode === "FREESHIP" && (
+                      <div className="flex items-center justify-between text-gray-900">
+                        <p className="font-semibold text-green-700">Free Delivery (FREESHIP)</p>
+                        <p className="font-semibold text-green-700">-₹99</p>
+                      </div>
+                    )}
                     <div className="flex items-center justify-between text-gray-900">
-                      <p className="font-semibold text-green-700">Discount ({appliedCouponCode})</p>
-                      <p className="font-semibold text-green-700">-₹{finalDiscount.toLocaleString()}</p>
+                      <p className="font-extrabold">Estimated total</p>
+                      <p className="font-extrabold">₹{discountedTotal.toLocaleString()}</p>
                     </div>
-                  )}
-                  {appliedCouponCode === "FREESHIP" && (
-                    <div className="flex items-center justify-between text-gray-900">
-                      <p className="font-semibold text-green-700">Free Delivery (FREESHIP)</p>
-                      <p className="font-semibold text-green-700">-₹99</p>
-                    </div>
-                  )}
-                  <div className="flex items-center justify-between text-gray-900">
-                    <p className="font-extrabold">Estimated total</p>
-                    <p className="font-extrabold">₹{discountedTotal.toLocaleString()}</p>
-                  </div>
 
-                  <p className="text-xs text-gray-600">
-                    Taxes, discounts and <span className="underline">shipping</span> calculated at checkout.
+                    <p className="text-xs text-gray-600">
+                      Taxes, discounts and <span className="underline">shipping</span> calculated at checkout.
+                    </p>
+                    
+                    <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                      <p className="text-xs text-gray-700">
+                        <span className="font-semibold">📦 Delivery:</span> 5-7 business days after order confirmation
+                      </p>
+                      <p className="text-xs text-gray-700 mt-1">
+                        <span className="font-semibold">✓ Availability:</span> Confirmed upon order placement
+                      </p>
+                    </div>
+
+                    <div className="pt-2">
+                      <Button
+                        className="w-full h-12 rounded-full bg-black text-white hover:bg-black/90"
+                        onClick={() => {
+                          setIsCartOpen(false);
+                          navigate("/checkout");
+                        }}
+                      >
+                        Checkout
+                      </Button>
+                    </div>
+                  </div>
+                ) : checkoutStep === "details" ? (
+                  <div className="space-y-5">
+                    <div>
+                      <p className="text-sm font-semibold mb-2">Contact</p>
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="space-y-1.5">
+                            <Label htmlFor="firstName">First name</Label>
+                            <Input
+                              id="firstName"
+                              value={details.firstName}
+                              onChange={(e) => setDetails((d) => ({ ...d, firstName: e.target.value }))}
+                              className="bg-white"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label htmlFor="lastName">Last name</Label>
+                            <Input
+                              id="lastName"
+                              value={details.lastName}
+                              onChange={(e) => setDetails((d) => ({ ...d, lastName: e.target.value }))}
+                              className="bg-white"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <p className="text-sm font-semibold">Delivery</p>
+                      <div className="space-y-3">
+                        <div className="space-y-1.5">
+                          <Label htmlFor="pin">PIN code</Label>
+                          <Input
+                            id="pin"
+                            inputMode="numeric"
+                            value={details.pin}
+                            onChange={(e) => setDetails((d) => ({ ...d, pin: e.target.value }))}
+                            className="bg-white"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label htmlFor="address1">Address</Label>
+                          <Input
+                            id="address1"
+                            placeholder="Street address"
+                            value={details.address1}
+                            onChange={(e) => setDetails((d) => ({ ...d, address1: e.target.value }))}
+                            className="bg-white"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label htmlFor="address2">Apartment, suite, etc. (optional)</Label>
+                          <Input
+                            id="address2"
+                            placeholder=""
+                            value={details.address2}
+                            onChange={(e) => setDetails((d) => ({ ...d, address2: e.target.value }))}
+                            className="bg-white"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label htmlFor="city">City/Town</Label>
+                          <Input
+                            id="city"
+                            value={details.city}
+                            onChange={(e) => setDetails((d) => ({ ...d, city: e.target.value }))}
+                            className="bg-white"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label htmlFor="state">State</Label>
+                          <Select
+                            value={details.state}
+                            onValueChange={(v) => setDetails((d) => ({ ...d, state: v }))}
+                          >
+                            <SelectTrigger className="bg-white">
+                              <SelectValue placeholder="Select state" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Andhra Pradesh">Andhra Pradesh</SelectItem>
+                              <SelectItem value="Arunachal Pradesh">Arunachal Pradesh</SelectItem>
+                              <SelectItem value="Assam">Assam</SelectItem>
+                              <SelectItem value="Bihar">Bihar</SelectItem>
+                              <SelectItem value="Chhattisgarh">Chhattisgarh</SelectItem>
+                              <SelectItem value="Goa">Goa</SelectItem>
+                              <SelectItem value="Gujarat">Gujarat</SelectItem>
+                              <SelectItem value="Haryana">Haryana</SelectItem>
+                              <SelectItem value="Himachal Pradesh">Himachal Pradesh</SelectItem>
+                              <SelectItem value="Jharkhand">Jharkhand</SelectItem>
+                              <SelectItem value="Karnataka">Karnataka</SelectItem>
+                              <SelectItem value="Kerala">Kerala</SelectItem>
+                              <SelectItem value="Madhya Pradesh">Madhya Pradesh</SelectItem>
+                              <SelectItem value="Maharashtra">Maharashtra</SelectItem>
+                              <SelectItem value="Manipur">Manipur</SelectItem>
+                              <SelectItem value="Meghalaya">Meghalaya</SelectItem>
+                              <SelectItem value="Mizoram">Mizoram</SelectItem>
+                              <SelectItem value="Nagaland">Nagaland</SelectItem>
+                              <SelectItem value="Odisha">Odisha</SelectItem>
+                              <SelectItem value="Punjab">Punjab</SelectItem>
+                              <SelectItem value="Rajasthan">Rajasthan</SelectItem>
+                              <SelectItem value="Sikkim">Sikkim</SelectItem>
+                              <SelectItem value="Tamil Nadu">Tamil Nadu</SelectItem>
+                              <SelectItem value="Telangana">Telangana</SelectItem>
+                              <SelectItem value="Tripura">Tripura</SelectItem>
+                              <SelectItem value="Uttar Pradesh">Uttar Pradesh</SelectItem>
+                              <SelectItem value="Uttarakhand">Uttarakhand</SelectItem>
+                              <SelectItem value="West Bengal">West Bengal</SelectItem>
+                              <SelectItem value="Delhi">Delhi</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label htmlFor="phone">Phone</Label>
+                          <Input
+                            id="phone"
+                            inputMode="tel"
+                            placeholder="+91"
+                            value={details.phone}
+                            onChange={(e) => setDetails((d) => ({ ...d, phone: e.target.value }))}
+                            className="bg-white"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2 pt-1">
+                      <Button
+                        variant="outline"
+                        className="h-12 rounded-full"
+                        onClick={() => setCheckoutStep("review")}
+                      >
+                        Back
+                      </Button>
+                      <Button
+                        className="flex-1 h-12 rounded-full bg-black text-white hover:bg-black/90"
+                        onClick={() => {
+                          const required = [
+                            details.firstName,
+                            details.lastName,
+                            details.address1,
+                            details.city,
+                            details.state,
+                            details.pin,
+                            details.phone,
+                          ].every((v) => String(v || "").trim().length > 0);
+                          if (!required) {
+                            alert("Please fill all delivery details.");
+                            return;
+                          }
+                          generateQRCode();
+                          setCheckoutStep("payment");
+                        }}
+                      >
+                        Proceed to Payment
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-5">
+                    <div className="text-center">
+                      <h3 className="text-xl font-bold mb-2">Scan to Pay</h3>
+                      <p className="text-sm text-gray-600 mb-4">
+                        Amount: ₹{discountedTotal.toLocaleString()}
+                      </p>
+                      
+                      {qrCodeUrl && (
+                        <div className="bg-white p-4 rounded-lg inline-block shadow-md">
+                          <img 
+                            src={qrCodeUrl} 
+                            alt="UPI Payment QR Code" 
+                            className="w-64 h-64 mx-auto"
+                          />
+                        </div>
+                      )}
+                      
+                      <p className="text-xs text-gray-500 mt-3">
+                        Scan this QR code with any UPI app to pay ₹{discountedTotal.toLocaleString()}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        The amount is locked and cannot be changed
+                      </p>
+                    </div>
+
+                    <div className="pt-2 border-t border-gray-300/60" />
+                    
+                    <div className="flex items-center justify-between">
+                      <p className="font-semibold">Subtotal</p>
+                      <p className="font-semibold">₹{estimatedTotal.toLocaleString()}</p>
+                    </div>
+
+                    {packagingCharges > 0 && (
+                      <div className="flex items-center justify-between">
+                        <p className="font-semibold">Packaging charges</p>
+                        <p className="font-semibold">₹{packagingCharges.toLocaleString()}</p>
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between">
+                      <p className="font-semibold">Delivery fee</p>
+                      <p className="font-semibold">₹{deliveryFee.toLocaleString()}</p>
+                    </div>
+
+                    {finalDiscount > 0 && (
+                      <div className="flex items-center justify-between">
+                        <p className="font-semibold text-green-700">Discount ({appliedCouponCode})</p>
+                        <p className="font-semibold text-green-700">-₹{finalDiscount.toLocaleString()}</p>
+                      </div>
+                    )}
+                    {appliedCouponCode === "FREESHIP" && (
+                      <div className="flex items-center justify-between">
+                        <p className="font-semibold text-green-700">Free Delivery (FREESHIP)</p>
+                        <p className="font-semibold text-green-700">-₹99</p>
+                      </div>
+                    )}
+                    
+                    <div className="flex items-center justify-between">
+                      <p className="font-extrabold">Total</p>
+                      <p className="font-extrabold">₹{discountedTotal.toLocaleString()}</p>
+                    </div>
+
+                    <div className="flex gap-2 pt-1">
+                      <Button
+                        variant="outline"
+                        className="h-12 rounded-full"
+                        onClick={() => setCheckoutStep("details")}
+                      >
+                        Back
+                      </Button>
+                      <Button
+                        className="flex-1 h-12 rounded-full bg-[#25D366] text-white hover:bg-[#20bd5b]"
+                        onClick={async () => {
+                          if (!cartItems || cartItems.length === 0) {
+                            window.location.href = "https://wa.me/9871629699";
+                            return;
+                          }
+
+                          // Save order to database before sending to WhatsApp
+                          if (user?._id) {
+                            try {
+                              const orderItems = cartItems.map(item => ({
+                                productId: item.productId,
+                                quantity: item.quantity ?? 1,
+                                price: item.product.price,
+                                color: (item as any).color,
+                                packaging: (item as any).packaging,
+                              }));
+
+                              await createOrder({
+                                userId: user._id as any,
+                                items: orderItems as any,
+                                total: discountedTotal,
+                                shippingAddress: {
+                                  firstName: details.firstName,
+                                  lastName: details.lastName,
+                                  address1: details.address1,
+                                  address2: details.address2,
+                                  city: details.city,
+                                  state: details.state,
+                                  pin: details.pin,
+                                  phone: details.phone,
+                                },
+                                paymentMethod: "UPI",
+                                discountApplied: finalDiscount,
+                              });
+                            } catch (error) {
+                              console.error('Failed to save order:', error);
+                            }
+                          }
+
+                          const lines: Array<string> = [];
+                          lines.push("✅ PAYMENT COMPLETED");
+                          lines.push("");
+                          lines.push("Order Details:");
+                          lines.push("");
+
+                          let grandTotal = 0;
+                          let totalPackagingCharges = 0;
+                          
+                          for (const item of cartItems) {
+                            const name = item.product.name;
+                            const qty = item.quantity ?? 1;
+                            const priceNum = item.product.price ?? 0;
+                            grandTotal += priceNum * qty;
+                            const price = `₹${priceNum.toLocaleString()}`;
+
+                            lines.push(`- ${name} | Qty: ${qty} | Price: ${price}`);
+                            if ((item as any).color) {
+                              const c = String((item as any).color);
+                              const cap = c.charAt(0).toUpperCase() + c.slice(1);
+                              lines.push(`  Color: ${cap}`);
+                            }
+                            if ((item as any).packaging) {
+                              const p = String((item as any).packaging);
+                              const packText = p === "indian" ? "Indian Box (+₹70)" : p === "imported" ? "Imported Box (Premium) (+₹250)" : "Without Box";
+                              lines.push(`  Packaging: ${packText}`);
+                              
+                              if (p === "indian") totalPackagingCharges += 70 * qty;
+                              else if (p === "imported") totalPackagingCharges += 250 * qty;
+                            }
+                            const productLink = `${window.location.origin}/product/${item.product._id}`;
+                            lines.push(`  Link: ${productLink}`);
+                          }
+
+                          if (totalPackagingCharges > 0) {
+                            lines.push("");
+                            lines.push(`Packaging charges: ₹${totalPackagingCharges.toLocaleString()}`);
+                          }
+
+                          let finalTotal = grandTotal + totalPackagingCharges;
+                          if (finalDiscount > 0) {
+                            lines.push("");
+                            if (appliedCouponCode === "COMBO15") {
+                              lines.push(`Discount code applied: COMBO15 - 15% off (₹${finalDiscount.toLocaleString()} saved)`);
+                            } else if (appliedCouponCode === "WATCH15") {
+                              lines.push(`Discount code applied: WATCH15 - 15% off on watches (₹${finalDiscount.toLocaleString()} saved)`);
+                            }
+                            finalTotal = Math.max(0, finalTotal - finalDiscount);
+                          }
+                          
+                          if (appliedCouponCode === "FREESHIP" && subtotalWithPackaging >= 799) {
+                            lines.push("");
+                            lines.push(`Free delivery applied: FREESHIP code`);
+                          }
+
+                          lines.push("");
+                          lines.push("Delivery Address:");
+                          lines.push(`${details.firstName} ${details.lastName}`);
+                          lines.push(`Contact number: ${details.phone}`);
+                          lines.push(`${details.address1}`);
+                          if (String(details.address2 || "").trim().length > 0) {
+                            lines.push(`${details.address2}`);
+                          }
+                          lines.push(`${details.city}, ${details.state} - ${details.pin}`);
+
+                          lines.push("");
+                          lines.push(`💰 Amount Paid: ₹${finalTotal.toLocaleString()}`);
+
+                          const message = lines.join("\n");
+                          const url = `https://wa.me/9871629699?text=${encodeURIComponent(message)}`;
+                          window.location.href = url;
+                        }}
+                      >
+                        Payment Done - Send Confirmation
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </SheetContent>
+          </Sheet>
+
+          <Sheet open={isProfileOpen} onOpenChange={(open) => setIsProfileOpen(open)}>
+            <SheetContent
+              side="right"
+              className="w-full sm:max-w-lg p-0 h-full bg-black text-white border-l border-white/10 flex flex-col overflow-hidden"
+            >
+              <SheetHeader className="px-6 pt-6 pb-4 text-left">
+                <p className="text-[10px] uppercase tracking-[0.4em] text-white/50">
+                  Luxe profile
+                </p>
+                <SheetTitle className="text-3xl font-extrabold">Personal Details</SheetTitle>
+                <p className="text-sm text-white/60">
+                  Save your address once and glide through checkout every time.
+                </p>
+                {isAuthorizedAdmin && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-4 h-10 rounded-full border-white/30 text-white hover:bg-white/10"
+                    onClick={() => {
+                      setIsProfileOpen(false);
+                      navigate("/admin");
+                    }}
+                  >
+                    Go to Admin
+                  </Button>
+                )}
+              </SheetHeader>
+              <div className="px-6">
+                <div className="h-px w-full bg-white/10" />
+              </div>
+              <div className="flex-1 overflow-y-auto px-6 pb-6 space-y-6">
+                <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 via-white/5 to-transparent p-5 shadow-[0_20px_60px_rgba(0,0,0,0.45)]">
+                  <p className="text-xs uppercase tracking-[0.4em] text-white/60">Concierge</p>
+                  <p className="text-lg font-semibold mt-3 text-white">
+                    Luxe remembers your delivery preferences for lightning-fast confirmations.
                   </p>
-                  
-                  <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
-                    <p className="text-xs text-gray-700">
-                      <span className="font-semibold">📦 Delivery:</span> 5-7 business days after order confirmation
-                    </p>
-                    <p className="text-xs text-gray-700 mt-1">
-                      <span className="font-semibold">✓ Availability:</span> Confirmed upon order placement
-                    </p>
-                  </div>
-
-                  <div className="pt-2">
-                    <Button
-                      className="w-full h-12 rounded-full bg-black text-white hover:bg-black/90"
-                      onClick={() => {
-                        setIsCartOpen(false);
-                        navigate("/checkout");
-                      }}
-                    >
-                      Checkout
-                    </Button>
+                  <div className="mt-4 flex flex-col gap-2 text-sm text-white/70">
+                    <span className="flex items-center gap-2">
+                      <span className="h-6 w-6 rounded-full bg-white/10 flex items-center justify-center text-white">
+                        ✓
+                      </span>
+                      Auto-filled checkout & premium delivery tracking.
+                    </span>
+                    <span className="flex items-center gap-2">
+                      <span className="h-6 w-6 rounded-full bg-white/10 flex items-center justify-center text-white">
+                        ✓
+                      </span>
+                      Priority WhatsApp confirmations at 8871880773.
+                    </span>
                   </div>
                 </div>
-              ) : checkoutStep === "details" ? (
-                <div className="space-y-5">
+
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-xs uppercase tracking-[0.3em] text-white/50">
+                        First name
+                      </Label>
+                      <Input
+                        value={profileForm.firstName}
+                        onChange={(e) => handleProfileFieldChange("firstName", e.target.value)}
+                        className="mt-2 bg-white/5 border-white/10 text-white placeholder:text-white/40"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs uppercase tracking-[0.3em] text-white/50">
+                        Last name
+                      </Label>
+                      <Input
+                        value={profileForm.lastName}
+                        onChange={(e) => handleProfileFieldChange("lastName", e.target.value)}
+                        className="mt-2 bg-white/5 border-white/10 text-white placeholder:text-white/40"
+                      />
+                    </div>
+                  </div>
+
                   <div>
-                    <p className="text-sm font-semibold mb-2">Contact</p>
-                    <div className="space-y-3">
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1.5">
-                          <Label htmlFor="firstName">First name</Label>
-                          <Input
-                            id="firstName"
-                            value={details.firstName}
-                            onChange={(e) => setDetails((d) => ({ ...d, firstName: e.target.value }))}
-                            className="bg-white"
-                          />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label htmlFor="lastName">Last name</Label>
-                          <Input
-                            id="lastName"
-                            value={details.lastName}
-                            onChange={(e) => setDetails((d) => ({ ...d, lastName: e.target.value }))}
-                            className="bg-white"
-                          />
-                        </div>
-                      </div>
+                    <Label className="text-xs uppercase tracking-[0.3em] text-white/50">
+                      Phone
+                    </Label>
+                    <Input
+                      value={profileForm.phone}
+                      onChange={(e) => handleProfileFieldChange("phone", e.target.value)}
+                      inputMode="tel"
+                      placeholder="+91"
+                      className="mt-2 bg-white/5 border-white/10 text-white placeholder:text-white/40"
+                    />
+                  </div>
+
+                  <div className="space-y-4">
+                    <div>
+                      <Label className="text-xs uppercase tracking-[0.3em] text-white/50">
+                        Address line 1
+                      </Label>
+                      <Input
+                        value={profileForm.address1}
+                        onChange={(e) => handleProfileFieldChange("address1", e.target.value)}
+                        placeholder="House / street / locality"
+                        className="mt-2 bg-white/5 border-white/10 text-white placeholder:text-white/40"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs uppercase tracking-[0.3em] text-white/50">
+                        Address line 2 (optional)
+                      </Label>
+                      <Input
+                        value={profileForm.address2}
+                        onChange={(e) => handleProfileFieldChange("address2", e.target.value)}
+                        placeholder="Apartment, suite, landmark"
+                        className="mt-2 bg-white/5 border-white/10 text-white placeholder:text-white/40"
+                      />
                     </div>
                   </div>
 
-                  <div className="space-y-3">
-                    <p className="text-sm font-semibold">Delivery</p>
-                    <div className="space-y-3">
-                      <div className="space-y-1.5">
-                        <Label htmlFor="pin">PIN code</Label>
-                        <Input
-                          id="pin"
-                          inputMode="numeric"
-                          value={details.pin}
-                          onChange={(e) => setDetails((d) => ({ ...d, pin: e.target.value }))}
-                          className="bg-white"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label htmlFor="address1">Address</Label>
-                        <Input
-                          id="address1"
-                          placeholder="Street address"
-                          value={details.address1}
-                          onChange={(e) => setDetails((d) => ({ ...d, address1: e.target.value }))}
-                          className="bg-white"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label htmlFor="address2">Apartment, suite, etc. (optional)</Label>
-                        <Input
-                          id="address2"
-                          placeholder=""
-                          value={details.address2}
-                          onChange={(e) => setDetails((d) => ({ ...d, address2: e.target.value }))}
-                          className="bg-white"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label htmlFor="city">City/Town</Label>
-                        <Input
-                          id="city"
-                          value={details.city}
-                          onChange={(e) => setDetails((d) => ({ ...d, city: e.target.value }))}
-                          className="bg-white"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label htmlFor="state">State</Label>
-                        <Select
-                          value={details.state}
-                          onValueChange={(v) => setDetails((d) => ({ ...d, state: v }))}
-                        >
-                          <SelectTrigger className="bg-white">
-                            <SelectValue placeholder="Select state" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Andhra Pradesh">Andhra Pradesh</SelectItem>
-                            <SelectItem value="Arunachal Pradesh">Arunachal Pradesh</SelectItem>
-                            <SelectItem value="Assam">Assam</SelectItem>
-                            <SelectItem value="Bihar">Bihar</SelectItem>
-                            <SelectItem value="Chhattisgarh">Chhattisgarh</SelectItem>
-                            <SelectItem value="Goa">Goa</SelectItem>
-                            <SelectItem value="Gujarat">Gujarat</SelectItem>
-                            <SelectItem value="Haryana">Haryana</SelectItem>
-                            <SelectItem value="Himachal Pradesh">Himachal Pradesh</SelectItem>
-                            <SelectItem value="Jharkhand">Jharkhand</SelectItem>
-                            <SelectItem value="Karnataka">Karnataka</SelectItem>
-                            <SelectItem value="Kerala">Kerala</SelectItem>
-                            <SelectItem value="Madhya Pradesh">Madhya Pradesh</SelectItem>
-                            <SelectItem value="Maharashtra">Maharashtra</SelectItem>
-                            <SelectItem value="Manipur">Manipur</SelectItem>
-                            <SelectItem value="Meghalaya">Meghalaya</SelectItem>
-                            <SelectItem value="Mizoram">Mizoram</SelectItem>
-                            <SelectItem value="Nagaland">Nagaland</SelectItem>
-                            <SelectItem value="Odisha">Odisha</SelectItem>
-                            <SelectItem value="Punjab">Punjab</SelectItem>
-                            <SelectItem value="Rajasthan">Rajasthan</SelectItem>
-                            <SelectItem value="Sikkim">Sikkim</SelectItem>
-                            <SelectItem value="Tamil Nadu">Tamil Nadu</SelectItem>
-                            <SelectItem value="Telangana">Telangana</SelectItem>
-                            <SelectItem value="Tripura">Tripura</SelectItem>
-                            <SelectItem value="Uttar Pradesh">Uttar Pradesh</SelectItem>
-                            <SelectItem value="Uttarakhand">Uttarakhand</SelectItem>
-                            <SelectItem value="West Bengal">West Bengal</SelectItem>
-                            <SelectItem value="Delhi">Delhi</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label htmlFor="phone">Phone</Label>
-                        <Input
-                          id="phone"
-                          inputMode="tel"
-                          placeholder="+91"
-                          value={details.phone}
-                          onChange={(e) => setDetails((d) => ({ ...d, phone: e.target.value }))}
-                          className="bg-white"
-                        />
-                      </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-xs uppercase tracking-[0.3em] text-white/50">
+                        City / Town
+                      </Label>
+                      <Input
+                        value={profileForm.city}
+                        onChange={(e) => handleProfileFieldChange("city", e.target.value)}
+                        className="mt-2 bg-white/5 border-white/10 text-white placeholder:text-white/40"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs uppercase tracking-[0.3em] text-white/50">
+                        PIN code
+                      </Label>
+                      <Input
+                        value={profileForm.pin}
+                        onChange={(e) => handleProfileFieldChange("pin", e.target.value)}
+                        inputMode="numeric"
+                        className="mt-2 bg-white/5 border-white/10 text-white placeholder:text-white/40"
+                      />
                     </div>
                   </div>
 
-                  <div className="flex gap-2 pt-1">
-                    <Button
-                      variant="outline"
-                      className="h-12 rounded-full"
-                      onClick={() => setCheckoutStep("review")}
+                  <div>
+                    <Label className="text-xs uppercase tracking-[0.3em] text-white/50">
+                      State
+                    </Label>
+                    <Select
+                      value={profileForm.state || undefined}
+                      onValueChange={(value) => handleProfileFieldChange("state", value)}
                     >
-                      Back
-                    </Button>
-                    <Button
-                      className="flex-1 h-12 rounded-full bg-black text-white hover:bg-black/90"
-                      onClick={() => {
-                        const required = [
-                          details.firstName,
-                          details.lastName,
-                          details.address1,
-                          details.city,
-                          details.state,
-                          details.pin,
-                          details.phone,
-                        ].every((v) => String(v || "").trim().length > 0);
-                        if (!required) {
-                          alert("Please fill all delivery details.");
-                          return;
-                        }
-                        generateQRCode();
-                        setCheckoutStep("payment");
-                      }}
-                    >
-                      Proceed to Payment
-                    </Button>
+                      <SelectTrigger className="mt-2 bg-white/5 border-white/10 text-white">
+                        <SelectValue placeholder="Select state" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-black text-white border border-white/10">
+                        {INDIA_STATES.map((state) => (
+                          <SelectItem key={state} value={state}>
+                            {state}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
-              ) : (
-                <div className="space-y-5">
-                  <div className="text-center">
-                    <h3 className="text-xl font-bold mb-2">Scan to Pay</h3>
-                    <p className="text-sm text-gray-600 mb-4">
-                      Amount: ₹{discountedTotal.toLocaleString()}
-                    </p>
-                    
-                    {qrCodeUrl && (
-                      <div className="bg-white p-4 rounded-lg inline-block shadow-md">
-                        <img 
-                          src={qrCodeUrl} 
-                          alt="UPI Payment QR Code" 
-                          className="w-64 h-64 mx-auto"
-                        />
-                      </div>
-                    )}
-                    
-                    <p className="text-xs text-gray-500 mt-3">
-                      Scan this QR code with any UPI app to pay ₹{discountedTotal.toLocaleString()}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      The amount is locked and cannot be changed
-                    </p>
-                  </div>
+              </div>
 
-                  <div className="pt-2 border-t border-gray-300/60" />
-                  
-                  <div className="flex items-center justify-between">
-                    <p className="font-semibold">Subtotal</p>
-                    <p className="font-semibold">₹{estimatedTotal.toLocaleString()}</p>
-                  </div>
-
-                  {packagingCharges > 0 && (
-                    <div className="flex items-center justify-between">
-                      <p className="font-semibold">Packaging charges</p>
-                      <p className="font-semibold">₹{packagingCharges.toLocaleString()}</p>
-                    </div>
-                  )}
-
-                  <div className="flex items-center justify-between">
-                    <p className="font-semibold">Delivery fee</p>
-                    <p className="font-semibold">₹{deliveryFee.toLocaleString()}</p>
-                  </div>
-
-                  {finalDiscount > 0 && (
-                    <div className="flex items-center justify-between">
-                      <p className="font-semibold text-green-700">Discount ({appliedCouponCode})</p>
-                      <p className="font-semibold text-green-700">-₹{finalDiscount.toLocaleString()}</p>
-                    </div>
-                  )}
-                  {appliedCouponCode === "FREESHIP" && (
-                    <div className="flex items-center justify-between">
-                      <p className="font-semibold text-green-700">Free Delivery (FREESHIP)</p>
-                      <p className="font-semibold text-green-700">-₹99</p>
-                    </div>
-                  )}
-                  
-                  <div className="flex items-center justify-between">
-                    <p className="font-extrabold">Total</p>
-                    <p className="font-extrabold">₹{discountedTotal.toLocaleString()}</p>
-                  </div>
-
-                  <div className="flex gap-2 pt-1">
-                    <Button
-                      variant="outline"
-                      className="h-12 rounded-full"
-                      onClick={() => setCheckoutStep("details")}
-                    >
-                      Back
-                    </Button>
-                    <Button
-                      className="flex-1 h-12 rounded-full bg-[#25D366] text-white hover:bg-[#20bd5b]"
-                      onClick={async () => {
-                        if (!cartItems || cartItems.length === 0) {
-                          window.location.href = "https://wa.me/9871629699";
-                          return;
-                        }
-
-                        // Save order to database before sending to WhatsApp
-                        if (user?._id) {
-                          try {
-                            const orderItems = cartItems.map(item => ({
-                              productId: item.productId,
-                              quantity: item.quantity ?? 1,
-                              price: item.product.price,
-                              color: (item as any).color,
-                              packaging: (item as any).packaging,
-                            }));
-
-                            await createOrder({
-                              userId: user._id as any,
-                              items: orderItems as any,
-                              total: discountedTotal,
-                              shippingAddress: {
-                                firstName: details.firstName,
-                                lastName: details.lastName,
-                                address1: details.address1,
-                                address2: details.address2,
-                                city: details.city,
-                                state: details.state,
-                                pin: details.pin,
-                                phone: details.phone,
-                              },
-                              paymentMethod: "UPI",
-                              discountApplied: finalDiscount,
-                            });
-                          } catch (error) {
-                            console.error('Failed to save order:', error);
-                          }
-                        }
-
-                        const lines: Array<string> = [];
-                        lines.push("✅ PAYMENT COMPLETED");
-                        lines.push("");
-                        lines.push("Order Details:");
-                        lines.push("");
-
-                        let grandTotal = 0;
-                        let totalPackagingCharges = 0;
-                        
-                        for (const item of cartItems) {
-                          const name = item.product.name;
-                          const qty = item.quantity ?? 1;
-                          const priceNum = item.product.price ?? 0;
-                          grandTotal += priceNum * qty;
-                          const price = `₹${priceNum.toLocaleString()}`;
-
-                          lines.push(`- ${name} | Qty: ${qty} | Price: ${price}`);
-                          if ((item as any).color) {
-                            const c = String((item as any).color);
-                            const cap = c.charAt(0).toUpperCase() + c.slice(1);
-                            lines.push(`  Color: ${cap}`);
-                          }
-                          if ((item as any).packaging) {
-                            const p = String((item as any).packaging);
-                            const packText = p === "indian" ? "Indian Box (+₹70)" : p === "imported" ? "Imported Box (Premium) (+₹250)" : "Without Box";
-                            lines.push(`  Packaging: ${packText}`);
-                            
-                            if (p === "indian") totalPackagingCharges += 70 * qty;
-                            else if (p === "imported") totalPackagingCharges += 250 * qty;
-                          }
-                          const productLink = `${window.location.origin}/product/${item.product._id}`;
-                          lines.push(`  Link: ${productLink}`);
-                        }
-
-                        if (totalPackagingCharges > 0) {
-                          lines.push("");
-                          lines.push(`Packaging charges: ₹${totalPackagingCharges.toLocaleString()}`);
-                        }
-
-                        let finalTotal = grandTotal + totalPackagingCharges;
-                        if (finalDiscount > 0) {
-                          lines.push("");
-                          if (appliedCouponCode === "COMBO15") {
-                            lines.push(`Discount code applied: COMBO15 - 15% off (₹${finalDiscount.toLocaleString()} saved)`);
-                          } else if (appliedCouponCode === "WATCH15") {
-                            lines.push(`Discount code applied: WATCH15 - 15% off on watches (₹${finalDiscount.toLocaleString()} saved)`);
-                          }
-                          finalTotal = Math.max(0, finalTotal - finalDiscount);
-                        }
-                        
-                        if (appliedCouponCode === "FREESHIP" && subtotalWithPackaging >= 799) {
-                          lines.push("");
-                          lines.push(`Free delivery applied: FREESHIP code`);
-                        }
-
-                        lines.push("");
-                        lines.push("Delivery Address:");
-                        lines.push(`${details.firstName} ${details.lastName}`);
-                        lines.push(`Contact number: ${details.phone}`);
-                        lines.push(`${details.address1}`);
-                        if (String(details.address2 || "").trim().length > 0) {
-                          lines.push(`${details.address2}`);
-                        }
-                        lines.push(`${details.city}, ${details.state} - ${details.pin}`);
-
-                        lines.push("");
-                        lines.push(`💰 Amount Paid: ₹${finalTotal.toLocaleString()}`);
-
-                        const message = lines.join("\n");
-                        const url = `https://wa.me/9871629699?text=${encodeURIComponent(message)}`;
-                        window.location.href = url;
-                      }}
-                    >
-                      Payment Done - Send Confirmation
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </SheetContent>
-        </Sheet>
+              <div className="px-6 py-5 border-t border-white/10 flex flex-col gap-3 sm:flex-row">
+                <Button
+                  variant="outline"
+                  className="h-12 rounded-full border-white/30 text-white hover:bg-white/10"
+                  onClick={() => setIsProfileOpen(false)}
+                >
+                  Close
+                </Button>
+                <Button
+                  className="h-12 flex-1 rounded-full bg-white text-black hover:bg-white/90 font-semibold tracking-wide"
+                  onClick={handleProfileSave}
+                >
+                  Save Luxe Profile
+                </Button>
+              </div>
+            </SheetContent>
+          </Sheet>
+        </>
       )}
     </motion.nav>
   );
