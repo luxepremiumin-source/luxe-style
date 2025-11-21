@@ -42,7 +42,7 @@ export default function Contact() {
 
               <div className="mb-4">
                 <p>WhatsApp: +91 8871880773</p>
-                <p>Email: vidhigadgets@gmail.com</p>
+                <p>Email: luxe.premium.in@gmail.com</p>
               </div>
 
               <p className="mb-4">
