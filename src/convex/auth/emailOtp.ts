@@ -28,7 +28,8 @@ export const emailOtp = Email({
       }
 
       const resend = new Resend(apiKey);
-      const from = process.env.RESEND_FROM_EMAIL?.trim() || "LUXE <onboarding@resend.dev>";
+      // Updated default to use the verified domain
+      const from = process.env.RESEND_FROM_EMAIL?.trim() || "LUXE <noreply@luxepremium.in>";
       const replyTo = process.env.RESEND_REPLY_TO?.trim() || "luxe.premium.in@gmail.com";
 
       const { error } = await resend.emails.send({

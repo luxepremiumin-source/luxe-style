@@ -19,7 +19,7 @@ export const sendWelcomeEmail = action({
 
     const from =
       process.env.RESEND_FROM_EMAIL?.trim() ||
-      "LUXE <onboarding@resend.dev>";
+      "LUXE <noreply@luxepremium.in>";
 
     const replyTo = process.env.RESEND_REPLY_TO?.trim() || "luxe.premium.in@gmail.com";
 
@@ -76,7 +76,7 @@ export const sendNewsletterToAll = action({
     const resend = new Resend(apiKey);
 
     const from =
-      process.env.RESEND_FROM_EMAIL?.trim() || "LUXE <onboarding@resend.dev>";
+      process.env.RESEND_FROM_EMAIL?.trim() || "LUXE <noreply@luxepremium.in>";
     const replyTo =
       process.env.RESEND_REPLY_TO?.trim() || "luxe.premium.in@gmail.com";
 
