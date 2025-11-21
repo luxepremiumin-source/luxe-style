@@ -162,8 +162,8 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                 <form onSubmit={handleEmailSubmit}>
                   <CardContent>
                     
-                    <div className="relative flex items-center gap-2">
-                      <div className="relative flex-1">
+                    <div className="relative flex flex-col gap-3 sm:flex-row sm:items-center">
+                      <div className="relative flex-1 w-full">
                         <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                         <Input
                           name="email"
@@ -179,14 +179,19 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                       </div>
                       <Button
                         type="submit"
-                        variant="outline"
-                        size="icon"
+                        className="h-11 w-full sm:w-auto px-6 font-semibold tracking-[0.2em] uppercase"
                         disabled={isLoading}
                       >
                         {isLoading ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            Sending
+                          </>
                         ) : (
-                          <ArrowRight className="h-4 w-4" />
+                          <>
+                            Send Code
+                            <ArrowRight className="h-4 w-4" />
+                          </>
                         )}
                       </Button>
                     </div>
