@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/input-otp";
 
 import { useAuth } from "@/hooks/use-auth";
-import { AlertCircle, ArrowRight, Loader2, Mail } from "lucide-react";
+import { ArrowRight, Loader2, Mail, UserX } from "lucide-react";
 import { Suspense, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 
@@ -40,6 +40,13 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       navigate(redirect);
     }
   }, [authLoading, isAuthenticated, navigate, redirectAfterAuth]);
+
+  // Smoothly auto-clear any error after a short delay
+  useEffect(() => {
+    if (!error) return;
+    const t = setTimeout(() => setError(null), 4000);
+    return () => clearTimeout(t);
+  }, [error]);
 
   const handleEmailSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -184,10 +191,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                       </Button>
                     </div>
                     {error && (
-                      <div className="mt-3 flex items-start justify-center gap-2 rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-100 text-left shadow-[0_10px_30px_rgba(0,0,0,0.4)]">
-                        <AlertCircle className="mt-0.5 h-4 w-4 text-red-300" />
-                        <span>{error}</span>
-                      </div>
+                      <p className="mt-2 text-sm text-red-500">{error}</p>
                     )}
                   </CardContent>
                 </form>
@@ -225,7 +229,11 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                       >
                         <InputOTPGroup>
                           {Array.from({ length: 6 }).map((_, index) => (
-                            <InputOTPSlot key={index} index={index} />
+                            <InputOTPSlot
+                              key={index}
+                              index={index}
+                              className="bg-black/80 text-white border-white/30 focus-visible:ring-white/60 focus-visible:border-white/80"
+                            />
                           ))}
                         </InputOTPGroup>
                       </InputOTP>
