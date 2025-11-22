@@ -55,12 +55,6 @@ export default function HeroSection() {
             >
               Watches
             </a>
-            <a
-              href="/admin"
-              className="pointer-events-auto rounded-full bg-yellow-400 text-black px-4 py-2 sm:px-5 sm:py-2.5 md:px-6 md:py-3 text-xs sm:text-sm font-bold ring-2 ring-yellow-600/30 hover:bg-yellow-300 active:bg-yellow-500 transition-colors duration-200 touch-manipulation min-h-[44px] flex items-center justify-center shadow-lg"
-            >
-              Go to Admin
-            </a>
           </div>
         </div>
       </div>
