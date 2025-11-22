@@ -76,6 +76,10 @@ export default function Admin() {
   const [editUploadedMedia, setEditUploadedMedia] = useState<MediaItem[]>([]);
   const [uploadingInBackground, setUploadingInBackground] = useState(false);
 
+  // NEW: Hero image management state
+  const [heroImageUrl, setHeroImageUrl] = useState("");
+  const [uploadedHeroImage, setUploadedHeroImage] = useState<string>("");
+
   // Add: Convex storage upload action
   const generateUploadUrl = useAction((api as any).storage.generateUploadUrl);
   // Add: Convex storage URL resolver action (returns a canonical public URL)
@@ -584,6 +588,49 @@ export default function Admin() {
     }
   };
 
+  // NEW: Hero image upload handler
+  const handleHeroImageUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    
+    const file = files[0];
+    if (!file.type.startsWith('image/')) {
+      toast.error("Please upload an image file");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      
+      // Create blob URL for immediate preview
+      const blobUrl = URL.createObjectURL(file);
+      setUploadedHeroImage(blobUrl);
+      
+      // Upload to Convex storage
+      const postUrl: string = await generateUploadUrl({});
+      const res = await fetch(postUrl, {
+        method: "POST",
+        headers: { "Content-Type": file.type },
+        body: file,
+      });
+      
+      if (!res.ok) throw new Error("Upload failed");
+      
+      const json = (await res.json()) as { storageId: string };
+      const publicUrl: string = await resolvePublicUrl({ storageId: json.storageId as any });
+      
+      setUploadedHeroImage(publicUrl);
+      setHeroImageUrl(publicUrl);
+      URL.revokeObjectURL(blobUrl);
+      
+      toast.success("Hero image uploaded! Copy the URL below to update HeroSection.tsx");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to upload hero image");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   // Update: guard render against unauthorized users
   if (isLoading || !isAuthenticated || !isAuthorized) {
     return (
@@ -624,6 +671,62 @@ export default function Admin() {
             </Button>
           </div>
         </div>
+
+        {/* NEW: Hero Image Management Card */}
+        <Card className="border border-gray-200 mb-8">
+          <CardHeader>
+            <CardTitle>Hero Section Image</CardTitle>
+            <CardDescription>Upload and manage the main hero banner image</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="hero-upload">Upload Hero Image</Label>
+                <Input
+                  id="hero-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleHeroImageUpload(e.target.files)}
+                />
+              </div>
+              
+              {uploadedHeroImage && (
+                <div className="space-y-3">
+                  <div className="relative aspect-video w-full max-w-2xl rounded-lg overflow-hidden border border-gray-200">
+                    <img
+                      src={uploadedHeroImage}
+                      alt="Hero preview"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label>Image URL (Copy this to update HeroSection.tsx)</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        value={uploadedHeroImage}
+                        readOnly
+                        className="font-mono text-sm"
+                      />
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          navigator.clipboard.writeText(uploadedHeroImage);
+                          toast.success("URL copied to clipboard!");
+                        }}
+                      >
+                        Copy
+                      </Button>
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      After copying, update the <code className="bg-gray-100 px-1 py-0.5 rounded">bg</code> constant in <code className="bg-gray-100 px-1 py-0.5 rounded">src/components/HeroSection.tsx</code>
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Product Statistics Card */}
         {productStats && (
