@@ -45,13 +45,13 @@ export default function HeroSection() {
           <div className="flex gap-2.5 sm:gap-3 md:gap-4 px-4">
             <a
               href="/category/goggles"
-              className="pointer-events-auto rounded-full bg-black/80 text-white px-4 py-2 sm:px-5 sm:py-2.5 md:px-6 md:py-3 text-xs sm:text-sm font-semibold ring-1 ring-white/20 hover:bg-black active:bg-black/90 transition-colors duration-200 touch-manipulation min-h-[44px] flex items-center justify-center"
+              className="pointer-events-auto rounded-full bg-white text-black px-4 py-2 sm:px-5 sm:py-2.5 md:px-6 md:py-3 text-xs sm:text-sm font-bold ring-2 ring-black/10 hover:bg-gray-100 active:bg-gray-200 transition-colors duration-200 touch-manipulation min-h-[44px] flex items-center justify-center shadow-lg"
             >
               Goggles
             </a>
             <a
               href="/category/watches"
-              className="pointer-events-auto rounded-full bg-black/80 text-white px-4 py-2 sm:px-5 sm:py-2.5 md:px-6 md:py-3 text-xs sm:text-sm font-semibold ring-1 ring-white/20 hover:bg-black active:bg-black/90 transition-colors duration-200 touch-manipulation min-h-[44px] flex items-center justify-center"
+              className="pointer-events-auto rounded-full bg-white text-black px-4 py-2 sm:px-5 sm:py-2.5 md:px-6 md:py-3 text-xs sm:text-sm font-bold ring-2 ring-black/10 hover:bg-gray-100 active:bg-gray-200 transition-colors duration-200 touch-manipulation min-h-[44px] flex items-center justify-center shadow-lg"
             >
               Watches
             </a>
