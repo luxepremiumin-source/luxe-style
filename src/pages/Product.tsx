@@ -39,6 +39,7 @@ export default function ProductPage() {
   const [qty, setQty] = useState(1);
   const supportsColors = product?.colors && product.colors.length > 0;
   const [color, setColor] = useState<string>("");
+  const [lowDataMode, setLowDataMode] = useState(false);
   
   const supportsPackaging = (product?.category ?? "").toLowerCase() === "goggles";
   const [packaging, setPackaging] = useState<"indian" | "imported" | "without">("without");
@@ -89,6 +90,14 @@ export default function ProductPage() {
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    if (typeof navigator === "undefined") return;
+    const connection = (navigator as typeof navigator & { connection?: { saveData?: boolean } }).connection;
+    if (connection?.saveData) {
+      setLowDataMode(true);
+    }
   }, []);
 
   const handleWishlistToggle = async () => {
@@ -203,18 +212,22 @@ export default function ProductPage() {
       <Navbar />
       <main className="pt-20 pb-20 md:pb-0">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 grid lg:grid-cols-2 gap-10">
-          <Card className="bg-black border-white/10 overflow-hidden rounded-2xl">
+          <Card
+            className="bg-black border-white/10 overflow-hidden rounded-2xl"
+            style={{ contentVisibility: "auto", containIntrinsicSize: "560px" }}
+          >
             <div className="relative aspect-square group">
               {currentMedia ? (
                 <>
                   {isVideo ? (
                     <video
                       src={currentMedia}
-                      className={`absolute inset-0 w-full h-full object-cover rounded-2xl ${!product.inStock ? 'brightness-50' : ''}`}
+                      className={`absolute inset-0 w-full h-full object-cover rounded-2xl ${!product.inStock ? "brightness-50" : ""}`}
                       controls
-                      autoPlay
+                      autoPlay={!lowDataMode}
                       muted
-                      loop
+                      loop={!lowDataMode}
+                      preload={lowDataMode ? "metadata" : "auto"}
                       playsInline
                     />
                   ) : (
@@ -222,9 +235,9 @@ export default function ProductPage() {
                       <img
                         src={currentMedia}
                         alt={product.name}
-                        className={`absolute inset-0 w-full h-full object-cover rounded-2xl transition-opacity duration-300 ${!product.inStock ? 'brightness-50' : ''}`}
-                        loading="eager"
-                        fetchPriority="high"
+                        className={`absolute inset-0 w-full h-full object-cover rounded-2xl transition-opacity duration-300 ${!product.inStock ? "brightness-50" : ""}`}
+                        loading={lowDataMode ? "lazy" : "eager"}
+                        fetchPriority={lowDataMode ? "auto" : "high"}
                         decoding="async"
                         // Add: fallback image to avoid broken images
                         onError={(e) => {
@@ -332,6 +345,8 @@ export default function ProductPage() {
                         src={src}
                         className="h-full w-full object-cover"
                         muted
+                        playsInline
+                        preload="metadata"
                       />
                       <div className="absolute inset-0 flex items-center justify-center bg-black/30">
                         <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">

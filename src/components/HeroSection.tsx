@@ -1,8 +1,19 @@
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 
 export default function HeroSection() {
   const bg =
     "https://harmless-tapir-303.convex.cloud/api/storage/9c7a0c50-e4a8-4cc2-b631-f5a35f277a9a";
+  const [allowMotion, setAllowMotion] = useState(true);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setAllowMotion(!mediaQuery.matches);
+    update();
+    mediaQuery.addEventListener("change", update);
+    return () => mediaQuery.removeEventListener("change", update);
+  }, []);
 
   return (
     <section className="relative w-full overflow-hidden bg-black">
@@ -12,11 +23,16 @@ export default function HeroSection() {
           alt="LUXE flagship visual"
           className="absolute inset-0 h-full w-full object-cover touch-none"
           loading="eager"
+          decoding="async"
+          sizes="100vw"
           fetchPriority="high"
-          decoding="sync"
-          initial={{ scale: 1.06 }}
-          animate={{ scale: [1.06, 1.14, 1.06] }}
-          transition={{ duration: 9, ease: "easeInOut", repeat: Infinity }}
+          initial={{ scale: allowMotion ? 1.06 : 1 }}
+          animate={allowMotion ? { scale: [1.06, 1.14, 1.06] } : { scale: 1 }}
+          transition={
+            allowMotion
+              ? { duration: 9, ease: "easeInOut", repeat: Infinity }
+              : undefined
+          }
           style={{ 
             transformOrigin: "50% 38%", 
             objectPosition: "50% 38%",

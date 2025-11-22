@@ -119,52 +119,61 @@ export default function CategorySection() {
 
   // Aggressively preload all carousel images with link preload tags
   useEffect(() => {
-    const allImages = categories.flatMap(c => c.images || []);
-    
-    // Create link preload tags for instant loading
-    const fragment = document.createDocumentFragment();
-    allImages.forEach(url => {
-      const link = document.createElement('link');
-      link.rel = 'preload';
-      link.as = 'image';
+    if (typeof window === "undefined" || typeof document === "undefined") {
+      setImagesLoaded(true);
+      setWatchesLoaded(true);
+      setBeltsLoaded(true);
+      return;
+    }
+
+    const connection = (navigator as typeof navigator & { connection?: { saveData?: boolean } }).connection;
+    const saveDataEnabled = connection?.saveData;
+    const isDesktop = window.matchMedia("(min-width: 1024px)").matches;
+
+    if (!isDesktop || saveDataEnabled) {
+      setImagesLoaded(true);
+      setWatchesLoaded(true);
+      setBeltsLoaded(true);
+      return;
+    }
+
+    const allImages = categories.flatMap((c) => c.images || []);
+    const createdLinks: Array<HTMLLinkElement> = [];
+
+    allImages.forEach((url) => {
+      const link = document.createElement("link");
+      link.rel = "preload";
+      link.as = "image";
       link.href = url;
-      fragment.appendChild(link);
+      document.head.appendChild(link);
+      createdLinks.push(link);
     });
-    document.head.appendChild(fragment);
-    
-    // Preload images in parallel
-    const gogglesCategory = categories.find(c => c.name === "Premium Goggles");
-    const watchesCategory = categories.find(c => c.name === "Designer Watches");
-    const beltsCategory = categories.find(c => c.name === "Luxury Belts");
-    
-    const loadImages = (images: string[]) => {
-      return Promise.all(images.map(src => {
-        return new Promise((resolve) => {
-          const img = new Image();
-          img.src = src;
-          img.onload = resolve;
-          img.onerror = resolve; // Resolve even on error to not block
-        });
-      }));
-    };
-    
+
+    const loadImages = (images: string[] = []) =>
+      Promise.all(
+        images.map(
+          (src) =>
+            new Promise<void>((resolve) => {
+              const img = new Image();
+              img.src = src;
+              img.onload = () => resolve();
+              img.onerror = () => resolve();
+            }),
+        ),
+      );
+
     Promise.all([
-      gogglesCategory?.images ? loadImages(gogglesCategory.images) : Promise.resolve(),
-      watchesCategory?.images ? loadImages(watchesCategory.images) : Promise.resolve(),
-      beltsCategory?.images ? loadImages(beltsCategory.images) : Promise.resolve(),
-    ]).then(() => {
+      loadImages(categories[0]?.images),
+      loadImages(categories[1]?.images),
+      loadImages(categories[2]?.images),
+    ]).finally(() => {
       setImagesLoaded(true);
       setWatchesLoaded(true);
       setBeltsLoaded(true);
     });
-    
+
     return () => {
-      // Cleanup preload links
-      document.querySelectorAll('link[rel="preload"][as="image"]').forEach(link => {
-        if (allImages.includes(link.getAttribute('href') || '')) {
-          link.remove();
-        }
-      });
+      createdLinks.forEach((link) => link.remove());
     };
   }, []);
 
@@ -182,19 +191,22 @@ export default function CategorySection() {
   // Auto-slide effect for Designer Watches - start with 1000ms delay, then transition every 2000ms (separate from goggles/belts)
   useEffect(() => {
     if (!watchesLoaded) return;
-    
-    // Start with a 1000ms delay, then transition every 2000ms (separate timing)
+
+    let interval: ReturnType<typeof setInterval> | undefined;
     const timeout = setTimeout(() => {
       setCurrentWatchIndex((prev) => (prev + 1) % 2);
-      
-      const interval = setInterval(() => {
+
+      interval = setInterval(() => {
         setCurrentWatchIndex((prev) => (prev + 1) % 2);
       }, 2000);
-      
-      return () => clearInterval(interval);
     }, 1000);
 
-    return () => clearTimeout(timeout);
+    return () => {
+      clearTimeout(timeout);
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
   }, [watchesLoaded]);
 
   // Auto-slide effect for Luxury Belts - sync with goggles (no delay, same timing)
@@ -238,13 +250,14 @@ export default function CategorySection() {
             >
               <Card
                 className="group cursor-pointer overflow-hidden ring-1 ring-white/10 active:ring-white/30 hover:ring-white/20 bg-transparent transition-all duration-200 touch-manipulation"
-                onClick={() => window.open(category.href, '_blank')}
+                onClick={() => window.open(category.href, "_blank")}
                 role="link"
                 tabIndex={0}
+                style={{ contentVisibility: "auto", containIntrinsicSize: "360px" }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
                     e.preventDefault();
-                    window.open(category.href, '_blank');
+                    window.open(category.href, "_blank");
                   }
                 }}
               >
@@ -256,8 +269,9 @@ export default function CategorySection() {
                         src={category.images[currentImageIndex]}
                         alt={category.name}
                         className="absolute inset-0 h-full w-full object-cover"
-                        loading="eager"
-                        fetchPriority="high"
+                        loading="lazy"
+                        decoding="async"
+                        fetchPriority="low"
                         initial={transitionVariants[currentImageIndex].initial}
                         animate={transitionVariants[currentImageIndex].animate}
                         exit={transitionVariants[currentImageIndex].exit}
@@ -272,8 +286,9 @@ export default function CategorySection() {
                         src={category.images[currentWatchIndex]}
                         alt={category.name}
                         className="absolute inset-0 h-full w-full object-cover"
-                        loading="eager"
-                        fetchPriority="high"
+                        loading="lazy"
+                        decoding="async"
+                        fetchPriority="low"
                         initial={watchTransitionVariants[currentWatchIndex].initial}
                         animate={watchTransitionVariants[currentWatchIndex].animate}
                         exit={watchTransitionVariants[currentWatchIndex].exit}
@@ -288,8 +303,9 @@ export default function CategorySection() {
                         src={category.images[currentBeltIndex]}
                         alt={category.name}
                         className="absolute inset-0 h-full w-full object-cover"
-                        loading="eager"
-                        fetchPriority="high"
+                        loading="lazy"
+                        decoding="async"
+                        fetchPriority="low"
                         initial={beltTransitionVariants[currentBeltIndex].initial}
                         animate={beltTransitionVariants[currentBeltIndex].animate}
                         exit={beltTransitionVariants[currentBeltIndex].exit}
@@ -303,6 +319,7 @@ export default function CategorySection() {
                       alt={category.name}
                       className="absolute inset-0 h-full w-full object-cover"
                       loading="lazy"
+                      decoding="async"
                     />
                   ) : null}
                   <motion.div

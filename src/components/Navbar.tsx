@@ -76,19 +76,12 @@ function AnnouncementRow() {
   // Increase horizontal padding and gap between segments so there's more space after "discount"
   const segment =
     "flex items-center gap-4 px-4 sm:px-6 whitespace-nowrap"; // UPDATED: larger gap/px for more separation
+  const trackClass = "flex items-center luxe-marquee-track";
 
   return (
     <div className="relative w-full overflow-hidden">
       {/* Scrolling track: moves right -> left continuously */}
-      <div
-        className="flex items-center"
-        style={{
-          // Smooth, continuous marquee effect
-          // Increase speed slightly by reducing duration from 18s -> 14s
-          animation: "luxe-marquee 14s linear infinite",
-          willChange: "transform",
-        }}
-      >
+      <div className={trackClass}>
         {/* Duplicate enough segments so the loop looks continuous */}
         <div className="flex items-center">
           <div className={segment}>
@@ -114,7 +107,7 @@ function AnnouncementRow() {
         </div>
 
         {/* Mirror the same row so there is no gap when looping */}
-        <div className="flex items-center" aria-hidden="true">
+        <div className={trackClass} aria-hidden="true">
           <div className={segment}>
             <span className="inline-block h-1 w-1 rounded-full bg-white/80" aria-hidden="true" />
             <span>Welcome to LUXE: Elevate Your Style with Today's Exclusive Deals!</span>
@@ -138,11 +131,29 @@ function AnnouncementRow() {
         </div>
       </div>
 
-      {/* Inject keyframes once per mount using a style tag */}
       <style>{`
         @keyframes luxe-marquee {
           0% { transform: translateX(0%); }
           100% { transform: translateX(-50%); }
+        }
+        .luxe-marquee-track {
+          animation: luxe-marquee 11s linear infinite;
+          will-change: transform;
+        }
+        @media (max-width: 640px) {
+          .luxe-marquee-track {
+            animation-duration: 7.5s;
+          }
+        }
+        @media (max-width: 420px) {
+          .luxe-marquee-track {
+            animation-duration: 6.2s;
+          }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .luxe-marquee-track {
+            animation-duration: 18s;
+          }
         }
       `}</style>
     </div>
