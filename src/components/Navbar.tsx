@@ -1427,7 +1427,7 @@ export default function Navbar() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="mt-4 h-10 rounded-full border-white/30 text-white hover:bg-white/10"
+                    className="mt-4 h-10 rounded-full bg-white text-black font-semibold border border-white/70 shadow-lg shadow-black/30 hover:bg-amber-300 hover:text-black focus-visible:ring-amber-200 transition-colors"
                     onClick={() => {
                       setIsProfileOpen(false);
                       navigate("/admin");
