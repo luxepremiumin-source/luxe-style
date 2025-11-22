@@ -155,7 +155,7 @@ export default function FeaturedProducts() {
                               ? ` (MRP ₹${product.originalPrice.toLocaleString()})`
                               : ""
                           }. Link: ${link}`;
-                          const url = `https://wa.me/9871629699?text=${encodeURIComponent(
+                          const url = `https://wa.me/8871880773?text=${encodeURIComponent(
                             message,
                           )}`;
                           window.open(url, "_blank");

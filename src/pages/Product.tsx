@@ -160,7 +160,7 @@ export default function ProductPage() {
       : "";
     const colorText = supportsColors && color ? ` Color: ${color}.` : "";
     const message = `Hi! I'm interested in "${product?.name}" (${prettyName[product?.category ?? ""] ?? product?.category}). Price: ₹${product?.price.toLocaleString()}${product?.originalPrice ? ` (MRP ₹${product.originalPrice.toLocaleString()})` : ""}.${colorText}${packagingText} Link: ${link}`;
-    const url = `https://wa.me/9871629699?text=${encodeURIComponent(message)}`;
+    const url = `https://wa.me/8871880773?text=${encodeURIComponent(message)}`;
     window.location.href = url;
   };
 

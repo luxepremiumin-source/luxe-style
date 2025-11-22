@@ -103,7 +103,7 @@ export default function TermsOfService() {
                   - If you have any questions or concerns, please don’t hesitate
                   to reach out to us:
                 </li>
-                <li>- WhatsApp: +91 9871629699</li>
+                <li>- WhatsApp: +91 8871880773</li>
                 <li>- Email: luxe.premium.in@gmail.com</li>
               </ul>
 

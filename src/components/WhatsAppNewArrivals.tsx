@@ -10,7 +10,7 @@ export default function WhatsAppNewArrivals() {
   };
 
   const handleDirectMessageClick = () => {
-    const dmUrl = "https://wa.me/9871629699";
+    const dmUrl = "https://wa.me/8871880773";
     window.location.href = dmUrl;
   };
 

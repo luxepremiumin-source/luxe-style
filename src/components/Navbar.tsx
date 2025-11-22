@@ -1280,7 +1280,7 @@ export default function Navbar() {
                         className="flex-1 h-12 rounded-full bg-[#25D366] text-white hover:bg-[#20bd5b]"
                         onClick={async () => {
                           if (!cartItems || cartItems.length === 0) {
-                            window.location.href = "https://wa.me/9871629699";
+                            window.location.href = "https://wa.me/8871880773";
                             return;
                           }
 
@@ -1386,7 +1386,7 @@ export default function Navbar() {
                           lines.push(`💰 Amount Paid: ₹${finalTotal.toLocaleString()}`);
 
                           const message = lines.join("\n");
-                          const url = `https://wa.me/9871629699?text=${encodeURIComponent(message)}`;
+                          const url = `https://wa.me/8871880773?text=${encodeURIComponent(message)}`;
                           window.location.href = url;
                         }}
                       >
