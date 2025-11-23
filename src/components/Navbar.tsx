@@ -382,7 +382,7 @@ export default function Navbar() {
             variant="ghost"
             size="icon"
             // Ensure highest stacking so clicks aren't blocked
-            className="relative z-[70] h-12 w-12 border border-white/50 hover:bg-white/10 rounded-md pointer-events-auto"
+            className="relative z-[70] h-12 w-12 hover:bg-white/10 rounded-full pointer-events-auto"
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -472,16 +472,16 @@ export default function Navbar() {
                     }
                     setIsProfileOpen(true);
                   }}
-                  className="hover:bg-white/10"
+                  className="hover:bg-white/10 rounded-full"
                   aria-label="Open profile"
                 >
                   <User className="h-6 w-6 text-white" />
                 </Button>
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
                   onClick={() => signOut()}
-                  className="hidden sm:flex border-white/40 text-white bg-transparent hover:bg-white/10"
+                  className="hidden sm:flex text-white bg-transparent hover:bg-white/10"
                 >
                   Sign Out
                 </Button>
@@ -489,8 +489,8 @@ export default function Navbar() {
             ) : (
               <Button
                 onClick={() => navigate("/auth")}
-                className="border border-white/40 text-white bg-transparent hover:bg-white/10"
-                variant="outline"
+                className="text-white bg-transparent hover:bg-white/10 font-medium"
+                variant="ghost"
               >
                 Sign In
               </Button>
