@@ -17,7 +17,7 @@ import {
 import { useAuth } from "@/hooks/use-auth";
 import { ArrowRight, Loader2, Mail, RefreshCw } from "lucide-react";
 import { Suspense, useEffect, useState } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 import { toast } from "sonner";
 
 interface AuthProps {
@@ -30,17 +30,19 @@ const AUTH_BG_IMAGE =
 function Auth({ redirectAfterAuth }: AuthProps = {}) {
   const { isLoading: authLoading, isAuthenticated, signIn } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [step, setStep] = useState<"signIn" | { email: string }>("signIn");
   const [otp, setOtp] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const redirectTarget = redirectAfterAuth || searchParams.get("redirectAfterAuth") || "/";
+
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
-      const redirect = redirectAfterAuth || "/";
-      navigate(redirect);
+      navigate(redirectTarget);
     }
-  }, [authLoading, isAuthenticated, navigate, redirectAfterAuth]);
+  }, [authLoading, isAuthenticated, navigate, redirectTarget]);
 
   // Smoothly auto-clear any error after a short delay
   useEffect(() => {
@@ -87,8 +89,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
 
       console.log("OTP verified, signed in successfully");
 
-      const redirect = redirectAfterAuth || "/";
-      navigate(redirect);
+      navigate(redirectTarget);
     } catch (error) {
       console.error("OTP verification error:", error);
 

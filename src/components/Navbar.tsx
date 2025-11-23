@@ -213,6 +213,16 @@ export default function Navbar() {
   };
 
   useEffect(() => {
+    if (location.search.includes("openCart=true")) {
+      setIsCartOpen(true);
+      // Clean up URL without reload
+      const url = new URL(window.location.href);
+      url.searchParams.delete("openCart");
+      window.history.replaceState({}, "", url);
+    }
+  }, [location.search]);
+
+  useEffect(() => {
     setMounted(true);
     return () => {
       setIsCartOpen(false);
