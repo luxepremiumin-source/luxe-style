@@ -203,6 +203,13 @@ export default function Admin() {
           </div>
           <div className="flex gap-3">
             <Button
+              onClick={() => navigate("/")}
+              variant="outline"
+              className="bg-white hover:bg-gray-50 text-gray-900 border-gray-300"
+            >
+              Back to Site
+            </Button>
+            <Button
               onClick={() => navigate("/admin/storage-recovery")}
               variant="outline"
               className="bg-white hover:bg-gray-50 text-gray-900 border-gray-300"
