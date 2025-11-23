@@ -15,9 +15,10 @@ import {
 } from "@/components/ui/input-otp";
 
 import { useAuth } from "@/hooks/use-auth";
-import { ArrowRight, Loader2, Mail } from "lucide-react";
+import { ArrowRight, Loader2, Mail, RefreshCw } from "lucide-react";
 import { Suspense, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
+import { toast } from "sonner";
 
 interface AuthProps {
   redirectAfterAuth?: string;
@@ -104,6 +105,23 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       
       setIsLoading(false);
       setOtp("");
+    }
+  };
+
+  const handleResendCode = async () => {
+    if (typeof step === "string") return;
+    setIsLoading(true);
+    setError(null);
+    try {
+      const formData = new FormData();
+      formData.append("email", step.email);
+      await signIn("email-otp", formData);
+      toast.success("Verification code resent successfully");
+    } catch (error) {
+      console.error("Resend error:", error);
+      setError("Failed to resend code. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -235,20 +253,33 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                         {error}
                       </p>
                     )}
-                    <p className="text-sm text-muted-foreground text-center mt-4">
-                      Didn't receive a code?{" "}
+                    <div className="text-center mt-4 space-y-2">
+                      <p className="text-sm text-muted-foreground">
+                        Didn't receive a code?{" "}
+                        <Button
+                          type="button"
+                          variant="link"
+                          className="p-0 h-auto text-white hover:text-white/80 underline"
+                          onClick={handleResendCode}
+                          disabled={isLoading}
+                        >
+                          Resend Code
+                        </Button>
+                      </p>
                       <Button
+                        type="button"
                         variant="link"
-                        className="p-0 h-auto"
+                        className="text-xs text-muted-foreground p-0 h-auto hover:text-white/80"
                         onClick={() => {
                           setStep("signIn");
                           setOtp("");
                           setError(null);
                         }}
+                        disabled={isLoading}
                       >
-                        Try again
+                        Use different email
                       </Button>
-                    </p>
+                    </div>
                   </CardContent>
                   <CardFooter className="flex-col gap-2">
                     <Button
@@ -267,19 +298,6 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                           <ArrowRight className="ml-2 h-4 w-4" />
                         </>
                       )}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      onClick={() => {
-                        setStep("signIn");
-                        setOtp("");
-                        setError(null);
-                      }}
-                      disabled={isLoading}
-                      className="w-full"
-                    >
-                      Use different email
                     </Button>
                   </CardFooter>
                 </form>

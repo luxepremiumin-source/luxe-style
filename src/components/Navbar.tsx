@@ -259,11 +259,21 @@ export default function Navbar() {
         // Simple UA parsing
         const ua = navigator.userAgent;
         let os = "Unknown";
-        if (ua.indexOf("Win") !== -1) os = "Windows";
-        if (ua.indexOf("Mac") !== -1) os = "MacOS";
-        if (ua.indexOf("Linux") !== -1) os = "Linux";
-        if (ua.indexOf("Android") !== -1) os = "Android";
-        if (ua.indexOf("like Mac") !== -1) os = "iOS";
+        
+        // Improved OS detection
+        if (/iPhone|iPad|iPod/i.test(ua)) {
+          os = "iOS";
+        } else if (/Android/i.test(ua)) {
+          os = "Android";
+        } else if (/Win/i.test(ua)) {
+          os = "Windows";
+        } else if (/Mac/i.test(ua)) {
+          os = "MacOS";
+        } else if (/Linux/i.test(ua)) {
+          os = "Linux";
+        } else if (/CrOS/i.test(ua)) {
+          os = "Chrome OS";
+        }
 
         let deviceType = "Desktop";
         if (/Mobi|Android/i.test(ua)) {
