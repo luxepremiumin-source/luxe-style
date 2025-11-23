@@ -36,8 +36,26 @@ type NewProduct = {
 // Add new type for unified media items
 type MediaItem = {
   url: string;
-  type: 'image' | 'video';
+  type: "image" | "video";
 };
+
+const HERO_GROUPS = [
+  {
+    slug: "hero-one",
+    label: "Hero Section 1 (Main Banner)",
+    description: "Displayed at the top of the landing page hero component.",
+  },
+  {
+    slug: "hero-two",
+    label: "Hero Section 2",
+    description: "Use for mid-page promotional storytelling.",
+  },
+  {
+    slug: "hero-three",
+    label: "Hero Section 3",
+    description: "Ideal for campaigns or seasonal highlights.",
+  },
+] as const;
 
 export default function Admin() {
   const navigate = useNavigate();
@@ -47,6 +65,9 @@ export default function Admin() {
   const updateProduct = useMutation(api.products.updateProduct);
   const deleteProduct = useMutation(api.products.deleteProduct);
   const productStats = useQuery(api.products.getProductCountByCategory);
+  const heroSectionsData = useQuery(api.heroSections.getHeroSections);
+  const addHeroSectionImage = useMutation(api.heroSections.addHeroImage);
+  const removeHeroSectionImage = useMutation(api.heroSections.removeHeroImage);
 
   // Add: strict admin access (by email and/or role)
   const allowedEmails = new Set<string>(["luxe.premium.in@gmail.com"]);
@@ -77,8 +98,7 @@ export default function Admin() {
   const [uploadingInBackground, setUploadingInBackground] = useState(false);
 
   // NEW: Hero image management state
-  const [heroImageUrl, setHeroImageUrl] = useState("");
-  const [uploadedHeroImage, setUploadedHeroImage] = useState<string>("");
+  const [heroUploading, setHeroUploading] = useState<Record<string, boolean>>({});
 
   // Add: Convex storage upload action
   const generateUploadUrl = useAction((api as any).storage.generateUploadUrl);
@@ -345,6 +365,13 @@ export default function Admin() {
   }, [isLoading, isAuthenticated, user, isAuthorized, navigate]);
 
   const submitting = useMemo(() => false, []);
+  const heroSectionsBySlug = useMemo(() => {
+    const map: Record<string, any> = {};
+    heroSectionsData?.forEach((section) => {
+      map[section.slug] = section;
+    });
+    return map;
+  }, [heroSectionsData]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (key: keyof NewProduct, value: string | boolean) => {
@@ -588,46 +615,90 @@ export default function Admin() {
     }
   };
 
-  // NEW: Hero image upload handler
-  const handleHeroImageUpload = async (files: FileList | null) => {
-    if (!files || files.length === 0) return;
-    
-    const file = files[0];
-    if (!file.type.startsWith('image/')) {
-      toast.error("Please upload an image file");
+  const handleHeroImagesUpload = async (
+    slug: string,
+    title: string,
+    fileList: FileList | null,
+  ) => {
+    if (!fileList || fileList.length === 0) {
+      return;
+    }
+
+    const imageFiles = Array.from(fileList).filter((file) =>
+      file.type.startsWith("image/"),
+    );
+
+    if (imageFiles.length === 0) {
+      toast.error("Please upload image files only.");
+      return;
+    }
+
+    const ignored = fileList.length - imageFiles.length;
+    if (ignored > 0) {
+      toast(
+        `Ignored ${ignored} file${ignored > 1 ? "s" : ""} that were not images.`,
+      );
+    }
+
+    setHeroUploading((prev) => ({ ...prev, [slug]: true }));
+
+    try {
+      let successCount = 0;
+
+      for (const file of imageFiles) {
+        const postUrl: string = await generateUploadUrl({});
+        const res = await fetch(postUrl, {
+          method: "POST",
+          headers: { "Content-Type": file.type },
+          body: file,
+        });
+
+        if (!res.ok) {
+          throw new Error("Upload failed");
+        }
+
+        const json = (await res.json()) as { storageId: string };
+        const publicUrl: string = await resolvePublicUrl({
+          storageId: json.storageId as any,
+        });
+
+        await addHeroSectionImage({
+          slug,
+          title,
+          imageUrl: publicUrl,
+        });
+
+        successCount += 1;
+      }
+
+      if (successCount > 0) {
+        toast.success(
+          `Added ${successCount} image${successCount > 1 ? "s" : ""} to ${title}.`,
+        );
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to upload hero images. Please try again.");
+    } finally {
+      setHeroUploading((prev) => ({ ...prev, [slug]: false }));
+    }
+  };
+
+  const handleHeroImageRemove = async (
+    slug: string,
+    imageUrl: string,
+    label: string,
+  ) => {
+    if (!confirm(`Remove this image from ${label}?`)) {
       return;
     }
 
     try {
-      setIsSubmitting(true);
-      
-      // Create blob URL for immediate preview
-      const blobUrl = URL.createObjectURL(file);
-      setUploadedHeroImage(blobUrl);
-      
-      // Upload to Convex storage
-      const postUrl: string = await generateUploadUrl({});
-      const res = await fetch(postUrl, {
-        method: "POST",
-        headers: { "Content-Type": file.type },
-        body: file,
-      });
-      
-      if (!res.ok) throw new Error("Upload failed");
-      
-      const json = (await res.json()) as { storageId: string };
-      const publicUrl: string = await resolvePublicUrl({ storageId: json.storageId as any });
-      
-      setUploadedHeroImage(publicUrl);
-      setHeroImageUrl(publicUrl);
-      URL.revokeObjectURL(blobUrl);
-      
-      toast.success("Hero image uploaded! Copy the URL below to update HeroSection.tsx");
+      await removeHeroSectionImage({ slug, imageUrl });
+      toast.success("Hero image removed.");
     } catch (err) {
       console.error(err);
-      toast.error("Failed to upload hero image");
-    } finally {
-      setIsSubmitting(false);
+      toast.error("Failed to remove hero image.");
     }
   };
 
@@ -672,59 +743,135 @@ export default function Admin() {
           </div>
         </div>
 
-        {/* NEW: Hero Image Management Card */}
+        {/* Hero Sections Management */}
         <Card className="border border-gray-200 mb-8">
           <CardHeader>
-            <CardTitle>Hero Section Image</CardTitle>
-            <CardDescription>Upload and manage the main hero banner image</CardDescription>
+            <CardTitle>Hero Sections</CardTitle>
+            <CardDescription>
+              Manage imagery for each hero section on the storefront
+            </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="hero-upload">Upload Hero Image</Label>
-                <Input
-                  id="hero-upload"
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleHeroImageUpload(e.target.files)}
-                />
-              </div>
-              
-              {uploadedHeroImage && (
-                <div className="space-y-3">
-                  <div className="relative aspect-video w-full max-w-2xl rounded-lg overflow-hidden border border-gray-200">
-                    <img
-                      src={uploadedHeroImage}
-                      alt="Hero preview"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label>Image URL (Copy this to update HeroSection.tsx)</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        value={uploadedHeroImage}
-                        readOnly
-                        className="font-mono text-sm"
-                      />
-                      <Button
-                        variant="outline"
-                        onClick={() => {
-                          navigator.clipboard.writeText(uploadedHeroImage);
-                          toast.success("URL copied to clipboard!");
-                        }}
-                      >
-                        Copy
-                      </Button>
+          <CardContent className="space-y-6">
+            {HERO_GROUPS.map((group) => {
+              const section = heroSectionsBySlug[group.slug];
+              const images: string[] = section?.images ?? [];
+
+              return (
+                <div
+                  key={group.slug}
+                  className="rounded-lg border border-gray-200 bg-white/70 p-4 shadow-sm"
+                >
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <h3 className="text-base font-semibold text-gray-900">
+                        {group.label}
+                      </h3>
+                      <p className="text-sm text-gray-500">{group.description}</p>
+                      {section?.title &&
+                        section.title.trim() !== "" &&
+                        section.title !== group.label && (
+                          <p className="mt-1 text-xs uppercase tracking-wider text-gray-400">
+                            Stored as: {section.title}
+                          </p>
+                        )}
                     </div>
-                    <p className="text-xs text-gray-500">
-                      After copying, update the <code className="bg-gray-100 px-1 py-0.5 rounded">bg</code> constant in <code className="bg-gray-100 px-1 py-0.5 rounded">src/components/HeroSection.tsx</code>
-                    </p>
+                    <div className="sm:text-right">
+                      <Label htmlFor={`hero-${group.slug}`} className="sr-only">
+                        Upload images for {group.label}
+                      </Label>
+                      <Input
+                        id={`hero-${group.slug}`}
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        disabled={!!heroUploading[group.slug]}
+                        onChange={(event) => {
+                          void handleHeroImagesUpload(
+                            group.slug,
+                            group.label,
+                            event.target.files,
+                          );
+                          event.target.value = "";
+                        }}
+                      />
+                      <p className="mt-1 text-xs text-gray-400">
+                        {heroUploading[group.slug]
+                          ? "Uploading..."
+                          : "Select one or more images to append to this section."}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 space-y-3">
+                    {images.length === 0 ? (
+                      <p className="text-xs italic text-gray-500">
+                        No images yet. Upload to populate this hero section.
+                      </p>
+                    ) : (
+                      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                        {images.map((imageUrl, index) => (
+                          <div
+                            key={`${group.slug}-${index}`}
+                            className="group relative overflow-hidden rounded-lg border border-gray-200 bg-black/5"
+                          >
+                            <img
+                              src={imageUrl}
+                              alt={`${group.label} image ${index + 1}`}
+                              className="h-40 w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                              loading="lazy"
+                              decoding="async"
+                              fetchPriority="low"
+                            />
+                            <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 bg-gradient-to-t from-black/80 via-black/50 to-transparent px-3 py-2">
+                              <span className="text-xs font-medium text-white">
+                                #{index + 1}
+                              </span>
+                              <div className="flex gap-1.5">
+                                <Button
+                                  type="button"
+                                  size="icon"
+                                  variant="secondary"
+                                  className="h-7 w-7 rounded-full bg-white/80 text-gray-900 hover:bg-white"
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(imageUrl);
+                                    toast.success("Image URL copied!");
+                                  }}
+                                >
+                                  <span className="sr-only">Copy image URL</span>
+                                  ⧉
+                                </Button>
+                                <Button
+                                  type="button"
+                                  size="icon"
+                                  variant="destructive"
+                                  className="h-7 w-7 rounded-full"
+                                  onClick={() =>
+                                    void handleHeroImageRemove(
+                                      group.slug,
+                                      imageUrl,
+                                      group.label,
+                                    )
+                                  }
+                                  disabled={!!heroUploading[group.slug]}
+                                >
+                                  <span className="sr-only">Remove image</span>
+                                  ×
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
-              )}
-            </div>
+              );
+            })}
+
+            <p className="text-xs text-gray-500">
+              Tip: The first image in “Hero Section 1” is used as the primary landing hero
+              background. Reorder by removing and re-uploading images in the desired order.
+            </p>
           </CardContent>
         </Card>
 

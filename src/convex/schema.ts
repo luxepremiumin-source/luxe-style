@@ -116,6 +116,11 @@ const schema = defineSchema(
       state: v.string(),
       pin: v.string(),
     }).index("by_user", ["userId"]),
+    heroSections: defineTable({
+      slug: v.string(),
+      title: v.string(),
+      images: v.array(v.string()),
+    }).index("by_slug", ["slug"]),
   },
   {
     schemaValidation: false,

@@ -13,6 +13,7 @@ import type * as auth from "../auth.js";
 import type * as cart from "../cart.js";
 import type * as customerProfiles from "../customerProfiles.js";
 import type * as emails from "../emails.js";
+import type * as heroSections from "../heroSections.js";
 import type * as http from "../http.js";
 import type * as migrateData from "../migrateData.js";
 import type * as orders from "../orders.js";
@@ -46,6 +47,7 @@ declare const fullApi: ApiFromModules<{
   cart: typeof cart;
   customerProfiles: typeof customerProfiles;
   emails: typeof emails;
+  heroSections: typeof heroSections;
   http: typeof http;
   migrateData: typeof migrateData;
   orders: typeof orders;

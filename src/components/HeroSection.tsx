@@ -1,9 +1,16 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
 export default function HeroSection() {
-  const bg =
+  const fallbackBg =
     "https://harmless-tapir-303.convex.cloud/api/storage/9c7a0c50-e4a8-4cc2-b631-f5a35f277a9a";
+  const heroSections = useQuery(api.heroSections.getHeroSections);
+  const dynamicBg =
+    heroSections?.find((section) => section.slug === "hero-one")?.images?.[0] ??
+    null;
+  const backgroundImage = dynamicBg ?? fallbackBg;
   const [allowMotion, setAllowMotion] = useState(true);
 
   useEffect(() => {
@@ -19,7 +26,7 @@ export default function HeroSection() {
     <section className="relative w-full overflow-hidden bg-black">
       <div className="relative h-[70vh] sm:h-[78vh] md:h-[86vh] lg:h-[88vh]">
         <motion.img
-          src={bg}
+          src={backgroundImage}
           alt="LUXE flagship visual"
           className="absolute inset-0 h-full w-full object-cover touch-none"
           loading="eager"

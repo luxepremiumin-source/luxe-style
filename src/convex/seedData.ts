@@ -384,3 +384,44 @@ export const seedAllProducts = mutation({
     return { inserted, updated, total: items.length };
   },
 });
+
+export const seedHeroSections = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const defaults: Array<{ slug: string; title: string; images: string[] }> = [
+      {
+        slug: "hero-one",
+        title: "Hero Section 1 (Main Banner)",
+        images: [
+          "https://harmless-tapir-303.convex.cloud/api/storage/9c7a0c50-e4a8-4cc2-b631-f5a35f277a9a",
+        ],
+      },
+      {
+        slug: "hero-two",
+        title: "Hero Section 2",
+        images: ["https://picsum.photos/seed/hero-two/1600/900"],
+      },
+      {
+        slug: "hero-three",
+        title: "Hero Section 3",
+        images: ["https://picsum.photos/seed/hero-three/1600/900"],
+      },
+    ];
+
+    let inserted = 0;
+
+    for (const hero of defaults) {
+      const existing = await ctx.db
+        .query("heroSections")
+        .withIndex("by_slug", (q) => q.eq("slug", hero.slug))
+        .unique();
+
+      if (!existing) {
+        await ctx.db.insert("heroSections", hero);
+        inserted++;
+      }
+    }
+
+    return { inserted };
+  },
+});
