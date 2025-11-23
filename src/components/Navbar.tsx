@@ -591,6 +591,18 @@ export default function Navbar() {
               >
                 Shop by brand
               </Link>
+              {isAuthenticated && (
+                <button
+                  onClick={() => {
+                    signOut();
+                    setIsMenuOpen(false);
+                    toast("Signed out successfully");
+                  }}
+                  className="block w-full text-left text-lg font-normal text-red-600 hover:text-red-700 transition-colors duration-200 px-0 py-3"
+                >
+                  Sign Out
+                </button>
+              )}
             </nav>
 
             {/* Instagram link at bottom */}
@@ -1421,6 +1433,19 @@ export default function Navbar() {
                     Go to Admin
                   </Button>
                 )}
+                <div className="mt-4">
+                  <Button
+                    variant="ghost"
+                    className="h-auto p-0 text-red-400 hover:text-red-300 hover:bg-transparent font-medium"
+                    onClick={() => {
+                      signOut();
+                      setIsProfileOpen(false);
+                      toast("Signed out successfully");
+                    }}
+                  >
+                    Sign Out
+                  </Button>
+                </div>
               </SheetHeader>
               <div className="px-6">
                 <div className="h-px w-full bg-white/10" />
