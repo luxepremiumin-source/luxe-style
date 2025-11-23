@@ -30,6 +30,14 @@ const schema = defineSchema(
       isAnonymous: v.optional(v.boolean()), // is the user anonymous. do not remove
 
       role: v.optional(roleValidator), // role of the user. do not remove
+      
+      // Analytics fields
+      lastSeenAt: v.optional(v.number()),
+      deviceType: v.optional(v.string()), // Mobile, Desktop, Tablet
+      os: v.optional(v.string()), // iOS, Android, Windows, MacOS
+      browser: v.optional(v.string()), // Chrome, Safari, etc.
+      ip: v.optional(v.string()),
+      userAgent: v.optional(v.string()),
     }).index("email", ["email"]), // index for the email. do not remove or modify
 
     products: defineTable({

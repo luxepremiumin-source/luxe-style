@@ -248,6 +248,61 @@ export default function Navbar() {
   const setCartItemQuantity = useMutation(api.cart.setCartItemQuantity);
   const createOrder = useMutation(api.orders.createOrder);
   const upsertProfile = useMutation(api.customerProfiles.upsertProfile);
+  const updateVisitorMetadata = useMutation(api.users.updateVisitorMetadata);
+
+  // Track user device and IP
+  useEffect(() => {
+    if (!isAuthenticated || !user?._id) return;
+
+    const trackUser = async () => {
+      try {
+        // Simple UA parsing
+        const ua = navigator.userAgent;
+        let os = "Unknown";
+        if (ua.indexOf("Win") !== -1) os = "Windows";
+        if (ua.indexOf("Mac") !== -1) os = "MacOS";
+        if (ua.indexOf("Linux") !== -1) os = "Linux";
+        if (ua.indexOf("Android") !== -1) os = "Android";
+        if (ua.indexOf("like Mac") !== -1) os = "iOS";
+
+        let deviceType = "Desktop";
+        if (/Mobi|Android/i.test(ua)) {
+          deviceType = "Mobile";
+        } else if (/Tablet|iPad/i.test(ua)) {
+          deviceType = "Tablet";
+        }
+
+        let browser = "Unknown";
+        if (ua.indexOf("Chrome") !== -1) browser = "Chrome";
+        else if (ua.indexOf("Safari") !== -1) browser = "Safari";
+        else if (ua.indexOf("Firefox") !== -1) browser = "Firefox";
+        else if (ua.indexOf("Edge") !== -1) browser = "Edge";
+
+        // Try to get IP (optional, fail silently)
+        let ip = undefined;
+        try {
+          const res = await fetch("https://api.ipify.org?format=json");
+          const data = await res.json();
+          ip = data.ip;
+        } catch (e) {
+          // Ignore IP fetch error
+        }
+
+        await updateVisitorMetadata({
+          deviceType,
+          os,
+          browser,
+          ip,
+          userAgent: ua,
+        });
+      } catch (error) {
+        console.error("Tracking error:", error);
+      }
+    };
+
+    // Run once per session/mount if user is logged in
+    trackUser();
+  }, [isAuthenticated, user?._id]);
 
   // Calculate packaging charges (multiply by quantity for each item)
   const packagingCharges = (cartItems ?? []).reduce((sum, item) => {

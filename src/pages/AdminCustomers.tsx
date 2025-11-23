@@ -14,7 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Search, User, MapPin, Eye, ShoppingBag, ChevronDown, ChevronUp } from "lucide-react";
+import { Search, User, MapPin, Eye, ShoppingBag, ChevronDown, ChevronUp, Monitor, Smartphone, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -57,7 +57,9 @@ export default function AdminCustomers() {
       userData.email.toLowerCase().includes(searchLower) ||
       userData.name.toLowerCase().includes(searchLower) ||
       userData.mostInterestedCategory.toLowerCase().includes(searchLower) ||
-      (userData.shippingAddress?.city || "").toLowerCase().includes(searchLower)
+      (userData.shippingAddress?.city || "").toLowerCase().includes(searchLower) ||
+      (userData.os || "").toLowerCase().includes(searchLower) ||
+      (userData.ip || "").includes(searchLower)
     );
   });
 
@@ -76,6 +78,11 @@ export default function AdminCustomers() {
     if (address.state) parts.push(address.state);
     if (address.pin) parts.push(address.pin);
     return parts.length > 0 ? parts.join(", ") : "No address";
+  };
+
+  const getDeviceIcon = (type?: string) => {
+    if (type === "Mobile") return <Smartphone className="h-4 w-4 text-gray-500" />;
+    return <Monitor className="h-4 w-4 text-gray-500" />;
   };
 
   const formatAddressFull = (address: any): string[] => {
@@ -125,7 +132,7 @@ export default function AdminCustomers() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Customer Analytics</h1>
           <p className="text-gray-600">
-            Track customer behavior, delivery addresses, and product interests
+            Track customer behavior, device info, delivery addresses, and product interests
           </p>
         </div>
 
@@ -136,7 +143,7 @@ export default function AdminCustomers() {
               Search Customers
             </CardTitle>
             <CardDescription>
-              Search by email, name, category interest, or city
+              Search by email, name, category, city, OS, or IP
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -175,7 +182,7 @@ export default function AdminCustomers() {
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-[200px]">Customer</TableHead>
-                      <TableHead className="w-[100px]">Type</TableHead>
+                      <TableHead className="w-[150px]">Device & IP</TableHead>
                       <TableHead className="w-[250px]">Delivery Address</TableHead>
                       <TableHead className="w-[150px]">Most Interested</TableHead>
                       <TableHead className="text-center w-[80px]">Orders</TableHead>
@@ -193,15 +200,32 @@ export default function AdminCustomers() {
                             <span className="text-sm text-gray-500">
                               {userData.email}
                             </span>
+                            <Badge
+                              variant={userData.isAnonymous ? "secondary" : "outline"}
+                              className="w-fit mt-1 text-[10px]"
+                            >
+                              {userData.isAnonymous ? "Guest" : "Registered"}
+                            </Badge>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge
-                            variant={userData.isAnonymous ? "secondary" : "default"}
-                            className="whitespace-nowrap"
-                          >
-                            {userData.isAnonymous ? "Guest" : "Registered"}
-                          </Badge>
+                          <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-2 text-sm text-gray-700">
+                              {getDeviceIcon(userData.deviceType)}
+                              <span>{userData.os || "Unknown OS"}</span>
+                            </div>
+                            {userData.browser && (
+                              <span className="text-xs text-gray-500 pl-6">
+                                {userData.browser}
+                              </span>
+                            )}
+                            {userData.ip && (
+                              <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
+                                <Globe className="h-3 w-3" />
+                                <span className="font-mono">{userData.ip}</span>
+                              </div>
+                            )}
+                          </div>
                         </TableCell>
                         <TableCell>
                           {userData.shippingAddress ? (

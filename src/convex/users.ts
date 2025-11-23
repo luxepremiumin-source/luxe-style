@@ -1,5 +1,5 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { query, QueryCtx } from "./_generated/server";
+import { query, mutation, QueryCtx } from "./_generated/server";
 import { v } from "convex/values";
 
 /**
@@ -32,6 +32,25 @@ export const getCurrentUser = async (ctx: QueryCtx) => {
   }
   return await ctx.db.get(userId);
 };
+
+export const updateVisitorMetadata = mutation({
+  args: {
+    deviceType: v.optional(v.string()),
+    os: v.optional(v.string()),
+    browser: v.optional(v.string()),
+    ip: v.optional(v.string()),
+    userAgent: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return;
+    
+    await ctx.db.patch(userId, {
+      ...args,
+      lastSeenAt: Date.now(),
+    });
+  },
+});
 
 // New query to get all users with their activity data
 export const getAllUsersWithActivity = query({
@@ -84,9 +103,14 @@ export const getAllUsersWithActivity = query({
           totalOrders: orders.length,
           cartItemCount: cartItems.length,
           mostInterestedCategory,
-          lastActive: recentlyViewed[0]?.viewedAt || user._creationTime,
+          lastActive: user.lastSeenAt || recentlyViewed[0]?.viewedAt || user._creationTime,
           shippingAddress: latestOrder?.shippingAddress || null,
           _creationTime: user._creationTime,
+          // Analytics
+          deviceType: user.deviceType,
+          os: user.os,
+          browser: user.browser,
+          ip: user.ip,
         };
       })
     );
