@@ -244,21 +244,6 @@ export default function Navbar() {
     0,
   );
 
-  // Add: auto-remove promo if cart becomes ineligible (< 2 items for COMBO15)
-  useEffect(() => {
-    if (!isCartOpen || !cartItems) return;
-    if (cartItemCount < 2 && appliedCouponCode === "COMBO15") {
-      // Use a ref or timeout to prevent rapid state updates
-      const timer = setTimeout(() => {
-        setAppliedDiscount(0);
-        setPromoCode("");
-        setDiscountPercentage(0);
-        setAppliedCouponCode("");
-      }, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [isCartOpen, cartItemCount, appliedCouponCode]);
-
   // Add mutation for updating cart quantities
   const setCartItemQuantity = useMutation(api.cart.setCartItemQuantity);
   const createOrder = useMutation(api.orders.createOrder);
