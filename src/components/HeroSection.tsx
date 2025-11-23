@@ -13,6 +13,19 @@ export default function HeroSection() {
   const backgroundImage = dynamicBg ?? fallbackBg;
   const [allowMotion, setAllowMotion] = useState(true);
 
+  // Preload the hero image for faster LCP
+  useEffect(() => {
+    const link = document.createElement("link");
+    link.rel = "preload";
+    link.as = "image";
+    link.href = backgroundImage;
+    link.fetchPriority = "high";
+    document.head.appendChild(link);
+    return () => {
+      document.head.removeChild(link);
+    };
+  }, [backgroundImage]);
+
   useEffect(() => {
     if (typeof window === "undefined") return;
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -25,14 +38,9 @@ export default function HeroSection() {
   return (
     <section className="relative w-full overflow-hidden bg-black">
       <div className="relative h-[70vh] sm:h-[78vh] md:h-[86vh] lg:h-[88vh]">
-        <motion.img
-          src={backgroundImage}
-          alt="LUXE flagship visual"
-          className="absolute inset-0 h-full w-full object-cover touch-none"
-          loading="eager"
-          decoding="async"
-          sizes="100vw"
-          fetchPriority="high"
+        {/* Use a wrapper for motion to keep the img tag simple and robust */}
+        <motion.div
+          className="absolute inset-0 h-full w-full"
           initial={{ scale: allowMotion ? 1.06 : 1 }}
           animate={allowMotion ? { scale: [1.06, 1.14, 1.06] } : { scale: 1 }}
           transition={
@@ -42,10 +50,22 @@ export default function HeroSection() {
           }
           style={{ 
             transformOrigin: "50% 38%", 
-            objectPosition: "50% 38%",
             willChange: "transform"
           }}
-        />
+        >
+          <img
+            src={backgroundImage}
+            alt="LUXE flagship visual"
+            className="h-full w-full object-cover touch-none"
+            loading="eager"
+            decoding="sync" // Changed to sync for immediate decoding on LCP
+            sizes="100vw"
+            fetchPriority="high"
+            style={{ 
+              objectPosition: "50% 38%",
+            }}
+          />
+        </motion.div>
         <div className="absolute inset-0 bg-black/40" />
 
         <div className="absolute inset-0 flex items-end justify-center pb-32 sm:pb-40 md:pb-44 pointer-events-none">
