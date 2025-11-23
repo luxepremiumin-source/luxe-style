@@ -18,7 +18,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { GripVertical, Package, LayoutDashboard } from "lucide-react";
+import { GripVertical, Package, LayoutDashboard, Trash2, RefreshCw } from "lucide-react";
 import ProductManager from "@/components/ProductManager";
 
 const HERO_GROUPS = [
@@ -48,6 +48,7 @@ export default function Admin() {
   const heroSectionsData = useQuery(api.heroSections.getHeroSections);
   const addHeroSectionImage = useMutation(api.heroSections.addHeroImage);
   const removeHeroSectionImage = useMutation(api.heroSections.removeHeroImage);
+  const replaceHeroSectionImage = useMutation(api.heroSections.replaceHeroImage);
 
   // Auth logic
   const allowedEmails = new Set<string>(["luxe.premium.in@gmail.com"]);
@@ -62,6 +63,7 @@ export default function Admin() {
 
   // Hero image management state
   const [heroUploading, setHeroUploading] = useState<Record<string, boolean>>({});
+  const [replacingImage, setReplacingImage] = useState<{ slug: string; oldUrl: string } | null>(null);
 
   // Convex storage actions
   const generateUploadUrl = useAction((api as any).storage.generateUploadUrl);
@@ -136,6 +138,52 @@ export default function Admin() {
     }
   };
 
+  const handleHeroImageReplace = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file || !replacingImage) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload an image file.");
+      return;
+    }
+
+    const { slug, oldUrl } = replacingImage;
+    setHeroUploading((prev) => ({ ...prev, [slug]: true }));
+
+    try {
+      const postUrl: string = await generateUploadUrl({});
+      const res = await fetch(postUrl, {
+        method: "POST",
+        headers: { "Content-Type": file.type },
+        body: file,
+      });
+
+      if (!res.ok) throw new Error("Upload failed");
+
+      const json = (await res.json()) as { storageId: string };
+      const publicUrl: string = await resolvePublicUrl({
+        storageId: json.storageId as any,
+      });
+
+      await replaceHeroSectionImage({
+        slug,
+        oldImageUrl: oldUrl,
+        newImageUrl: publicUrl,
+      });
+
+      toast.success("Image replaced successfully!");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to replace image.");
+    } finally {
+      setHeroUploading((prev) => ({ ...prev, [slug]: false }));
+      setReplacingImage(null);
+      event.target.value = ""; // Reset input
+    }
+  };
+
   const handleHeroImageRemove = async (
     slug: string,
     imageUrl: string,
@@ -195,6 +243,15 @@ export default function Admin() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
+      {/* Hidden input for replacement */}
+      <input
+        type="file"
+        accept="image/*"
+        className="hidden"
+        id="replace-hero-image-input"
+        onChange={handleHeroImageReplace}
+      />
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8 flex items-center justify-between">
           <div>
@@ -367,9 +424,25 @@ export default function Admin() {
                                   variant="secondary"
                                   className="h-7 w-7 rounded-full bg-white/80 text-gray-900 hover:bg-white"
                                   onClick={() => {
+                                    setReplacingImage({ slug: group.slug, oldUrl: imageUrl });
+                                    document.getElementById("replace-hero-image-input")?.click();
+                                  }}
+                                  disabled={!!heroUploading[group.slug]}
+                                  title="Replace image"
+                                >
+                                  <span className="sr-only">Replace image</span>
+                                  <RefreshCw className="h-3.5 w-3.5" />
+                                </Button>
+                                <Button
+                                  type="button"
+                                  size="icon"
+                                  variant="secondary"
+                                  className="h-7 w-7 rounded-full bg-white/80 text-gray-900 hover:bg-white"
+                                  onClick={() => {
                                     navigator.clipboard.writeText(imageUrl);
                                     toast.success("Image URL copied!");
                                   }}
+                                  title="Copy URL"
                                 >
                                   <span className="sr-only">Copy image URL</span>
                                   ⧉
@@ -387,9 +460,10 @@ export default function Admin() {
                                     )
                                   }
                                   disabled={!!heroUploading[group.slug]}
+                                  title="Remove image"
                                 >
                                   <span className="sr-only">Remove image</span>
-                                  ×
+                                  <Trash2 className="h-3.5 w-3.5" />
                                 </Button>
                               </div>
                             </div>

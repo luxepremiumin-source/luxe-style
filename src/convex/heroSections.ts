@@ -78,3 +78,31 @@ export const removeHeroImage = mutation({
     await ctx.db.patch(existing._id, { images: filtered });
   },
 });
+
+export const replaceHeroImage = mutation({
+  args: {
+    slug: v.string(),
+    oldImageUrl: v.string(),
+    newImageUrl: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db
+      .query("heroSections")
+      .withIndex("by_slug", (q) => q.eq("slug", args.slug))
+      .unique();
+
+    if (!existing) {
+      throw new Error(`Hero section "${args.slug}" not found.`);
+    }
+
+    const index = existing.images.indexOf(args.oldImageUrl);
+    if (index === -1) {
+      throw new Error("Image to replace not found.");
+    }
+
+    const newImages = [...existing.images];
+    newImages[index] = args.newImageUrl;
+
+    await ctx.db.patch(existing._id, { images: newImages });
+  },
+});
