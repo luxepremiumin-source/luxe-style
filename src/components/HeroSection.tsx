@@ -1,5 +1,3 @@
-import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 
@@ -11,61 +9,23 @@ export default function HeroSection() {
     heroSections?.find((section) => section.slug === "hero-one")?.images?.[0] ??
     null;
   const backgroundImage = dynamicBg ?? fallbackBg;
-  const [allowMotion, setAllowMotion] = useState(true);
-
-  // Preload the hero image for faster LCP
-  useEffect(() => {
-    const link = document.createElement("link");
-    link.rel = "preload";
-    link.as = "image";
-    link.href = backgroundImage;
-    link.fetchPriority = "high";
-    document.head.appendChild(link);
-    return () => {
-      document.head.removeChild(link);
-    };
-  }, [backgroundImage]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const update = () => setAllowMotion(!mediaQuery.matches);
-    update();
-    mediaQuery.addEventListener("change", update);
-    return () => mediaQuery.removeEventListener("change", update);
-  }, []);
 
   return (
     <section className="relative w-full overflow-hidden bg-black">
       <div className="relative h-[70vh] sm:h-[78vh] md:h-[86vh] lg:h-[88vh]">
-        {/* Use a wrapper for motion to keep the img tag simple and robust */}
-        <motion.div
-          className="absolute inset-0 h-full w-full"
-          initial={{ scale: allowMotion ? 1.06 : 1 }}
-          animate={allowMotion ? { scale: [1.06, 1.14, 1.06] } : { scale: 1 }}
-          transition={
-            allowMotion
-              ? { duration: 9, ease: "easeInOut", repeat: Infinity }
-              : undefined
-          }
-          style={{ 
-            transformOrigin: "50% 38%", 
-            willChange: "transform"
-          }}
-        >
+        <div className="absolute inset-0 h-full w-full">
           <img
             src={backgroundImage}
             alt="LUXE flagship visual"
-            className="h-full w-full object-cover touch-none"
+            className="h-full w-full object-cover animate-hero-zoom"
             loading="eager"
-            decoding="sync" // Changed to sync for immediate decoding on LCP
-            sizes="100vw"
+            decoding="sync"
             fetchPriority="high"
             style={{ 
               objectPosition: "50% 38%",
             }}
           />
-        </motion.div>
+        </div>
         <div className="absolute inset-0 bg-black/40" />
 
         <div className="absolute inset-0 flex items-end justify-center pb-32 sm:pb-40 md:pb-44 pointer-events-none">
@@ -85,6 +45,22 @@ export default function HeroSection() {
           </div>
         </div>
       </div>
+      <style>{`
+        @keyframes hero-zoom {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.05); }
+          100% { transform: scale(1); }
+        }
+        .animate-hero-zoom {
+          animation: hero-zoom 20s ease-in-out infinite;
+          will-change: transform;
+        }
+        @media (max-width: 768px) {
+          .animate-hero-zoom {
+            animation: none;
+          }
+        }
+      `}</style>
     </section>
   );
 }
