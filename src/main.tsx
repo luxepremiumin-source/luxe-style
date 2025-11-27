@@ -26,6 +26,8 @@ import BrandProducts from "./pages/BrandProducts.tsx";
 import Checkout from "@/pages/Checkout.tsx";
 import SearchResults from "./pages/SearchResults.tsx";
 import "./types/global.d.ts";
+import MetaPixel from "@/components/MetaPixel";
+import { Outlet } from "react-router";
 
 // Use environment variable or fallback to the correct deployment URL
 const convexUrl = import.meta.env.VITE_CONVEX_URL || "https://neat-falcon-155.convex.cloud";
@@ -34,78 +36,92 @@ console.log("[CONVEX] Using Convex URL:", convexUrl);
 
 const convex = new ConvexReactClient(convexUrl);
 
+function Layout() {
+  return (
+    <>
+      <MetaPixel />
+      <Outlet />
+    </>
+  );
+}
+
 const router = createBrowserRouter([
   {
-    path: "/",
-    element: <Landing />,
-  },
-  {
-    path: "/auth",
-    element: <AuthPage redirectAfterAuth="/" />,
-  },
-  {
-    path: "/admin",
-    element: <Admin />,
-  },
-  {
-    path: "/admin/customers",
-    element: <AdminCustomers />,
-  },
-  {
-    path: "/admin/storage-recovery",
-    element: <AdminStorageRecovery />,
-  },
-  {
-    path: "/checkout",
-    element: <Checkout />,
-  },
-  {
-    path: "/search",
-    element: <SearchResults />,
-  },
-  {
-    path: "/category/:category",
-    element: <CategoryPage />,
-  },
-  {
-    path: "/product/:id",
-    element: <ProductPage />,
-  },
-  {
-    path: "/contact",
-    element: <Contact />,
-  },
-  {
-    path: "/about",
-    element: <AboutUs />,
-  },
-  {
-    path: "/track-order",
-    element: <TrackOrder />,
-  },
-  {
-    path: "/terms-of-service",
-    element: <TermsOfService />,
-  },
-  {
-    path: "/shipping-policy",
-    element: <ShippingPolicy />,
-  },
-  {
-    path: "/refund-policy",
-    element: <RefundPolicy />,
-  },
-  {
-    path: "/shop-by-brand",
-    element: <ShopByBrand />,
-  },
-  {
-    path: "/brand/:brandName",
-    element: <BrandProducts />,
-  },
-  {
-    path: "*",
-    element: <NotFound />,
+    element: <Layout />,
+    children: [
+      {
+        path: "/",
+        element: <Landing />,
+      },
+      {
+        path: "/auth",
+        element: <AuthPage redirectAfterAuth="/" />,
+      },
+      {
+        path: "/admin",
+        element: <Admin />,
+      },
+      {
+        path: "/admin/customers",
+        element: <AdminCustomers />,
+      },
+      {
+        path: "/admin/storage-recovery",
+        element: <AdminStorageRecovery />,
+      },
+      {
+        path: "/checkout",
+        element: <Checkout />,
+      },
+      {
+        path: "/search",
+        element: <SearchResults />,
+      },
+      {
+        path: "/category/:category",
+        element: <CategoryPage />,
+      },
+      {
+        path: "/product/:id",
+        element: <ProductPage />,
+      },
+      {
+        path: "/contact",
+        element: <Contact />,
+      },
+      {
+        path: "/about",
+        element: <AboutUs />,
+      },
+      {
+        path: "/track-order",
+        element: <TrackOrder />,
+      },
+      {
+        path: "/terms-of-service",
+        element: <TermsOfService />,
+      },
+      {
+        path: "/shipping-policy",
+        element: <ShippingPolicy />,
+      },
+      {
+        path: "/refund-policy",
+        element: <RefundPolicy />,
+      },
+      {
+        path: "/shop-by-brand",
+        element: <ShopByBrand />,
+      },
+      {
+        path: "/brand/:brandName",
+        element: <BrandProducts />,
+      },
+      {
+        path: "*",
+        element: <NotFound />,
+      },
+    ],
   },
 ]);
 
