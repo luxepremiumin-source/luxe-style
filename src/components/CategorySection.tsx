@@ -223,30 +223,18 @@ export default function CategorySection() {
   return (
     <section className="py-12 sm:py-16 md:py-24 bg-black">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.4 }}
-          className="text-center mb-8 sm:mb-12 md:mb-16"
-        >
+        <div className="text-center mb-8 sm:mb-12 md:mb-16">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white mb-3 sm:mb-4">
             Explore Our Collections
           </h2>
           <p className="text-base sm:text-lg md:text-xl text-gray-300 max-w-2xl mx-auto px-4">
             Discover premium accessories that elevate your style and make a statement
           </p>
-        </motion.div>
+        </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           {categories.map((category, index) => (
-            <motion.div
-              key={category.name}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.08, duration: 0.4 }}
-            >
+            <div key={category.name}>
               <Card
                 className="group cursor-pointer overflow-hidden ring-1 ring-white/10 active:ring-white/30 hover:ring-white/20 bg-transparent transition-all duration-200 touch-manipulation"
                 onClick={() => window.open(category.href, "_blank")}
@@ -322,11 +310,7 @@ export default function CategorySection() {
                       fetchPriority="high"
                     />
                   ) : null}
-                  <motion.div
-                    whileHover={{ scale: 1.05 }}
-                    transition={{ duration: 0.3 }}
-                    className="absolute inset-0"
-                  />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
                 </div>
                 
                 <div className="p-4 sm:p-6">
@@ -349,7 +333,7 @@ export default function CategorySection() {
                   </Button>
                 </div>
               </Card>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>

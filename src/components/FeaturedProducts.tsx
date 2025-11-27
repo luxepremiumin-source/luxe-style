@@ -15,19 +15,14 @@ export default function FeaturedProducts() {
     return (
       <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
+          <div className="text-center mb-16">
             <h2 className="text-4xl lg:text-5xl font-bold tracking-tight text-gray-900 mb-4">
               Featured Products
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
               Loading featured items...
             </p>
-          </motion.div>
+          </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className="animate-pulse">
@@ -50,19 +45,14 @@ export default function FeaturedProducts() {
   return (
     <section className="py-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center mb-16"
-        >
+        <div className="text-center mb-16">
           <h2 className="text-4xl lg:text-5xl font-bold tracking-tight text-gray-900 mb-4">
             Featured Products
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
             Handpicked premium accessories that our customers love most
           </p>
-        </motion.div>
+        </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {products.map((product, index) => {
@@ -71,13 +61,7 @@ export default function FeaturedProducts() {
               "https://picsum.photos/seed/luxe-300/300";
 
             return (
-              <motion.div
-                key={product._id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-              >
+              <div key={product._id}>
                 <Card
                   className="group cursor-pointer overflow-hidden border border-gray-200 hover:border-gray-300 transition-all duration-300 bg-white"
                   onClick={() => window.open(`/product/${product._id}`, "_blank")}
@@ -87,9 +71,9 @@ export default function FeaturedProducts() {
                       src={image}
                       alt={product.name}
                       className="absolute inset-0 w-full h-full object-cover"
-                      loading={index < 4 ? "eager" : "lazy"}
-                      decoding="async"
-                      fetchPriority={index < 4 ? "high" : "auto"}
+                      loading={index < 8 ? "eager" : "lazy"}
+                      decoding="sync"
+                      fetchPriority={index < 8 ? "high" : "auto"}
                     />
                     {product.originalPrice && product.originalPrice > product.price && (
                       <Badge className="absolute top-3 left-3 z-10 bg-gray-900 text-white">
@@ -107,11 +91,7 @@ export default function FeaturedProducts() {
                     >
                       <Heart className="h-4 w-4" />
                     </Button>
-                    <motion.div
-                      whileHover={{ scale: 1.05 }}
-                      transition={{ duration: 0.3 }}
-                      className="absolute inset-0"
-                    />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300" />
                   </div>
 
                   <div className="p-4">
@@ -169,17 +149,12 @@ export default function FeaturedProducts() {
                     </div>
                   </div>
                 </Card>
-              </motion.div>
+              </div>
             );
           })}
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center mt-12"
-        >
+        <div className="text-center mt-12">
           <Button
             size="lg"
             variant="outline"
@@ -188,7 +163,7 @@ export default function FeaturedProducts() {
           >
             View All Products
           </Button>
-        </motion.div>
+        </div>
       </div>
     </section>
   );
