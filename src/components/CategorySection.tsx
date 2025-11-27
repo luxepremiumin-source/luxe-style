@@ -128,9 +128,8 @@ export default function CategorySection() {
 
     const connection = (navigator as typeof navigator & { connection?: { saveData?: boolean } }).connection;
     const saveDataEnabled = connection?.saveData;
-    const isDesktop = window.matchMedia("(min-width: 1024px)").matches;
 
-    if (!isDesktop || saveDataEnabled) {
+    if (saveDataEnabled) {
       setImagesLoaded(true);
       setWatchesLoaded(true);
       setBeltsLoaded(true);
@@ -269,9 +268,9 @@ export default function CategorySection() {
                         src={category.images[currentImageIndex]}
                         alt={category.name}
                         className="absolute inset-0 h-full w-full object-cover"
-                        loading="lazy"
-                        decoding="async"
-                        fetchPriority="low"
+                        loading="eager"
+                        decoding="sync"
+                        fetchPriority="high"
                         initial={transitionVariants[currentImageIndex].initial}
                         animate={transitionVariants[currentImageIndex].animate}
                         exit={transitionVariants[currentImageIndex].exit}
@@ -286,9 +285,9 @@ export default function CategorySection() {
                         src={category.images[currentWatchIndex]}
                         alt={category.name}
                         className="absolute inset-0 h-full w-full object-cover"
-                        loading="lazy"
-                        decoding="async"
-                        fetchPriority="low"
+                        loading="eager"
+                        decoding="sync"
+                        fetchPriority="high"
                         initial={watchTransitionVariants[currentWatchIndex].initial}
                         animate={watchTransitionVariants[currentWatchIndex].animate}
                         exit={watchTransitionVariants[currentWatchIndex].exit}
@@ -303,9 +302,9 @@ export default function CategorySection() {
                         src={category.images[currentBeltIndex]}
                         alt={category.name}
                         className="absolute inset-0 h-full w-full object-cover"
-                        loading="lazy"
-                        decoding="async"
-                        fetchPriority="low"
+                        loading="eager"
+                        decoding="sync"
+                        fetchPriority="high"
                         initial={beltTransitionVariants[currentBeltIndex].initial}
                         animate={beltTransitionVariants[currentBeltIndex].animate}
                         exit={beltTransitionVariants[currentBeltIndex].exit}
@@ -318,8 +317,9 @@ export default function CategorySection() {
                       src={category.images[0]}
                       alt={category.name}
                       className="absolute inset-0 h-full w-full object-cover"
-                      loading="lazy"
-                      decoding="async"
+                      loading="eager"
+                      decoding="sync"
+                      fetchPriority="high"
                     />
                   ) : null}
                   <motion.div

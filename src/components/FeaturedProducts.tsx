@@ -81,16 +81,15 @@ export default function FeaturedProducts() {
                 <Card
                   className="group cursor-pointer overflow-hidden border border-gray-200 hover:border-gray-300 transition-all duration-300 bg-white"
                   onClick={() => window.open(`/product/${product._id}`, "_blank")}
-                  style={{ contentVisibility: "auto", containIntrinsicSize: "420px" }}
                 >
                   <div className="relative aspect-square overflow-hidden">
                     <img
                       src={image}
                       alt={product.name}
                       className="absolute inset-0 w-full h-full object-cover"
-                      loading="lazy"
+                      loading={index < 4 ? "eager" : "lazy"}
                       decoding="async"
-                      fetchPriority="low"
+                      fetchPriority={index < 4 ? "high" : "auto"}
                     />
                     {product.originalPrice && product.originalPrice > product.price && (
                       <Badge className="absolute top-3 left-3 z-10 bg-gray-900 text-white">
