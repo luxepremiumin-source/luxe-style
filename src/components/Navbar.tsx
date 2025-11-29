@@ -1118,7 +1118,19 @@ export default function Navbar() {
                       </p>
                     </div>
 
-                    <div className="pt-2">
+                    <div className="pt-2 space-y-3">
+                      <Button
+                        variant="outline"
+                        className="w-full h-12 rounded-full border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900 hover:border-gray-400 transition-all"
+                        onClick={() => {
+                          const message = "Hi, I want to confirm the availability of these items in my cart before checking out.";
+                          const url = `https://wa.me/8871880773?text=${encodeURIComponent(message)}`;
+                          window.open(url, "_blank");
+                        }}
+                      >
+                        Confirm Availability
+                      </Button>
+                      
                       <Button
                         className="w-full h-12 rounded-full bg-black text-white hover:bg-black/90"
                         onClick={() => {

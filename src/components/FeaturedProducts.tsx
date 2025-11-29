@@ -72,8 +72,8 @@ export default function FeaturedProducts() {
                       alt={product.name}
                       className="absolute inset-0 w-full h-full object-cover"
                       loading={index < 8 ? "eager" : "lazy"}
-                      decoding="sync"
-                      fetchPriority={index < 8 ? "high" : "auto"}
+                      decoding="async"
+                      fetchPriority={index < 4 ? "high" : "auto"}
                     />
                     {product.originalPrice && product.originalPrice > product.price && (
                       <Badge className="absolute top-3 left-3 z-10 bg-gray-900 text-white">
