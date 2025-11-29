@@ -5,10 +5,71 @@ import { motion } from "framer-motion";
 import { Heart, ShoppingBag, MessageCircle } from "lucide-react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { useEffect, useMemo } from "react";
 
 export default function FeaturedProducts() {
   // Load featured products from Convex
   const products = useQuery(api.products.getFeaturedProducts);
+  const fallbackImage = "https://picsum.photos/seed/luxe-300/300";
+
+  const getPrimaryImage = (item: any) => {
+    if (Array.isArray(item?.images) && typeof item.images[0] === "string" && item.images[0]) {
+      return item.images[0];
+    }
+    return null;
+  };
+
+  const prioritizedImageUrls = useMemo(() => {
+    if (!products) return [];
+    const urls = products
+      .map((product) => getPrimaryImage(product))
+      .filter((url): url is string => Boolean(url));
+    return Array.from(new Set(urls));
+  }, [products]);
+
+  useEffect(() => {
+    if (
+      !prioritizedImageUrls.length ||
+      typeof document === "undefined" ||
+      typeof window === "undefined"
+    ) {
+      return;
+    }
+    const connection = (
+      navigator as Navigator & { connection?: { saveData?: boolean } }
+    ).connection;
+    if (connection?.saveData) {
+      return;
+    }
+
+    const preloadTargets = prioritizedImageUrls.slice(0, 8);
+    const createdLinks: HTMLLinkElement[] = [];
+
+    preloadTargets.forEach((url) => {
+      const link = document.createElement("link");
+      link.rel = "preload";
+      link.as = "image";
+      link.href = url;
+      link.crossOrigin = "anonymous";
+      document.head.appendChild(link);
+      createdLinks.push(link);
+    });
+
+    const warmedImages = preloadTargets.map((url) => {
+      const img = new Image();
+      img.decoding = "sync";
+      img.loading = "eager";
+      img.src = url;
+      return img;
+    });
+
+    return () => {
+      createdLinks.forEach((link) => link.remove());
+      warmedImages.forEach((img) => {
+        img.src = "";
+      });
+    };
+  }, [prioritizedImageUrls]);
 
   // Simple loading state
   if (products === undefined) {
@@ -68,12 +129,12 @@ export default function FeaturedProducts() {
                 >
                   <div className="relative aspect-square overflow-hidden">
                     <img
-                      src={image}
+                      src={getPrimaryImage(product) ?? fallbackImage}
                       alt={product.name}
                       className="absolute inset-0 w-full h-full object-cover"
                       loading={index < 8 ? "eager" : "lazy"}
-                      decoding="async"
-                      fetchPriority={index < 4 ? "high" : "auto"}
+                      decoding={index < 8 ? "sync" : "async"}
+                      fetchPriority={index < 8 ? "high" : "auto"}
                     />
                     {product.originalPrice && product.originalPrice > product.price && (
                       <Badge className="absolute top-3 left-3 z-10 bg-gray-900 text-white">
