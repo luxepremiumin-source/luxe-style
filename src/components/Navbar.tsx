@@ -444,6 +444,10 @@ export default function Navbar() {
     });
   }, [profileData]);
 
+  const confirmAvailabilityUrl = `https://wa.me/918871880773?text=${encodeURIComponent(
+    "Hi, I want to confirm the availability of these items in my cart before checking out."
+  )}`;
+
   return (
     <motion.nav
       initial={{ y: -100 }}
