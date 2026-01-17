@@ -1,4 +1,6 @@
+import { useMemo, useState } from "react";
 import { useQuery } from "convex/react";
+import type { Doc } from "@/convex/_generated/dataModel";
 import { api } from "@/convex/_generated/api";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -265,7 +267,7 @@ export default function ShopByBrand() {
   const detectedBrands = new Set<string>();
   
   if (allProducts) {
-    allProducts.forEach(product => {
+    allProducts.forEach((product: Doc<"products">) => {
       // If product has brand field, use it
       if (product.brand) {
         detectedBrands.add(product.brand);
