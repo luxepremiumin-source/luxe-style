@@ -5,7 +5,7 @@ import { MessageCircle, Sparkles } from "lucide-react";
 
 export default function WhatsAppNewArrivals() {
   const handleCommunityClick = () => {
-    const communityUrl = "https://chat.whatsapp.com/DBdZEP66bVk2NRcFoumLLx";
+    const communityUrl = "https://chat.whatsapp.com/EEk0S8PYfR474ks8ok1rPE";
     window.location.href = communityUrl;
   };
 
