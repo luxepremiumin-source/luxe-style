@@ -29,19 +29,7 @@ export default function HeroSection() {
         <div className="absolute inset-0 bg-black/40" />
 
         <div className="absolute inset-0 flex items-end justify-center pb-32 sm:pb-40 md:pb-44 pointer-events-none">
-          <div className="flex gap-2.5 sm:gap-3 md:gap-4 px-4">
-            <a
-              href="/category/goggles"
-              className="pointer-events-auto rounded-full bg-white text-black px-4 py-2 sm:px-5 sm:py-2.5 md:px-6 md:py-3 text-xs sm:text-sm font-bold ring-2 ring-black/10 hover:bg-gray-100 active:bg-gray-200 transition-colors duration-200 touch-manipulation min-h-[44px] flex items-center justify-center shadow-lg"
-            >
-              Goggles
-            </a>
-            <a
-              href="/category/watches"
-              className="pointer-events-auto rounded-full bg-white text-black px-4 py-2 sm:px-5 sm:py-2.5 md:px-6 md:py-3 text-xs sm:text-sm font-bold ring-2 ring-black/10 hover:bg-gray-100 active:bg-gray-200 transition-colors duration-200 touch-manipulation min-h-[44px] flex items-center justify-center shadow-lg"
-            >
-              Watches
-            </a>
+          <div className="flex justify-center gap-2.5 sm:gap-3 md:gap-4 px-4">
             <a
               href="/category/mens"
               className="pointer-events-auto rounded-full bg-white text-black px-4 py-2 sm:px-5 sm:py-2.5 md:px-6 md:py-3 text-xs sm:text-sm font-bold ring-2 ring-black/10 hover:bg-gray-100 active:bg-gray-200 transition-colors duration-200 touch-manipulation min-h-[44px] flex items-center justify-center shadow-lg"
