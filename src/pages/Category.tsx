@@ -10,7 +10,7 @@ import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
 import { useQuery } from "convex/react";
 import { motion } from "framer-motion";
-import { MessageCircle, Heart, ChevronLeft, ChevronRight, X, ChevronDown } from "lucide-react";
+import { MessageCircle, Heart, ChevronLeft, ChevronRight, X, ChevronDown, ArrowRight } from "lucide-react";
 import { useParams } from "react-router";
 import { useNavigate } from "react-router";
 import { useState, useEffect } from "react";
@@ -22,8 +22,97 @@ const prettyName: Record<string, string> = {
   "gift box": "Gift Box",
 };
 
+const curatedSections: Record<
+  string,
+  {
+    heading: string;
+    subheading: string;
+    cards: Array<{
+      title: string;
+      description: string;
+      label: string;
+      href: string;
+      image: string;
+    }>;
+  }
+> = {
+  mens: {
+    heading: "Explore Our Collections",
+    subheading:
+      "Discover premium accessories that elevate your style and make a statement.",
+    cards: [
+      {
+        title: "Premium Goggles",
+        description: "Fashion eyewear for every mood.",
+        label: "Mens Goggles",
+        href: "/category/goggles",
+        image:
+          "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=80",
+      },
+      {
+        title: "Designer Watches",
+        description: "Luxury-inspired watches for everyday wear.",
+        label: "Mens Watches",
+        href: "/category/watches",
+        image:
+          "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=1200&q=80",
+      },
+      {
+        title: "Luxury Belts",
+        description: "Essential belts for an iconic style upgrade.",
+        label: "Mens Belts",
+        href: "/category/belts",
+        image:
+          "https://images.unsplash.com/photo-1529946825183-68891d45d1d1?auto=format&fit=crop&w=1200&q=80",
+      },
+    ],
+  },
+  womens: {
+    heading: "Premium Women's Collections",
+    subheading:
+      "Handpicked statement pieces that balance modern luxury with effortless elegance.",
+    cards: [
+      {
+        title: "Luxe Goggles",
+        description: "Bold frames and tinted lenses made for daytime glamour.",
+        label: "Women's Eyewear",
+        href: "/category/goggles",
+        image:
+          "https://images.unsplash.com/photo-1503341455253-b2e723bb3dbb?auto=format&fit=crop&w=1200&q=80",
+      },
+      {
+        title: "Signature Watches",
+        description: "Delicate craftsmanship that keeps every moment polished.",
+        label: "Women's Timepieces",
+        href: "/category/watches",
+        image:
+          "https://images.unsplash.com/photo-1522312346375-d1a52e2b99b3?auto=format&fit=crop&w=1200&q=80",
+      },
+      {
+        title: "Designer Handbags",
+        description: "Sophisticated silhouettes for every invitation.",
+        label: "Women's Handbags",
+        href: "/category/handbags",
+        image:
+          "https://images.unsplash.com/photo-1522312298940-653d2f2c8a1b?auto=format&fit=crop&w=1200&q=80",
+      },
+    ],
+  },
+};
+
 export default function CategoryPage() {
   const { category = "" } = useParams();
+  const normalizedCategory = category.toLowerCase();
+  const curatedContent = curatedSections[normalizedCategory];
+  const displayCategoryName = prettyName[normalizedCategory] ?? "Collection";
+  const headerTitle = curatedContent?.heading ?? displayCategoryName;
+  const headerSubtitle =
+    curatedContent?.subheading ??
+    `Explore our premium ${
+      displayCategoryName === "Collection"
+        ? "products"
+        : displayCategoryName.toLowerCase()
+    }.`;
   const allProducts = useQuery(api.products.getProductsByCategory, { category });
   const { isAuthenticated, user, signIn } = useAuth();
   const addToCart = useMutation(api.cart.addToCart);
@@ -186,12 +275,69 @@ export default function CategoryPage() {
         <section className="bg-black">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
             {/* Header */}
-            <div className="mb-8">
+            <div className="mb-8 text-center lg:text-left">
               <h1 className="text-3xl lg:text-4xl font-bold tracking-tight text-white">
-                {prettyName[category] ?? "Collection"}
+                {headerTitle}
               </h1>
-              <p className="text-gray-300 mt-2">Explore our premium {prettyName[category] ?? "products"}.</p>
+              <p className="text-gray-300 mt-2">{headerSubtitle}</p>
             </div>
+
+            {curatedContent && (
+              <div className="mb-12">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {curatedContent.cards.map((card, index) => (
+                    <motion.div
+                      key={card.title}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: index * 0.05, duration: 0.4 }}
+                      whileHover={{ y: -6 }}
+                      className="group rounded-[32px] border border-white/15 bg-gradient-to-b from-white/5 to-transparent overflow-hidden flex flex-col cursor-pointer transition-shadow duration-300 hover:shadow-[0_25px_80px_rgba(0,0,0,0.45)]"
+                      onClick={() => navigate(card.href)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          navigate(card.href);
+                        }
+                      }}
+                    >
+                      <div className="relative h-64 w-full overflow-hidden">
+                        <img
+                          src={card.image}
+                          alt={card.title}
+                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          loading="lazy"
+                          decoding="async"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+                      </div>
+                      <div className="p-6 flex flex-col gap-4 flex-1">
+                        <span className="text-xs font-semibold uppercase tracking-[0.3em] text-white/60">
+                          {card.label}
+                        </span>
+                        <div>
+                          <h3 className="text-2xl font-semibold text-white">
+                            {card.title}
+                          </h3>
+                          <p className="mt-2 text-sm text-white/70">
+                            {card.description}
+                          </p>
+                        </div>
+                        <div className="mt-auto">
+                          <span className="inline-flex items-center gap-2 text-sm font-semibold text-white">
+                            Shop Now
+                            <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
+                          </span>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div>
               {/* Products Grid */}
