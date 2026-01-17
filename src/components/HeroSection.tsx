@@ -42,6 +42,18 @@ export default function HeroSection() {
             >
               Watches
             </a>
+            <a
+              href="/category/mens"
+              className="pointer-events-auto rounded-full bg-white text-black px-4 py-2 sm:px-5 sm:py-2.5 md:px-6 md:py-3 text-xs sm:text-sm font-bold ring-2 ring-black/10 hover:bg-gray-100 active:bg-gray-200 transition-colors duration-200 touch-manipulation min-h-[44px] flex items-center justify-center shadow-lg"
+            >
+              Mens
+            </a>
+            <a
+              href="/category/womens"
+              className="pointer-events-auto rounded-full bg-white text-black px-4 py-2 sm:px-5 sm:py-2.5 md:px-6 md:py-3 text-xs sm:text-sm font-bold ring-2 ring-black/10 hover:bg-gray-100 active:bg-gray-200 transition-colors duration-200 touch-manipulation min-h-[44px] flex items-center justify-center shadow-lg"
+            >
+              Womens
+            </a>
           </div>
         </div>
       </div>
