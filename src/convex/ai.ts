@@ -155,35 +155,43 @@ export const analyzeImage = action({
           const mimeType = matches ? matches[1] : "image/jpeg";
           const base64Data = matches ? matches[2] : args.imageBase64;
 
-          const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${googleKey}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              contents: [{
-                parts: [
-                  { text: "Analyze this product image. Identify the main product, brand, color, and type. Return a JSON object with a 'searchQuery' field containing a concise search string (3-5 words) to find similar products (e.g. 'Black Fossil Chronograph Watch')." },
-                  {
-                    inline_data: {
-                      mime_type: mimeType,
-                      data: base64Data
-                    }
-                  }
-                ]
-              }],
-              generationConfig: {
-                response_mime_type: "application/json"
-              }
-            }),
-          });
+          const models = ["gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-pro", "gemini-1.5-pro"];
+          let response;
+          let usedModel;
 
-          if (!response.ok) {
+          for (const model of models) {
+            usedModel = model;
+            response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${googleKey}`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                contents: [{
+                  parts: [
+                    { text: "Analyze this product image. Identify the main product, brand, color, and type. Return a JSON object with a 'searchQuery' field containing a concise search string (3-5 words) to find similar products (e.g. 'Black Fossil Chronograph Watch')." },
+                    {
+                      inline_data: {
+                        mime_type: mimeType,
+                        data: base64Data
+                      }
+                    }
+                  ]
+                }],
+                generationConfig: {
+                  response_mime_type: "application/json"
+                }
+              }),
+            });
+            if (response.status !== 404) break; // If not 404, stop trying (either success or other error)
+          }
+
+          if (response && !response.ok) {
             const errorText = await response.text();
-            console.error("Gemini API Error:", errorText);
+            console.error(`Gemini API Error (${usedModel}):`, errorText);
             // Continue to OpenAI fallback if Gemini fails
-          } else {
+          } else if (response) {
             const data = await response.json();
             content = data.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (content) console.log("Gemini Analysis success");
+            if (content) console.log(`Gemini Analysis success with ${usedModel}`);
           }
         } catch (e) {
           console.error("Gemini Analysis Error:", e);
