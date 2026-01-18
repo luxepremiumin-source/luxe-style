@@ -45,12 +45,15 @@ export function AIAnalysisFeedback({ status, similarProducts, error, onEditProdu
           </p>
 
           {status === "error" && isKeyError && (
-            <div className="mt-2 bg-white/50 p-2 rounded border border-red-100 text-xs">
+            <div className="mt-2 bg-white/50 p-3 rounded border border-red-100 text-xs">
               <strong>How to fix:</strong>
-              <ol className="list-decimal ml-4 mt-1 space-y-1">
-                <li>Go to the <strong>Integrations</strong> tab in the top bar.</li>
+              <ol className="list-decimal ml-4 mt-2 space-y-1.5">
+                <li>
+                  Get a key from <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline hover:text-blue-800">platform.openai.com</a>
+                </li>
+                <li>Go to the <strong>Integrations</strong> tab in the top bar of this window.</li>
                 <li>Click on <strong>OpenAI</strong>.</li>
-                <li>Add your <strong>OPENAI_API_KEY</strong>.</li>
+                <li>Paste your key into <strong>OPENAI_API_KEY</strong> and Save.</li>
                 <li>Try pasting the image again.</li>
               </ol>
             </div>

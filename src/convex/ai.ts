@@ -65,6 +65,7 @@ export const analyzeImage = action({
   }> => {
     console.log("Starting AI analysis...");
     let content: string | null = null;
+    let vlyError: string | null = null;
 
     // 1. Try Vly Integration
     // We check if the key exists OR if we are in a production environment where it might be injected differently
@@ -95,22 +96,28 @@ export const analyzeImage = action({
           console.log("Vly Analysis success");
         } else {
           console.warn("Vly Analysis failed:", result.error);
+          vlyError = result.error || "Unknown Vly error";
         }
-      } catch (e) {
+      } catch (e: any) {
         console.error("Vly Analysis Error:", e);
+        vlyError = e.message || "Vly exception";
       }
     }
 
     // 2. Fallback to Direct OpenAI Fetch
     if (!content) {
-      const apiKey = process.env.OPENAI_API_KEY || process.env.OPENAI_KEY;
+      const apiKey = (process.env.OPENAI_API_KEY || process.env.OPENAI_KEY)?.trim();
       
       if (!apiKey) {
         console.error("OpenAI API Key missing during analysis.");
         // Return a specific flag for missing keys so the UI can show a helpful message
+        const errorMsg = vlyError 
+          ? `Built-in AI failed (${vlyError}) and OpenAI Key is missing. Please add OPENAI_API_KEY.` 
+          : "Missing API Key. Please add OPENAI_API_KEY in the Integrations tab.";
+          
         return { 
           success: false, 
-          error: "Missing API Key. Please add OPENAI_API_KEY in the Integrations tab.",
+          error: errorMsg,
           missingKey: true 
         };
       }
