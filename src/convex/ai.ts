@@ -6,9 +6,10 @@ import { api } from "./_generated/api";
 export const check = action({
   args: {},
   handler: async (ctx) => {
-    const apiKey = process.env.OPENAI_API_KEY;
+    const apiKey = process.env.OPENAI_API_KEY || process.env.OPENAI_KEY;
     if (!apiKey) {
-      return { success: false, error: "OPENAI_API_KEY is not set in the environment variables." };
+      console.error("OpenAI API Key missing. Available env vars:", Object.keys(process.env));
+      return { success: false, error: "OPENAI_API_KEY is not set. Please add it in the Integrations tab or Settings > Environment Variables." };
     }
     try {
       const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -44,9 +45,10 @@ export const analyzeImage = action({
     searchQuery?: string;
     matches?: any[];
   }> => {
-    const apiKey = process.env.OPENAI_API_KEY;
+    const apiKey = process.env.OPENAI_API_KEY || process.env.OPENAI_KEY;
     if (!apiKey) {
-      return { success: false, error: "OPENAI_API_KEY is not set" };
+      console.error("OpenAI API Key missing during analysis.");
+      return { success: false, error: "OPENAI_API_KEY is not set. Please add it in the Integrations tab." };
     }
     
     try {
@@ -81,6 +83,9 @@ export const analyzeImage = action({
       if (!response.ok) {
         const errorText = await response.text();
         console.error("OpenAI API Error:", errorText);
+        if (response.status === 401) {
+           return { success: false, error: "Invalid OpenAI API Key. Please check your integration settings." };
+        }
         return { success: false, error: `OpenAI API error: ${response.status}` };
       }
 
