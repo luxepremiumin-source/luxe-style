@@ -328,6 +328,7 @@ export default function ProductManager({ onBack }: ProductManagerProps) {
         price: priceNum,
         originalPrice: form.originalPrice ? Number(form.originalPrice) : undefined,
         category: form.category,
+        targetGender: form.targetGender || undefined,
         images,
         videos: videos.length > 0 ? videos : undefined,
         colors: form.colors.length > 0 ? form.colors : undefined,
@@ -407,6 +408,7 @@ export default function ProductManager({ onBack }: ProductManagerProps) {
         price: Number(editForm.price),
         originalPrice: editForm.originalPrice ? Number(editForm.originalPrice) : undefined,
         category: editForm.category,
+        targetGender: editForm.targetGender || undefined,
         featured: editForm.featured,
         inStock: editForm.inStock,
       };
@@ -724,18 +726,35 @@ export default function ProductManager({ onBack }: ProductManagerProps) {
             </div>
 
             <div className="space-y-2">
+              <Label>Collection</Label>
+              <Select
+                value={editForm.targetGender || undefined}
+                onValueChange={(v) => setEditForm(f => ({ ...f, targetGender: v as GenderOption, category: "" }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Mens or Womens" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="mens">Mens</SelectItem>
+                  <SelectItem value="womens">Womens</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
               <Label>Category</Label>
               <Select
                 value={editForm.category}
                 onValueChange={(v) => setEditForm(f => ({ ...f, category: v as any }))}
+                disabled={!editForm.targetGender}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a category" />
+                  <SelectValue placeholder={editForm.targetGender ? "Select a category" : "Select Mens or Womens first"} />
                 </SelectTrigger>
                 <SelectContent>
-                  {ALL_CATEGORY_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
+                  {(editForm.targetGender ? CATEGORY_OPTIONS_BY_GENDER[editForm.targetGender] : []).map((value) => (
+                    <SelectItem key={value} value={value}>
+                      {CATEGORY_LABELS[value]}
                     </SelectItem>
                   ))}
                 </SelectContent>
