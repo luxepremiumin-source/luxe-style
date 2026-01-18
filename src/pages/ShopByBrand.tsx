@@ -51,7 +51,7 @@ const BRAND_LOGOS: Record<string, { name: string; logo: string }> = {
   },
   "marc jacobs": {
     name: "Marc Jacobs",
-    logo: "https://harmless-tapir-303.convex.cloud/api/storage/9fb34354-0cf8-4838-946e-27ddb152f833"
+    logo: "https://harmless-tapir-303.convex.cloud/api/storage/d753e1e7-b724-43a8-8507-bcc7b554eb42"
   },
   "prada": {
     name: "Prada",
@@ -207,7 +207,7 @@ const BRAND_LOGOS: Record<string, { name: string; logo: string }> = {
   },
   "omega": {
     name: "Omega",
-    logo: "https://harmless-tapir-303.convex.cloud/api/storage/d753e1e7-b724-43a8-8507-bcc7b554eb42"
+    logo: "https://harmless-tapir-303.convex.cloud/api/storage/9fb34354-0cf8-4838-946e-27ddb152f833"
   },
   "tag heuer": {
     name: "TAG Heuer",
