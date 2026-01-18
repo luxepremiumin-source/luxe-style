@@ -11,63 +11,59 @@ import { ArrowRight } from "lucide-react";
 const BRAND_LOGOS: Record<string, { name: string; logo: string }> = {
   "gucci": {
     name: "Gucci",
-    logo: "https://logos-world.net/wp-content/uploads/2020/04/Gucci-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/gucci.svg"
   },
   "mont blanc": {
     name: "Mont Blanc",
-    logo: "https://logos-world.net/wp-content/uploads/2021/03/Montblanc-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/montblanc-1.svg"
   },
   "montblanc": {
     name: "Mont Blanc",
-    logo: "https://logos-world.net/wp-content/uploads/2021/03/Montblanc-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/montblanc-1.svg"
   },
   "burberry": {
     name: "Burberry",
-    logo: "https://logos-world.net/wp-content/uploads/2020/04/Burberry-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/burberry-1.svg"
   },
   "hermes": {
     name: "Hermès",
-    logo: "https://logos-world.net/wp-content/uploads/2020/11/Hermes-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/hermes-2.svg"
   },
   "hermès": {
     name: "Hermès",
-    logo: "https://logos-world.net/wp-content/uploads/2020/11/Hermes-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/hermes-2.svg"
   },
   "louis vuitton": {
     name: "Louis Vuitton",
-    logo: "https://logos-world.net/wp-content/uploads/2020/04/Louis-Vuitton-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/louis-vuitton-1.svg"
   },
   "lv": {
     name: "Louis Vuitton",
-    logo: "https://logos-world.net/wp-content/uploads/2020/04/Louis-Vuitton-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/louis-vuitton-1.svg"
   },
   "ferragamo": {
     name: "Ferragamo",
-    logo: "https://logos-world.net/wp-content/uploads/2021/02/Salvatore-Ferragamo-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/salvatore-ferragamo.svg"
   },
   "salvatore ferragamo": {
     name: "Ferragamo",
-    logo: "https://logos-world.net/wp-content/uploads/2021/02/Salvatore-Ferragamo-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/salvatore-ferragamo.svg"
   },
   "marc jacobs": {
     name: "Marc Jacobs",
     logo: "https://logos-world.net/wp-content/uploads/2021/03/Marc-Jacobs-Logo.png"
   },
-  "marc jacob": {
-    name: "Marc Jacobs",
-    logo: "https://logos-world.net/wp-content/uploads/2021/03/Marc-Jacobs-Logo.png"
-  },
   "prada": {
     name: "Prada",
-    logo: "https://logos-world.net/wp-content/uploads/2020/05/Prada-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/prada.svg"
   },
   "celine": {
     name: "Celine",
-    logo: "https://logos-world.net/wp-content/uploads/2021/03/Celine-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/celine.svg"
   },
   "chanel": {
     name: "Chanel",
-    logo: "https://logos-world.net/wp-content/uploads/2020/05/Chanel-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/chanel-1.svg"
   },
   "tom ford": {
     name: "Tom Ford",
@@ -79,35 +75,39 @@ const BRAND_LOGOS: Record<string, { name: string; logo: string }> = {
   },
   "coach": {
     name: "Coach",
-    logo: "https://logos-world.net/wp-content/uploads/2020/09/Coach-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/coach.svg"
   },
   "guess": {
     name: "Guess",
-    logo: "https://logos-world.net/wp-content/uploads/2020/09/Guess-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/guess-1.svg"
   },
   "armani": {
-    name: "Armani Exchange",
-    logo: "https://logos-world.net/wp-content/uploads/2020/12/Armani-Exchange-Logo.png"
+    name: "Armani",
+    logo: "https://cdn.worldvectorlogo.com/logos/armani.svg"
   },
   "armani exchange": {
     name: "Armani Exchange",
-    logo: "https://logos-world.net/wp-content/uploads/2020/12/Armani-Exchange-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/armani-exchange.svg"
+  },
+  "emporio armani": {
+    name: "Emporio Armani",
+    logo: "https://cdn.worldvectorlogo.com/logos/emporio-armani.svg"
+  },
+  "giorgio armani": {
+    name: "Giorgio Armani",
+    logo: "https://cdn.worldvectorlogo.com/logos/giorgio-armani.svg"
   },
   "michael kors": {
     name: "Michael Kors",
-    logo: "https://logos-world.net/wp-content/uploads/2020/09/Michael-Kors-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/michael-kors.svg"
   },
   "ferrari": {
     name: "Ferrari",
-    logo: "https://logos-world.net/wp-content/uploads/2020/05/Ferrari-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/ferrari.svg"
   },
   "scuderia ferrari": {
     name: "Ferrari",
-    logo: "https://logos-world.net/wp-content/uploads/2020/05/Ferrari-Logo.png"
-  },
-  "scuderia": {
-    name: "Ferrari",
-    logo: "https://logos-world.net/wp-content/uploads/2020/05/Ferrari-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/ferrari.svg"
   },
   "moscot": {
     name: "Moscot",
@@ -115,147 +115,183 @@ const BRAND_LOGOS: Record<string, { name: string; logo: string }> = {
   },
   "cartier": {
     name: "Cartier",
-    logo: "https://logos-world.net/wp-content/uploads/2020/11/Cartier-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/cartier-3.svg"
   },
   "ray ban": {
     name: "Ray-Ban",
-    logo: "https://logos-world.net/wp-content/uploads/2020/12/Ray-Ban-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/ray-ban-1.svg"
   },
   "rayban": {
     name: "Ray-Ban",
-    logo: "https://logos-world.net/wp-content/uploads/2020/12/Ray-Ban-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/ray-ban-1.svg"
   },
   "ray-ban": {
     name: "Ray-Ban",
-    logo: "https://logos-world.net/wp-content/uploads/2020/12/Ray-Ban-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/ray-ban-1.svg"
   },
   "breitling": {
     name: "Breitling",
-    logo: "https://logos-world.net/wp-content/uploads/2020/11/Breitling-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/breitling-1.svg"
   },
   "fossil": {
     name: "Fossil",
-    logo: "https://logos-world.net/wp-content/uploads/2020/09/Fossil-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/fossil.svg"
   },
   "audemars piguet": {
     name: "Audemars Piguet",
-    logo: "https://logos-world.net/wp-content/uploads/2021/09/Audemars-Piguet-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/audemars-piguet.svg"
   },
   "longines": {
     name: "Longines",
-    logo: "https://logos-world.net/wp-content/uploads/2020/09/Longines-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/longines-1.svg"
   },
   "casio": {
     name: "Casio",
-    logo: "https://logos-world.net/wp-content/uploads/2020/05/Casio-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/casio-2.svg"
   },
   "bvlgari": {
     name: "Bvlgari",
-    logo: "https://logos-world.net/wp-content/uploads/2020/11/Bvlgari-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/bvlgari-1.svg"
   },
   "bulgari": {
     name: "Bvlgari",
-    logo: "https://logos-world.net/wp-content/uploads/2020/11/Bvlgari-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/bvlgari-1.svg"
   },
   "rolex": {
     name: "Rolex",
-    logo: "https://logos-world.net/wp-content/uploads/2020/09/Rolex-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/rolex.svg"
   },
   "versace": {
     name: "Versace",
-    logo: "https://logos-world.net/wp-content/uploads/2020/09/Versace-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/versace.svg"
   },
   "dior": {
     name: "Dior",
-    logo: "https://logos-world.net/wp-content/uploads/2020/11/Dior-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/dior.svg"
   },
   "fendi": {
     name: "Fendi",
-    logo: "https://logos-world.net/wp-content/uploads/2020/11/Fendi-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/fendi.svg"
   },
   "balenciaga": {
     name: "Balenciaga",
-    logo: "https://logos-world.net/wp-content/uploads/2021/02/Balenciaga-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/balenciaga.svg"
   },
   "givenchy": {
     name: "Givenchy",
-    logo: "https://logos-world.net/wp-content/uploads/2020/12/Givenchy-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/givenchy-4.svg"
   },
   "valentino": {
     name: "Valentino",
-    logo: "https://logos-world.net/wp-content/uploads/2021/02/Valentino-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/valentino-1.svg"
   },
   "bottega veneta": {
     name: "Bottega Veneta",
-    logo: "https://logos-world.net/wp-content/uploads/2020/12/Bottega-Veneta-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/bottega-veneta.svg"
   },
   "bottega": {
     name: "Bottega Veneta",
-    logo: "https://logos-world.net/wp-content/uploads/2020/12/Bottega-Veneta-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/bottega-veneta.svg"
   },
   "dolce gabbana": {
     name: "Dolce & Gabbana",
-    logo: "https://logos-world.net/wp-content/uploads/2020/09/Dolce-Gabbana-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/dolce-gabbana-1.svg"
   },
   "dolce": {
     name: "Dolce & Gabbana",
-    logo: "https://logos-world.net/wp-content/uploads/2020/09/Dolce-Gabbana-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/dolce-gabbana-1.svg"
   },
   "d&g": {
     name: "Dolce & Gabbana",
-    logo: "https://logos-world.net/wp-content/uploads/2020/09/Dolce-Gabbana-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/dolce-gabbana-1.svg"
   },
   "omega": {
     name: "Omega",
-    logo: "https://logos-world.net/wp-content/uploads/2020/09/Omega-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/omega-3.svg"
   },
   "tag heuer": {
     name: "TAG Heuer",
-    logo: "https://logos-world.net/wp-content/uploads/2020/09/TAG-Heuer-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/tag-heuer-1.svg"
   },
   "tag": {
     name: "TAG Heuer",
-    logo: "https://logos-world.net/wp-content/uploads/2020/09/TAG-Heuer-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/tag-heuer-1.svg"
   },
   "patek philippe": {
     name: "Patek Philippe",
-    logo: "https://logos-world.net/wp-content/uploads/2020/09/Patek-Philippe-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/patek-philippe.svg"
   },
   "patek": {
     name: "Patek Philippe",
-    logo: "https://logos-world.net/wp-content/uploads/2020/09/Patek-Philippe-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/patek-philippe.svg"
   },
   "hublot": {
     name: "Hublot",
-    logo: "https://logos-world.net/wp-content/uploads/2020/09/Hublot-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/hublot.svg"
   },
   "iwc": {
     name: "IWC Schaffhausen",
-    logo: "https://logos-world.net/wp-content/uploads/2020/09/IWC-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/iwc-schaffhausen.svg"
   },
   "tissot": {
     name: "Tissot",
-    logo: "https://logos-world.net/wp-content/uploads/2020/09/Tissot-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/tissot-2.svg"
   },
   "seiko": {
     name: "Seiko",
-    logo: "https://logos-world.net/wp-content/uploads/2020/09/Seiko-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/seiko-2.svg"
   },
   "citizen": {
     name: "Citizen",
-    logo: "https://logos-world.net/wp-content/uploads/2020/09/Citizen-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/citizen.svg"
   },
   "oakley": {
     name: "Oakley",
-    logo: "https://logos-world.net/wp-content/uploads/2020/12/Oakley-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/oakley.svg"
   },
   "persol": {
     name: "Persol",
-    logo: "https://logos-world.net/wp-content/uploads/2021/03/Persol-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/persol.svg"
   },
   "police": {
     name: "Police",
-    logo: "https://logos-world.net/wp-content/uploads/2021/03/Police-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/police.svg"
+  },
+  "maybach": {
+    name: "Maybach",
+    logo: "https://cdn.worldvectorlogo.com/logos/maybach.svg"
+  },
+  "carrera": {
+    name: "Carrera",
+    logo: "https://cdn.worldvectorlogo.com/logos/carrera.svg"
+  },
+  "rado": {
+    name: "Rado",
+    logo: "https://cdn.worldvectorlogo.com/logos/rado.svg"
+  },
+  "tiffany": {
+    name: "Tiffany & Co.",
+    logo: "https://cdn.worldvectorlogo.com/logos/tiffany-co.svg"
+  },
+  "tiffany & co": {
+    name: "Tiffany & Co.",
+    logo: "https://cdn.worldvectorlogo.com/logos/tiffany-co.svg"
+  },
+  "tommy hilfiger": {
+    name: "Tommy Hilfiger",
+    logo: "https://cdn.worldvectorlogo.com/logos/tommy-hilfiger.svg"
+  },
+  "jaguar": {
+    name: "Jaguar",
+    logo: "https://cdn.worldvectorlogo.com/logos/jaguar.svg"
+  },
+  "calvin klein": {
+    name: "Calvin Klein",
+    logo: "https://cdn.worldvectorlogo.com/logos/calvin-klein-1.svg"
+  },
+  "g-shock": {
+    name: "G-Shock",
+    logo: "https://cdn.worldvectorlogo.com/logos/g-shock-1.svg"
   }
 };
 

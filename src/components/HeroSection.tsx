@@ -31,7 +31,7 @@ export default function HeroSection() {
         <div className="absolute inset-0 flex items-end justify-center pb-32 sm:pb-40 md:pb-44 pointer-events-none">
           <div
             className="flex justify-center gap-2.5 sm:gap-3 md:gap-4 px-4"
-            style={{ transform: "translateX(-8px)" }}
+            style={{ transform: "translateX(-10px)" }}
           >
             <a
               href="/category/mens"
