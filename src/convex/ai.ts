@@ -61,11 +61,14 @@ export const analyzeImage = action({
     error?: string;
     searchQuery?: string;
     matches?: any[];
+    missingKey?: boolean;
   }> => {
     console.log("Starting AI analysis...");
     let content: string | null = null;
 
     // 1. Try Vly Integration
+    // We check if the key exists OR if we are in a production environment where it might be injected differently
+    // But primarily we rely on the env var.
     if (process.env.VLY_INTEGRATION_KEY) {
       try {
         console.log("Attempting analysis with Vly...");
@@ -82,7 +85,7 @@ export const analyzeImage = action({
                     url: args.imageBase64,
                   },
                 },
-              ] as any, // Cast to any to bypass potential type restrictions if Vly types are strict
+              ] as any,
             },
           ],
         });
@@ -98,17 +101,18 @@ export const analyzeImage = action({
       }
     }
 
-    // 2. Fallback to Direct OpenAI Fetch if Vly failed or key missing
+    // 2. Fallback to Direct OpenAI Fetch
     if (!content) {
       const apiKey = process.env.OPENAI_API_KEY || process.env.OPENAI_KEY;
+      
       if (!apiKey) {
         console.error("OpenAI API Key missing during analysis.");
-        // If Vly key was also missing, this is a hard failure
-        if (!process.env.VLY_INTEGRATION_KEY) {
-           return { success: false, error: "No AI API keys found. Please add OPENAI_API_KEY in Integrations." };
-        }
-        // If Vly failed but existed, we might have already logged it, but return generic error
-        return { success: false, error: "AI Analysis failed. Please check service status." };
+        // Return a specific flag for missing keys so the UI can show a helpful message
+        return { 
+          success: false, 
+          error: "Missing API Key. Please add OPENAI_API_KEY in the Integrations tab.",
+          missingKey: true 
+        };
       }
       
       try {
@@ -135,6 +139,8 @@ export const analyzeImage = action({
                 ],
               },
             ],
+            // Remove response_format: { type: "json_object" } if it causes issues with some models, 
+            // but gpt-4o supports it. We'll keep it but handle the response carefully.
             response_format: { type: "json_object" },
           }),
         });
@@ -143,7 +149,7 @@ export const analyzeImage = action({
           const errorText = await response.text();
           console.error("OpenAI API Error:", errorText);
           if (response.status === 401) {
-             return { success: false, error: "Invalid OpenAI API Key. Please check your integration settings." };
+             return { success: false, error: "Invalid OpenAI API Key. Please check your integration settings.", missingKey: true };
           }
           return { success: false, error: `OpenAI API error: ${response.status}` };
         }
@@ -156,11 +162,17 @@ export const analyzeImage = action({
       }
     }
 
-    // Process the content (from either source)
+    // Process the content
     if (!content) return { success: false, error: "No analysis returned" };
     
     try {
       console.log("AI Response:", content);
+      // Handle markdown code blocks if present
+      const jsonMatch = content.match(/```json\s*([\s\S]*?)\s*```/);
+      if (jsonMatch) {
+        content = jsonMatch[1];
+      }
+      
       const result = JSON.parse(content);
       const searchQuery = result.searchQuery;
 

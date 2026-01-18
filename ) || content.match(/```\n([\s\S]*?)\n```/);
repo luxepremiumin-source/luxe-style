@@ -1,0 +1,15 @@
+      const jsonString = jsonMatch ? jsonMatch[1] : content;
+      
+      const result = JSON.parse(jsonString);
+      const searchQuery = result.searchQuery;
+
+      // Search for products using the generated query
+      const matches = await ctx.runQuery(api.products.searchProducts, { searchTerm: searchQuery });
+
+      return { success: true, searchQuery, matches: matches.slice(0, 3) };
+    } catch (e: any) {
+      console.error("Result parsing error:", e);
+      return { success: false, error: "Failed to parse AI response" };
+    }
+  },
+});

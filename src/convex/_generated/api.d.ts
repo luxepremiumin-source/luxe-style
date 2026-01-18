@@ -13,6 +13,7 @@ import type * as auth_emailOtp from "../auth/emailOtp.js";
 import type * as auth from "../auth.js";
 import type * as cart from "../cart.js";
 import type * as customerProfiles from "../customerProfiles.js";
+import type * as debug from "../debug.js";
 import type * as emails from "../emails.js";
 import type * as heroSections from "../heroSections.js";
 import type * as http from "../http.js";
@@ -48,6 +49,7 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   cart: typeof cart;
   customerProfiles: typeof customerProfiles;
+  debug: typeof debug;
   emails: typeof emails;
   heroSections: typeof heroSections;
   http: typeof http;
