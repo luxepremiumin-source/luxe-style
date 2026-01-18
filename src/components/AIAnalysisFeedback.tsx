@@ -13,6 +13,8 @@ export function AIAnalysisFeedback({ status, similarProducts, error, onEditProdu
 
   // Check if error is related to missing keys
   const isKeyError = error?.toLowerCase().includes("key") || error?.toLowerCase().includes("api");
+  // Check for quota/billing errors
+  const isQuotaError = error?.toLowerCase().includes("quota") || error?.includes("429") || error?.toLowerCase().includes("billing");
 
   return (
     <div className={`mt-3 p-4 rounded-lg border text-sm transition-all duration-300 ${
@@ -26,7 +28,7 @@ export function AIAnalysisFeedback({ status, similarProducts, error, onEditProdu
           {status === "analyzing" && <Loader2 className="h-5 w-5 animate-spin" />}
           {status === "found" && <Search className="h-5 w-5" />}
           {status === "not_found" && <CheckCircle2 className="h-5 w-5" />}
-          {status === "error" && (isKeyError ? <Key className="h-5 w-5" /> : <AlertCircle className="h-5 w-5" />)}
+          {status === "error" && (isKeyError || isQuotaError ? <Key className="h-5 w-5" /> : <AlertCircle className="h-5 w-5" />)}
         </div>
         
         <div className="flex-1 space-y-1">
@@ -34,17 +36,31 @@ export function AIAnalysisFeedback({ status, similarProducts, error, onEditProdu
             {status === "analyzing" && "Analyzing Product Image..."}
             {status === "found" && "Potential Duplicates Found"}
             {status === "not_found" && "No Duplicates Found"}
-            {status === "error" && (isKeyError ? "Setup Required" : "Analysis Failed")}
+            {status === "error" && (isQuotaError ? "OpenAI Billing Issue" : isKeyError ? "Setup Required" : "Analysis Failed")}
           </p>
           
           <p className="opacity-90">
             {status === "analyzing" && "Identifying product details and checking catalog..."}
             {status === "found" && "We found similar products in your inventory."}
             {status === "not_found" && "This appears to be a new product."}
-            {status === "error" && error}
+            {status === "error" && (isQuotaError ? "Your OpenAI account has run out of credits (Error 429)." : error)}
           </p>
 
-          {status === "error" && isKeyError && (
+          {status === "error" && isQuotaError && (
+            <div className="mt-2 bg-white/50 p-3 rounded border border-red-100 text-xs">
+              <strong>How to fix (Insufficient Quota):</strong>
+              <ol className="list-decimal ml-4 mt-2 space-y-1.5">
+                <li>
+                  Go to <a href="https://platform.openai.com/settings/organization/billing/overview" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline hover:text-blue-800">OpenAI Billing Settings</a>
+                </li>
+                <li>Add a payment method or purchase credits (minimum $5).</li>
+                <li>Wait a few minutes for the credits to activate.</li>
+                <li>Try pasting the image again.</li>
+              </ol>
+            </div>
+          )}
+
+          {status === "error" && isKeyError && !isQuotaError && (
             <div className="mt-2 bg-white/50 p-3 rounded border border-red-100 text-xs">
               <strong>How to fix:</strong>
               <ol className="list-decimal ml-4 mt-2 space-y-1.5">

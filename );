@@ -1,0 +1,17 @@
+      if (jsonMatch) {
+        content = jsonMatch[1];
+      }
+      
+      const result = JSON.parse(content);
+      const searchQuery = result.searchQuery;
+
+      // Search for products using the generated query
+      const matches = await ctx.runQuery(api.products.searchProducts, { searchTerm: searchQuery });
+
+      return { success: true, searchQuery, matches: matches.slice(0, 3) }; // Return top 3 matches
+    } catch (e: any) {
+      console.error("Result parsing error:", e);
+      return { success: false, error: "Failed to parse AI response" };
+    }
+  },
+});

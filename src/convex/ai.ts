@@ -146,8 +146,6 @@ export const analyzeImage = action({
                 ],
               },
             ],
-            // Remove response_format: { type: "json_object" } if it causes issues with some models, 
-            // but gpt-4o supports it. We'll keep it but handle the response carefully.
             response_format: { type: "json_object" },
           }),
         });
@@ -158,7 +156,8 @@ export const analyzeImage = action({
           if (response.status === 401) {
              return { success: false, error: "Invalid OpenAI API Key. Please check your integration settings.", missingKey: true };
           }
-          return { success: false, error: `OpenAI API error: ${response.status}` };
+          // Pass through the error text so the frontend can detect "insufficient_quota"
+          return { success: false, error: `OpenAI API error: ${response.status} - ${errorText}` };
         }
 
         const data = await response.json();
