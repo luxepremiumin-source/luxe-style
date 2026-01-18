@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/use-auth";
 import { useState, useEffect } from "react";
-import { Minus, Plus, MessageCircle, Heart } from "lucide-react";
+import { Minus, Plus, MessageCircle, Heart, Truck } from "lucide-react";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ProductZoom from "@/components/ProductZoom";
@@ -45,6 +45,16 @@ export default function ProductPage() {
   const [packaging, setPackaging] = useState<"indian" | "imported" | "without">("without");
   const [activeIndex, setActiveIndex] = useState(0);
   const [showStickyBar, setShowStickyBar] = useState(false);
+
+  // Calculate delivery date (5 days from now)
+  const deliveryDate = new Date();
+  deliveryDate.setDate(deliveryDate.getDate() + 5);
+  const day = deliveryDate.getDate();
+  const month = deliveryDate.toLocaleString('default', { month: 'short' });
+  const suffix = ["th", "st", "nd", "rd"];
+  const v = day % 100;
+  const deliveryDaySuffix = suffix[(v - 20) % 10] || suffix[v] || suffix[0];
+  const formattedDeliveryDate = `${day}${deliveryDaySuffix} ${month}`;
 
   useEffect(() => {
     if (!product?.images?.length) return;
@@ -438,6 +448,13 @@ export default function ProductPage() {
                 </Select>
               </div>
             )}
+
+            <div className="mt-4 flex items-center gap-2 text-sm text-white/80">
+              <Truck className="h-4 w-4 text-emerald-400" />
+              <p>
+                Delivery expected by <span className="text-emerald-400 font-medium">{formattedDeliveryDate}</span>
+              </p>
+            </div>
 
             {supportsPackaging && (
               <div className="mt-6">
