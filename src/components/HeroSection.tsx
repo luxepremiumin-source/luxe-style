@@ -1,5 +1,6 @@
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { Link } from "react-router";
 
 export default function HeroSection() {
   const fallbackBg =
@@ -33,18 +34,18 @@ export default function HeroSection() {
             className="flex justify-center gap-2.5 sm:gap-3 md:gap-4 px-4"
             style={{ transform: "translateX(-10px)" }}
           >
-            <a
-              href="/category/mens"
+            <Link
+              to="/category/mens"
               className="pointer-events-auto rounded-full bg-white text-black px-4 py-2 sm:px-5 sm:py-2.5 md:px-6 md:py-3 text-xs sm:text-sm font-bold ring-2 ring-black/10 hover:bg-gray-100 active:bg-gray-200 transition-colors duration-200 touch-manipulation min-h-[44px] flex items-center justify-center shadow-lg"
             >
               Mens
-            </a>
-            <a
-              href="/category/womens"
+            </Link>
+            <Link
+              to="/category/womens"
               className="pointer-events-auto rounded-full bg-white text-black px-4 py-2 sm:px-5 sm:py-2.5 md:px-6 md:py-3 text-xs sm:text-sm font-bold ring-2 ring-black/10 hover:bg-gray-100 active:bg-gray-200 transition-colors duration-200 touch-manipulation min-h-[44px] flex items-center justify-center shadow-lg"
             >
               Womens
-            </a>
+            </Link>
           </div>
         </div>
       </div>
