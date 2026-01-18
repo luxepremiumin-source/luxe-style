@@ -91,7 +91,7 @@ const BRAND_LOGOS: Record<string, { name: string; logo: string }> = {
   },
   "emporio armani": {
     name: "Emporio Armani",
-    logo: "https://harmless-tapir-303.convex.cloud/api/storage/fdfb121a-5d4f-46a0-88cb-2d75dd99c0e4"
+    logo: "https://harmless-tapir-303.convex.cloud/api/storage/3844305f-2e95-4107-9a9f-6752730f6faa"
   },
   "giorgio armani": {
     name: "Giorgio Armani",
@@ -135,7 +135,7 @@ const BRAND_LOGOS: Record<string, { name: string; logo: string }> = {
   },
   "fossil": {
     name: "Fossil",
-    logo: "https://harmless-tapir-303.convex.cloud/api/storage/3844305f-2e95-4107-9a9f-6752730f6faa"
+    logo: "https://harmless-tapir-303.convex.cloud/api/storage/fdfb121a-5d4f-46a0-88cb-2d75dd99c0e4"
   },
   "audemars piguet": {
     name: "Audemars Piguet",
