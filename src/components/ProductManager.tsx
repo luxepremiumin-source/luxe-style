@@ -521,6 +521,30 @@ export default function ProductManager({ onBack }: ProductManagerProps) {
                 />
               </div>
 
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="price">Price</Label>
+                  <Input
+                    id="price"
+                    type="number"
+                    value={form.price}
+                    onChange={(e) => handleChange("price", e.target.value)}
+                    placeholder="0.00"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="originalPrice">Original Price (Optional)</Label>
+                  <Input
+                    id="originalPrice"
+                    type="number"
+                    value={form.originalPrice}
+                    onChange={(e) => handleChange("originalPrice", e.target.value)}
+                    placeholder="0.00"
+                  />
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <Label>Collection</Label>
                 <Select
