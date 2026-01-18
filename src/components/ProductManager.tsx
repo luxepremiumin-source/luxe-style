@@ -91,6 +91,7 @@ export default function ProductManager({ onBack }: ProductManagerProps) {
   
   const generateUploadUrl = useAction((api as any).storage.generateUploadUrl);
   const resolvePublicUrl = useAction((api as any).storage.resolvePublicUrl);
+  const analyzeImage = useAction(api.ai.analyzeImage);
 
   const [form, setForm] = useState<NewProduct>({
     name: "",
@@ -112,6 +113,10 @@ export default function ProductManager({ onBack }: ProductManagerProps) {
   const [uploadingInBackground, setUploadingInBackground] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<"all" | CategoryOption>("all");
+
+  // AI Analysis State
+  const [analysisStatus, setAnalysisStatus] = useState<"idle" | "analyzing" | "found" | "not_found" | "error">("idle");
+  const [similarProducts, setSimilarProducts] = useState<any[]>([]);
 
   // Drag and drop state
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
@@ -255,6 +260,42 @@ export default function ProductManager({ onBack }: ProductManagerProps) {
     }
     if (files.length === 0) return;
     e.preventDefault();
+
+    // AI Analysis for the first image
+    const firstImage = files.find(f => f.type.startsWith('image/'));
+    if (firstImage) {
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        const base64 = event.target?.result as string;
+        if (base64) {
+          setAnalysisStatus("analyzing");
+          setSimilarProducts([]);
+          
+          try {
+            const result = await analyzeImage({ imageBase64: base64 });
+            if (result.success) {
+              if (result.matches && result.matches.length > 0) {
+                setAnalysisStatus("found");
+                setSimilarProducts(result.matches);
+                toast.success(`Found ${result.matches.length} similar products!`);
+              } else {
+                setAnalysisStatus("not_found");
+                toast.info("No duplicate products found.");
+              }
+            } else {
+              setAnalysisStatus("error");
+              toast.error(result.error || "Analysis failed");
+            }
+          } catch (error) {
+            console.error("Analysis error:", error);
+            setAnalysisStatus("error");
+            toast.error("Failed to analyze image");
+          }
+        }
+      };
+      reader.readAsDataURL(firstImage);
+    }
+
     await uploadMediaFiles(files, false);
     toast(`Pasted ${files.length} item${files.length > 1 ? "s" : ""}`);
   };
@@ -632,6 +673,70 @@ export default function ProductManager({ onBack }: ProductManagerProps) {
                   placeholder="Click here and paste images or videos from clipboard"
                   className="w-full h-16 rounded-md border border-gray-200 p-3 text-sm bg-white/90"
                 />
+                
+                {/* AI Analysis Feedback */}
+                {analysisStatus !== "idle" && (
+                  <div className={`mt-2 p-3 rounded-md text-sm border ${
+                    analysisStatus === "analyzing" ? "bg-blue-50 border-blue-200 text-blue-700" :
+                    analysisStatus === "found" ? "bg-yellow-50 border-yellow-200 text-yellow-800" :
+                    analysisStatus === "not_found" ? "bg-green-50 border-green-200 text-green-700" :
+                    "bg-red-50 border-red-200 text-red-700"
+                  }`}>
+                    <div className="flex items-center gap-2 font-medium mb-1">
+                      {analysisStatus === "analyzing" && (
+                        <>
+                          <span className="animate-spin">⏳</span>
+                          Analyzing image for duplicates...
+                        </>
+                      )}
+                      {analysisStatus === "found" && (
+                        <>
+                          <span>⚠️</span>
+                          Potential Duplicates Found
+                        </>
+                      )}
+                      {analysisStatus === "not_found" && (
+                        <>
+                          <span>✅</span>
+                          No duplicates found. This looks like a new product.
+                        </>
+                      )}
+                      {analysisStatus === "error" && (
+                        <>
+                          <span>❌</span>
+                          Analysis failed. Please check API key.
+                        </>
+                      )}
+                    </div>
+                    
+                    {analysisStatus === "found" && similarProducts.length > 0 && (
+                      <div className="mt-2 space-y-2">
+                        <p className="text-xs opacity-80">Similar products already in catalog:</p>
+                        <div className="grid gap-2">
+                          {similarProducts.map((prod: any) => (
+                            <div key={prod._id} className="flex items-center gap-2 bg-white/50 p-2 rounded border border-yellow-100">
+                              {prod.images && prod.images[0] && (
+                                <img src={prod.images[0]} className="w-8 h-8 rounded object-cover" alt="" />
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <p className="truncate font-medium">{prod.name}</p>
+                                <p className="text-xs opacity-75">₹{prod.price}</p>
+                              </div>
+                              <Button 
+                                size="sm" 
+                                variant="ghost" 
+                                className="h-6 text-xs"
+                                onClick={() => openEdit(prod)}
+                              >
+                                Edit
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               <div className="space-y-2">
