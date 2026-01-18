@@ -46,9 +46,9 @@ export default function ProductPage() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [showStickyBar, setShowStickyBar] = useState(false);
 
-  // Calculate delivery date (5 days from now)
+  // Calculate delivery date (6 days from now)
   const deliveryDate = new Date();
-  deliveryDate.setDate(deliveryDate.getDate() + 5);
+  deliveryDate.setDate(deliveryDate.getDate() + 6);
   const day = deliveryDate.getDate();
   const month = deliveryDate.toLocaleString('default', { month: 'short' });
   const suffix = ["th", "st", "nd", "rd"];
