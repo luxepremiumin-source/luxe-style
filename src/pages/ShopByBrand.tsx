@@ -51,7 +51,7 @@ const BRAND_LOGOS: Record<string, { name: string; logo: string }> = {
   },
   "marc jacobs": {
     name: "Marc Jacobs",
-    logo: "https://logos-world.net/wp-content/uploads/2021/03/Marc-Jacobs-Logo.png"
+    logo: "https://cdn.worldvectorlogo.com/logos/marc-jacobs-1.svg"
   },
   "prada": {
     name: "Prada",
@@ -207,7 +207,7 @@ const BRAND_LOGOS: Record<string, { name: string; logo: string }> = {
   },
   "omega": {
     name: "Omega",
-    logo: "https://cdn.worldvectorlogo.com/logos/omega-3.svg"
+    logo: "https://cdn.worldvectorlogo.com/logos/omega-1.svg"
   },
   "tag heuer": {
     name: "TAG Heuer",
