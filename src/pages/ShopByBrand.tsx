@@ -6,6 +6,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
+import { OptimizedImage } from "@/components/ui/optimized-image";
 
 // Brand data with logos from reliable CDN sources
 const BRAND_LOGOS: Record<string, { name: string; logo: string }> = {
@@ -379,10 +380,11 @@ export default function ShopByBrand() {
                   className="group cursor-pointer"
                 >
                   <div className="relative aspect-square bg-white rounded-2xl p-6 sm:p-8 flex items-center justify-center overflow-hidden transition-all duration-200 hover:scale-105 hover:shadow-2xl">
-                    <img
+                    <OptimizedImage
                       src={brandData.logo}
                       alt={brandData.name}
                       className="w-full h-full object-contain transition-all duration-200"
+                      containerClassName="w-full h-full flex items-center justify-center"
                       loading="lazy"
                       onError={(e) => {
                         // Fallback if image fails to load

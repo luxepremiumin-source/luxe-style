@@ -16,6 +16,7 @@ import { useMutation, useQuery, useAction } from "convex/react";
 import { useEffect, useState, useMemo } from "react";
 import { toast } from "sonner";
 import { GripVertical, ArrowLeft } from "lucide-react";
+import { compressImage } from "@/lib/imageCompression";
 
 type GenderOption = "mens" | "womens";
 type CategoryOption =
@@ -164,7 +165,21 @@ export default function ProductManager({ onBack }: ProductManagerProps) {
   const uploadMediaFiles = async (files: Array<File>, isEdit: boolean = false) => {
     if (!files || files.length === 0) return;
     
-    const blobItems: MediaItem[] = files.map(file => ({
+    // Compress images before processing
+    const processedFiles = await Promise.all(files.map(async (file) => {
+      if (file.type.startsWith('image/')) {
+        try {
+          // Compress to max 1920px width and 0.8 quality
+          return await compressImage(file, 0.8, 1920);
+        } catch (err) {
+          console.error("Image compression failed, using original:", err);
+          return file;
+        }
+      }
+      return file;
+    }));
+
+    const blobItems: MediaItem[] = processedFiles.map(file => ({
       url: URL.createObjectURL(file),
       type: file.type.startsWith('video/') ? 'video' : 'image'
     }));
@@ -177,7 +192,7 @@ export default function ProductManager({ onBack }: ProductManagerProps) {
     
     setUploadingInBackground(true);
     
-    Promise.all(files.map(async (file, i) => {
+    Promise.all(processedFiles.map(async (file, i) => {
       const blobUrl = blobItems[i].url;
       const mediaType = blobItems[i].type;
       
