@@ -22,11 +22,37 @@ export const check = action({
       }
     }
 
+    // Try Google Gemini (Free option)
+    const googleKey = process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY;
+    if (googleKey) {
+      try {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${googleKey}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: "Say 'Gemini is working' if you can hear me." }] }]
+          }),
+        });
+        if (!response.ok) {
+          const errorText = await response.text();
+          return { success: false, error: `Gemini API error: ${response.status} - ${errorText}` };
+        }
+        const data = await response.json();
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        return { success: true, message: text || "Gemini is working" };
+      } catch (e: any) {
+        console.error("Gemini check failed:", e);
+      }
+    }
+
     // Fallback to OpenAI Key
     const apiKey = process.env.OPENAI_API_KEY || process.env.OPENAI_KEY;
     if (!apiKey) {
-      console.error("OpenAI API Key missing. Available env vars:", Object.keys(process.env));
-      return { success: false, error: "OPENAI_API_KEY is not set. Please add it in the Integrations tab or Settings > Environment Variables." };
+      console.error("API Keys missing. Available env vars:", Object.keys(process.env));
+      return { 
+        success: false, 
+        error: "No AI API keys found. Please add OPENAI_API_KEY or GOOGLE_API_KEY in the Integrations tab." 
+      };
     }
     try {
       const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -104,16 +130,64 @@ export const analyzeImage = action({
       }
     }
 
-    // 2. Fallback to Direct OpenAI Fetch
+    // 2. Try Google Gemini (Free Tier)
+    if (!content) {
+      const googleKey = (process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY)?.trim();
+      if (googleKey) {
+        try {
+          console.log("Attempting analysis with Google Gemini...");
+          
+          // Extract base64 data and mime type
+          const matches = args.imageBase64.match(/^data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+);base64,(.+)$/);
+          const mimeType = matches ? matches[1] : "image/jpeg";
+          const base64Data = matches ? matches[2] : args.imageBase64;
+
+          const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${googleKey}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents: [{
+                parts: [
+                  { text: "Analyze this product image. Identify the main product, brand, color, and type. Return a JSON object with a 'searchQuery' field containing a concise search string (3-5 words) to find similar products (e.g. 'Black Fossil Chronograph Watch')." },
+                  {
+                    inline_data: {
+                      mime_type: mimeType,
+                      data: base64Data
+                    }
+                  }
+                ]
+              }],
+              generationConfig: {
+                response_mime_type: "application/json"
+              }
+            }),
+          });
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error("Gemini API Error:", errorText);
+            // Continue to OpenAI fallback if Gemini fails
+          } else {
+            const data = await response.json();
+            content = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (content) console.log("Gemini Analysis success");
+          }
+        } catch (e) {
+          console.error("Gemini Analysis Error:", e);
+        }
+      }
+    }
+
+    // 3. Fallback to Direct OpenAI Fetch
     if (!content) {
       const apiKey = (process.env.OPENAI_API_KEY || process.env.OPENAI_KEY)?.trim();
       
       if (!apiKey) {
-        console.error("OpenAI API Key missing during analysis.");
+        console.error("All AI API Keys missing during analysis.");
         // Return a specific flag for missing keys so the UI can show a helpful message
         const errorMsg = vlyError 
-          ? `Built-in AI failed (${vlyError}) and OpenAI Key is missing. Please add OPENAI_API_KEY.` 
-          : "Missing API Key. Please add OPENAI_API_KEY in the Integrations tab.";
+          ? `Built-in AI failed (${vlyError}) and no fallback keys (OpenAI/Gemini) found.` 
+          : "Missing API Key. Please add OPENAI_API_KEY or GOOGLE_API_KEY in the Integrations tab.";
           
         return { 
           success: false, 

@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { AlertCircle, CheckCircle2, Loader2, Search, Key } from "lucide-react";
+import { AlertCircle, CheckCircle2, Loader2, Search, Key, Sparkles } from "lucide-react";
 
 interface AIAnalysisFeedbackProps {
   status: "idle" | "analyzing" | "found" | "not_found" | "error";
@@ -43,35 +43,39 @@ export function AIAnalysisFeedback({ status, similarProducts, error, onEditProdu
             {status === "analyzing" && "Identifying product details and checking catalog..."}
             {status === "found" && "We found similar products in your inventory."}
             {status === "not_found" && "This appears to be a new product."}
-            {status === "error" && (isQuotaError ? "Your OpenAI account has run out of credits (Error 429)." : error)}
+            {status === "error" && (isQuotaError ? "Your OpenAI account has run out of credits." : error)}
           </p>
 
-          {status === "error" && isQuotaError && (
-            <div className="mt-2 bg-white/50 p-3 rounded border border-red-100 text-xs">
-              <strong>How to fix (Insufficient Quota):</strong>
-              <ol className="list-decimal ml-4 mt-2 space-y-1.5">
-                <li>
-                  Go to <a href="https://platform.openai.com/settings/organization/billing/overview" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline hover:text-blue-800">OpenAI Billing Settings</a>
-                </li>
-                <li>Add a payment method or purchase credits (minimum $5).</li>
-                <li>Wait a few minutes for the credits to activate.</li>
-                <li>Try pasting the image again.</li>
-              </ol>
-            </div>
-          )}
+          {status === "error" && (isQuotaError || isKeyError) && (
+            <div className="mt-3 space-y-3">
+              <div className="bg-white/60 p-3 rounded border border-red-100 text-xs">
+                <div className="flex items-center gap-2 mb-2 font-semibold text-blue-700">
+                  <Sparkles className="h-3 w-3" />
+                  <span>Free Alternative: Google Gemini</span>
+                </div>
+                <p className="mb-2">You can use Google's Gemini API for free instead of OpenAI.</p>
+                <ol className="list-decimal ml-4 space-y-1.5">
+                  <li>
+                    Get a free key from <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline hover:text-blue-800">Google AI Studio</a>
+                  </li>
+                  <li>Go to the <strong>Integrations</strong> tab in the top bar.</li>
+                  <li>Click on <strong>Add Integration</strong> or find a place to add keys.</li>
+                  <li>Add a new key named <strong>GOOGLE_API_KEY</strong> with your key.</li>
+                  <li>Save and try again.</li>
+                </ol>
+              </div>
 
-          {status === "error" && isKeyError && !isQuotaError && (
-            <div className="mt-2 bg-white/50 p-3 rounded border border-red-100 text-xs">
-              <strong>How to fix:</strong>
-              <ol className="list-decimal ml-4 mt-2 space-y-1.5">
-                <li>
-                  Get a key from <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline hover:text-blue-800">platform.openai.com</a>
-                </li>
-                <li>Go to the <strong>Integrations</strong> tab in the top bar of this window.</li>
-                <li>Click on <strong>OpenAI</strong>.</li>
-                <li>Paste your key into <strong>OPENAI_API_KEY</strong> and Save.</li>
-                <li>Try pasting the image again.</li>
-              </ol>
+              {isQuotaError && (
+                <div className="bg-white/50 p-3 rounded border border-red-100 text-xs opacity-80">
+                  <strong>Or fix OpenAI Billing:</strong>
+                  <ol className="list-decimal ml-4 mt-1 space-y-1">
+                    <li>
+                      Go to <a href="https://platform.openai.com/settings/organization/billing/overview" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline hover:text-blue-800">OpenAI Billing</a>
+                    </li>
+                    <li>Add credits (min $5).</li>
+                  </ol>
+                </div>
+              )}
             </div>
           )}
         </div>
