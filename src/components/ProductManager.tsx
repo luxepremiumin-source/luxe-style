@@ -17,6 +17,7 @@ import { useEffect, useState, useMemo } from "react";
 import { toast } from "sonner";
 import { GripVertical, ArrowLeft } from "lucide-react";
 import { compressImage } from "@/lib/imageCompression";
+import { AIAnalysisFeedback } from "@/components/AIAnalysisFeedback";
 
 type GenderOption = "mens" | "womens";
 type CategoryOption =
@@ -116,6 +117,7 @@ export default function ProductManager({ onBack }: ProductManagerProps) {
 
   // AI Analysis State
   const [analysisStatus, setAnalysisStatus] = useState<"idle" | "analyzing" | "found" | "not_found" | "error">("idle");
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [similarProducts, setSimilarProducts] = useState<any[]>([]);
 
   // Drag and drop state
@@ -269,6 +271,7 @@ export default function ProductManager({ onBack }: ProductManagerProps) {
         const base64 = event.target?.result as string;
         if (base64) {
           setAnalysisStatus("analyzing");
+          setAnalysisError(null);
           setSimilarProducts([]);
           
           try {
@@ -284,11 +287,13 @@ export default function ProductManager({ onBack }: ProductManagerProps) {
               }
             } else {
               setAnalysisStatus("error");
+              setAnalysisError(result.error || "Analysis failed");
               toast.error(result.error || "Analysis failed");
             }
-          } catch (error) {
+          } catch (error: any) {
             console.error("Analysis error:", error);
             setAnalysisStatus("error");
+            setAnalysisError(error.message || "Failed to analyze image");
             toast.error("Failed to analyze image");
           }
         }
@@ -675,68 +680,12 @@ export default function ProductManager({ onBack }: ProductManagerProps) {
                 />
                 
                 {/* AI Analysis Feedback */}
-                {analysisStatus !== "idle" && (
-                  <div className={`mt-2 p-3 rounded-md text-sm border ${
-                    analysisStatus === "analyzing" ? "bg-blue-50 border-blue-200 text-blue-700" :
-                    analysisStatus === "found" ? "bg-yellow-50 border-yellow-200 text-yellow-800" :
-                    analysisStatus === "not_found" ? "bg-green-50 border-green-200 text-green-700" :
-                    "bg-red-50 border-red-200 text-red-700"
-                  }`}>
-                    <div className="flex items-center gap-2 font-medium mb-1">
-                      {analysisStatus === "analyzing" && (
-                        <>
-                          <span className="animate-spin">⏳</span>
-                          Analyzing image for duplicates...
-                        </>
-                      )}
-                      {analysisStatus === "found" && (
-                        <>
-                          <span>⚠️</span>
-                          Potential Duplicates Found
-                        </>
-                      )}
-                      {analysisStatus === "not_found" && (
-                        <>
-                          <span>✅</span>
-                          No duplicates found. This looks like a new product.
-                        </>
-                      )}
-                      {analysisStatus === "error" && (
-                        <>
-                          <span>❌</span>
-                          Analysis failed. Please check API key.
-                        </>
-                      )}
-                    </div>
-                    
-                    {analysisStatus === "found" && similarProducts.length > 0 && (
-                      <div className="mt-2 space-y-2">
-                        <p className="text-xs opacity-80">Similar products already in catalog:</p>
-                        <div className="grid gap-2">
-                          {similarProducts.map((prod: any) => (
-                            <div key={prod._id} className="flex items-center gap-2 bg-white/50 p-2 rounded border border-yellow-100">
-                              {prod.images && prod.images[0] && (
-                                <img src={prod.images[0]} className="w-8 h-8 rounded object-cover" alt="" />
-                              )}
-                              <div className="flex-1 min-w-0">
-                                <p className="truncate font-medium">{prod.name}</p>
-                                <p className="text-xs opacity-75">₹{prod.price}</p>
-                              </div>
-                              <Button 
-                                size="sm" 
-                                variant="ghost" 
-                                className="h-6 text-xs"
-                                onClick={() => openEdit(prod)}
-                              >
-                                Edit
-                              </Button>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
+                <AIAnalysisFeedback 
+                  status={analysisStatus}
+                  similarProducts={similarProducts}
+                  error={analysisError}
+                  onEditProduct={openEdit}
+                />
               </div>
 
               <div className="space-y-2">
