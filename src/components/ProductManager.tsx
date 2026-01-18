@@ -13,11 +13,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { api } from "@/convex/_generated/api";
 import { useMutation, useQuery, useAction } from "convex/react";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { GripVertical, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { compressImage } from "@/lib/imageCompression";
-import { AIAnalysisFeedback } from "@/components/AIAnalysisFeedback";
 import { 
   CATEGORY_LABELS, 
   CATEGORY_OPTIONS_BY_GENDER, 
@@ -58,7 +57,6 @@ export default function ProductManager({ onBack }: ProductManagerProps) {
   
   const generateUploadUrl = useAction((api as any).storage.generateUploadUrl);
   const resolvePublicUrl = useAction((api as any).storage.resolvePublicUrl);
-  const analyzeImage = useAction(api.ai.analyzeImage);
 
   const [form, setForm] = useState<NewProduct>({
     name: "",
@@ -79,11 +77,6 @@ export default function ProductManager({ onBack }: ProductManagerProps) {
   const [editUploadedMedia, setEditUploadedMedia] = useState<MediaItem[]>([]);
   const [uploadingInBackground, setUploadingInBackground] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // AI Analysis State
-  const [analysisStatus, setAnalysisStatus] = useState<"idle" | "analyzing" | "found" | "not_found" | "error">("idle");
-  const [analysisError, setAnalysisError] = useState<string | null>(null);
-  const [similarProducts, setSimilarProducts] = useState<any[]>([]);
 
   // Drag and drop state
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
@@ -227,44 +220,6 @@ export default function ProductManager({ onBack }: ProductManagerProps) {
     }
     if (files.length === 0) return;
     e.preventDefault();
-
-    // AI Analysis for the first image
-    const firstImage = files.find(f => f.type.startsWith('image/'));
-    if (firstImage) {
-      const reader = new FileReader();
-      reader.onload = async (event) => {
-        const base64 = event.target?.result as string;
-        if (base64) {
-          setAnalysisStatus("analyzing");
-          setAnalysisError(null);
-          setSimilarProducts([]);
-          
-          try {
-            const result = await analyzeImage({ imageBase64: base64 });
-            if (result.success) {
-              if (result.matches && result.matches.length > 0) {
-                setAnalysisStatus("found");
-                setSimilarProducts(result.matches);
-                toast.success(`Found ${result.matches.length} similar products!`);
-              } else {
-                setAnalysisStatus("not_found");
-                toast.info("No duplicate products found.");
-              }
-            } else {
-              setAnalysisStatus("error");
-              setAnalysisError(result.error || "Analysis failed");
-              toast.error(result.error || "Analysis failed");
-            }
-          } catch (error: any) {
-            console.error("Analysis error:", error);
-            setAnalysisStatus("error");
-            setAnalysisError(error.message || "Failed to analyze image");
-            toast.error("Failed to analyze image");
-          }
-        }
-      };
-      reader.readAsDataURL(firstImage);
-    }
 
     await uploadMediaFiles(files, false);
     toast(`Pasted ${files.length} item${files.length > 1 ? "s" : ""}`);
@@ -636,14 +591,6 @@ export default function ProductManager({ onBack }: ProductManagerProps) {
                   onPaste={handlePasteUpload}
                   placeholder="Click here and paste images or videos from clipboard"
                   className="w-full h-16 rounded-md border border-gray-200 p-3 text-sm bg-white/90"
-                />
-                
-                {/* AI Analysis Feedback */}
-                <AIAnalysisFeedback 
-                  status={analysisStatus}
-                  similarProducts={similarProducts}
-                  error={analysisError}
-                  onEditProduct={openEdit}
                 />
               </div>
 
