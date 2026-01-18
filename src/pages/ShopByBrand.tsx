@@ -91,7 +91,7 @@ const BRAND_LOGOS: Record<string, { name: string; logo: string }> = {
   },
   "emporio armani": {
     name: "Emporio Armani",
-    logo: "https://cdn.worldvectorlogo.com/logos/emporio-armani.svg"
+    logo: "https://harmless-tapir-303.convex.cloud/api/storage/fdfb121a-5d4f-46a0-88cb-2d75dd99c0e4"
   },
   "giorgio armani": {
     name: "Giorgio Armani",
@@ -135,7 +135,7 @@ const BRAND_LOGOS: Record<string, { name: string; logo: string }> = {
   },
   "fossil": {
     name: "Fossil",
-    logo: "https://cdn.worldvectorlogo.com/logos/fossil.svg"
+    logo: "https://harmless-tapir-303.convex.cloud/api/storage/3844305f-2e95-4107-9a9f-6752730f6faa"
   },
   "audemars piguet": {
     name: "Audemars Piguet",
@@ -263,7 +263,7 @@ const BRAND_LOGOS: Record<string, { name: string; logo: string }> = {
   },
   "carrera": {
     name: "Carrera",
-    logo: "https://cdn.worldvectorlogo.com/logos/carrera.svg"
+    logo: "https://harmless-tapir-303.convex.cloud/api/storage/11902880-6775-482a-b3a1-92c4c097c0ba"
   },
   "rado": {
     name: "Rado",
