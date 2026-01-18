@@ -23,23 +23,36 @@ export const check = action({
     }
 
     // Try Google Gemini (Free option)
-    const googleKey = process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY;
+    const googleKey = (process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY)?.trim();
     if (googleKey) {
       try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${googleKey}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: "Say 'Gemini is working' if you can hear me." }] }]
-          }),
-        });
-        if (!response.ok) {
-          const errorText = await response.text();
-          return { success: false, error: `Gemini API error: ${response.status} - ${errorText}` };
+        // Try gemini-1.5-flash first, then fallback to gemini-pro
+        const models = ["gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-pro"];
+        let response;
+        let usedModel;
+
+        for (const model of models) {
+          usedModel = model;
+          response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${googleKey}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: "Say 'Gemini is working' if you can hear me." }] }]
+            }),
+          });
+          if (response.status !== 404) break; // If not 404, stop trying (either success or other error)
         }
-        const data = await response.json();
-        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-        return { success: true, message: text || "Gemini is working" };
+
+        if (response && !response.ok) {
+          const errorText = await response.text();
+          return { success: false, error: `Gemini API error (${usedModel}): ${response.status} - ${errorText}` };
+        }
+        
+        if (response) {
+          const data = await response.json();
+          const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+          return { success: true, message: text || `Gemini is working (${usedModel})` };
+        }
       } catch (e: any) {
         console.error("Gemini check failed:", e);
       }
