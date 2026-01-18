@@ -18,7 +18,13 @@ import { toast } from "sonner";
 import { GripVertical, ArrowLeft } from "lucide-react";
 
 type GenderOption = "mens" | "womens";
-type CategoryOption = "goggles" | "watches" | "belts" | "gift box" | "wallets" | "handbags";
+type CategoryOption =
+  | "goggles"
+  | "watches"
+  | "belts"
+  | "gift box"
+  | "wallets"
+  | "handbags";
 
 const CATEGORY_LABELS: Record<CategoryOption, string> = {
   goggles: "Goggles",
@@ -30,7 +36,7 @@ const CATEGORY_LABELS: Record<CategoryOption, string> = {
 };
 
 const CATEGORY_OPTIONS_BY_GENDER: Record<GenderOption, CategoryOption[]> = {
-  mens: ["watches", "goggles", "belts", "wallets"],
+  mens: ["watches", "wallets", "goggles", "belts"],
   womens: ["handbags", "watches", "goggles", "wallets", "gift box", "belts"],
 };
 
