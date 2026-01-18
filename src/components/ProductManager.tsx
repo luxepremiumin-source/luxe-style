@@ -44,6 +44,21 @@ const ALL_CATEGORY_OPTIONS: Array<{ value: CategoryOption; label: string }> = Ob
   CATEGORY_LABELS,
 ).map(([value, label]) => ({ value: value as CategoryOption, label }));
 
+const COMMON_COLORS = [
+  "Black",
+  "White",
+  "Grey",
+  "Brown",
+  "Gold",
+  "Silver",
+  "Blue",
+  "Red",
+  "Green",
+  "Beige",
+  "Pink",
+  "Purple",
+];
+
 type NewProduct = {
   name: string;
   description: string;
@@ -582,6 +597,26 @@ export default function ProductManager({ onBack }: ProductManagerProps) {
 
               <div className="space-y-2">
                 <Label>Color Options</Label>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {COMMON_COLORS.map((color) => (
+                    <Button
+                      key={color}
+                      type="button"
+                      variant={form.colors.includes(color) ? "default" : "outline"}
+                      size="sm"
+                      className="h-7 px-2 text-xs"
+                      onClick={() => {
+                        if (!form.colors.includes(color)) {
+                          setForm((prev) => ({ ...prev, colors: [...prev.colors, color] }));
+                        } else {
+                          setForm((prev) => ({ ...prev, colors: prev.colors.filter((c) => c !== color) }));
+                        }
+                      }}
+                    >
+                      {color}
+                    </Button>
+                  ))}
+                </div>
                 <div className="flex gap-2">
                   <Input
                     value={newColor}
@@ -770,6 +805,72 @@ export default function ProductManager({ onBack }: ProductManagerProps) {
                 <Label>Original Price</Label>
                 <Input type="number" value={editForm.originalPrice} onChange={(e) => setEditForm(f => ({ ...f, originalPrice: e.target.value }))} />
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Color Options</Label>
+              <div className="flex flex-wrap gap-2 mb-2">
+                {COMMON_COLORS.map((color) => (
+                  <Button
+                    key={color}
+                    type="button"
+                    variant={editForm.colors.includes(color) ? "default" : "outline"}
+                    size="sm"
+                    className="h-7 px-2 text-xs"
+                    onClick={() => {
+                      if (!editForm.colors.includes(color)) {
+                        setEditForm((prev) => ({ ...prev, colors: [...prev.colors, color] }));
+                      } else {
+                        setEditForm((prev) => ({ ...prev, colors: prev.colors.filter((c) => c !== color) }));
+                      }
+                    }}
+                  >
+                    {color}
+                  </Button>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <Input
+                  value={editNewColor}
+                  onChange={(e) => setEditNewColor(e.target.value)}
+                  placeholder="e.g., Black, White"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && editNewColor.trim()) {
+                      e.preventDefault();
+                      setEditForm((prev) => ({ ...prev, colors: [...prev.colors, editNewColor.trim()] }));
+                      setEditNewColor("");
+                    }
+                  }}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    if (editNewColor.trim()) {
+                      setEditForm((prev) => ({ ...prev, colors: [...prev.colors, editNewColor.trim()] }));
+                      setEditNewColor("");
+                    }
+                  }}
+                >
+                  Add
+                </Button>
+              </div>
+              {editForm.colors.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {editForm.colors.map((color, idx) => (
+                    <div key={idx} className="flex items-center gap-1 bg-gray-100 px-3 py-1 rounded-full text-sm">
+                      <span>{color}</span>
+                      <button
+                        type="button"
+                        onClick={() => setEditForm((prev) => ({ ...prev, colors: prev.colors.filter((_, i) => i !== idx) }))}
+                        className="text-gray-500 hover:text-gray-700"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
             
             <div className="space-y-2">
