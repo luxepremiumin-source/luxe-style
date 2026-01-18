@@ -422,6 +422,8 @@ export default function Navbar() {
     { name: "Goggles", href: "/category/goggles" },
     { name: "Watches", href: "/category/watches" },
     { name: "Belts", href: "/category/belts" },
+    { name: "Wallets", href: "/category/wallets" },
+    { name: "Handbags", href: "/category/handbags" },
   ];
 
   useEffect(() => {
@@ -655,6 +657,20 @@ export default function Navbar() {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Belts
+              </Link>
+              <Link
+                to="/category/wallets"
+                className="block text-lg font-normal hover:text-gray-600 transition-colors duration-200 px-0 py-3 text-gray-900"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Wallets
+              </Link>
+              <Link
+                to="/category/handbags"
+                className="block text-lg font-normal hover:text-gray-600 transition-colors duration-200 px-0 py-3 text-gray-900"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Handbags
               </Link>
               <Link
                 to="/category/gift box"

@@ -19,6 +19,8 @@ const prettyName: Record<string, string> = {
   goggles: "Goggles",
   watches: "Watches",
   belts: "Belts",
+  wallets: "Wallets",
+  handbags: "Handbags",
   "gift box": "Gift Box",
 };
 
