@@ -18,48 +18,14 @@ import { toast } from "sonner";
 import { GripVertical, ArrowLeft } from "lucide-react";
 import { compressImage } from "@/lib/imageCompression";
 import { AIAnalysisFeedback } from "@/components/AIAnalysisFeedback";
-
-type GenderOption = "mens" | "womens";
-type CategoryOption =
-  | "goggles"
-  | "watches"
-  | "belts"
-  | "gift box"
-  | "wallets"
-  | "handbags";
-
-const CATEGORY_LABELS: Record<CategoryOption, string> = {
-  goggles: "Goggles",
-  watches: "Watches",
-  belts: "Belts",
-  "gift box": "Gift Box",
-  wallets: "Wallets",
-  handbags: "Handbags",
-};
-
-const CATEGORY_OPTIONS_BY_GENDER: Record<GenderOption, CategoryOption[]> = {
-  mens: ["watches", "wallets", "goggles", "belts"],
-  womens: ["handbags", "watches", "goggles", "wallets", "gift box", "belts"],
-};
-
-const ALL_CATEGORY_OPTIONS: Array<{ value: CategoryOption; label: string }> = Object.entries(
-  CATEGORY_LABELS,
-).map(([value, label]) => ({ value: value as CategoryOption, label }));
-
-const COMMON_COLORS = [
-  "Black",
-  "White",
-  "Grey",
-  "Brown",
-  "Gold",
-  "Silver",
-  "Blue",
-  "Red",
-  "Green",
-  "Beige",
-  "Pink",
-  "Purple",
-];
+import { 
+  CATEGORY_LABELS, 
+  CATEGORY_OPTIONS_BY_GENDER, 
+  COMMON_COLORS, 
+  CategoryOption, 
+  GenderOption 
+} from "@/lib/product-constants";
+import { ProductList } from "@/components/ProductList";
 
 type NewProduct = {
   name: string;
@@ -113,7 +79,6 @@ export default function ProductManager({ onBack }: ProductManagerProps) {
   const [editUploadedMedia, setEditUploadedMedia] = useState<MediaItem[]>([]);
   const [uploadingInBackground, setUploadingInBackground] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<"all" | CategoryOption>("all");
 
   // AI Analysis State
   const [analysisStatus, setAnalysisStatus] = useState<"idle" | "analyzing" | "found" | "not_found" | "error">("idle");
@@ -519,12 +484,6 @@ export default function ProductManager({ onBack }: ProductManagerProps) {
     }
   };
 
-  const filteredProducts = products
-    ? selectedCategory === "all"
-      ? products
-      : products.filter((p) => p.category === selectedCategory)
-    : [];
-
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex items-center gap-4 mb-6">
@@ -774,68 +733,11 @@ export default function ProductManager({ onBack }: ProductManagerProps) {
           </CardContent>
         </Card>
 
-        <Card className="border border-gray-200 h-fit">
-          <CardHeader>
-            <CardTitle>Existing Products</CardTitle>
-            <CardDescription>Manage your catalog</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="mb-4">
-              <Label htmlFor="category-filter">Filter by Category</Label>
-              <Select
-                value={selectedCategory}
-                onValueChange={(v) => setSelectedCategory(v as any)}
-              >
-                <SelectTrigger id="category-filter">
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  {ALL_CATEGORY_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {!products ? (
-              <p className="text-sm text-gray-500">Loading...</p>
-            ) : filteredProducts.length === 0 ? (
-              <p className="text-sm text-gray-500">No products found.</p>
-            ) : (
-              <div className="space-y-3 max-h-[800px] overflow-y-auto pr-2">
-                {filteredProducts.slice().reverse().map((p) => (
-                  <div key={p._id} className="border border-gray-200 rounded-md p-3 space-y-3">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0 flex-1">
-                        <p className="font-medium truncate">{p.name}</p>
-                        <p className="text-xs text-gray-500 capitalize">
-                          {p.category} • ₹{p.price.toLocaleString()}
-                        </p>
-                        <div className="text-xs text-gray-500 mt-1">
-                          {p.inStock ? "In Stock" : "Out of Stock"}
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm" onClick={() => openEdit(p)}>Edit</Button>
-                        <Button variant="destructive" size="sm" onClick={() => handleDeleteProduct(p._id, p.name)}>Delete</Button>
-                      </div>
-                    </div>
-                    {p.images && p.images.length > 0 && (
-                      <div className="grid grid-cols-4 gap-2">
-                        {p.images.slice(0, 4).map((img, idx) => (
-                          <img key={idx} src={img} className="h-12 w-full object-cover rounded border" />
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <ProductList 
+          products={products} 
+          onEdit={openEdit} 
+          onDelete={handleDeleteProduct} 
+        />
       </div>
 
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
