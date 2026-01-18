@@ -17,12 +17,34 @@ import { useEffect, useState, useMemo } from "react";
 import { toast } from "sonner";
 import { GripVertical, ArrowLeft } from "lucide-react";
 
+type GenderOption = "mens" | "womens";
+type CategoryOption = "goggles" | "watches" | "belts" | "gift box" | "wallets" | "handbags";
+
+const CATEGORY_LABELS: Record<CategoryOption, string> = {
+  goggles: "Goggles",
+  watches: "Watches",
+  belts: "Belts",
+  "gift box": "Gift Box",
+  wallets: "Wallets",
+  handbags: "Handbags",
+};
+
+const CATEGORY_OPTIONS_BY_GENDER: Record<GenderOption, CategoryOption[]> = {
+  mens: ["watches", "goggles", "belts", "wallets"],
+  womens: ["handbags", "watches", "goggles", "wallets", "gift box", "belts"],
+};
+
+const ALL_CATEGORY_OPTIONS: Array<{ value: CategoryOption; label: string }> = Object.entries(
+  CATEGORY_LABELS,
+).map(([value, label]) => ({ value: value as CategoryOption, label }));
+
 type NewProduct = {
   name: string;
   description: string;
   price: string;
   originalPrice: string;
-  category: "goggles" | "watches" | "belts" | "gift box";
+  category: CategoryOption | "";
+  targetGender: GenderOption | "";
   images: string; // comma separated
   videos: string; // comma separated
   colors: string[];
@@ -53,7 +75,8 @@ export default function ProductManager({ onBack }: ProductManagerProps) {
     description: "",
     price: "",
     originalPrice: "",
-    category: "goggles",
+    category: "",
+    targetGender: "",
     images: "",
     videos: "",
     colors: [],
@@ -66,7 +89,7 @@ export default function ProductManager({ onBack }: ProductManagerProps) {
   const [editUploadedMedia, setEditUploadedMedia] = useState<MediaItem[]>([]);
   const [uploadingInBackground, setUploadingInBackground] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<"all" | "goggles" | "watches" | "belts" | "gift box">("all");
+  const [selectedCategory, setSelectedCategory] = useState<"all" | CategoryOption>("all");
 
   // Drag and drop state
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
@@ -80,7 +103,8 @@ export default function ProductManager({ onBack }: ProductManagerProps) {
     description: string;
     price: string;
     originalPrice: string;
-    category: "goggles" | "watches" | "belts" | "gift box";
+    category: CategoryOption | "";
+    targetGender: GenderOption | "";
     images: string;
     videos: string;
     colors: string[];
@@ -92,6 +116,7 @@ export default function ProductManager({ onBack }: ProductManagerProps) {
     price: "",
     originalPrice: "",
     category: "goggles",
+    targetGender: "mens",
     images: "",
     videos: "",
     colors: [],
@@ -250,6 +275,10 @@ export default function ProductManager({ onBack }: ProductManagerProps) {
     setForm((prev) => ({ ...prev, [key]: value as any }));
   };
 
+  const handleGenderChange = (value: GenderOption) => {
+    setForm((prev) => ({ ...prev, targetGender: value, category: "" }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting) return;
@@ -258,6 +287,9 @@ export default function ProductManager({ onBack }: ProductManagerProps) {
     if (!form.description.trim()) return toast("Please enter a product description.");
     const priceNum = Number(form.price);
     if (Number.isNaN(priceNum) || priceNum <= 0) return toast("Please enter a valid price.");
+
+    if (!form.targetGender) return toast("Please select Mens or Womens.");
+    if (!form.category) return toast("Please select a category.");
 
     const hasBlobUrls = uploadedMedia.some(item => item.url.startsWith("blob:"));
     if (hasBlobUrls && uploadingInBackground) {
@@ -303,7 +335,8 @@ export default function ProductManager({ onBack }: ProductManagerProps) {
         description: "",
         price: "",
         originalPrice: "",
-        category: "goggles",
+        category: "",
+        targetGender: "",
         images: "",
         videos: "",
         colors: [],
@@ -328,6 +361,7 @@ export default function ProductManager({ onBack }: ProductManagerProps) {
       price: String(p.price ?? ""),
       originalPrice: p.originalPrice ? String(p.originalPrice) : "",
       category: (p.category as any) ?? "goggles",
+      targetGender: (p.targetGender as any) ?? "mens",
       images: Array.isArray(p.images) ? p.images.join(", ") : "",
       videos: Array.isArray(p.videos) ? p.videos.join(", ") : "",
       colors: Array.isArray(p.colors) ? p.colors : [],
@@ -449,46 +483,40 @@ export default function ProductManager({ onBack }: ProductManagerProps) {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="price">Price (₹)</Label>
-                  <Input
-                    id="price"
-                    type="number"
-                    min={0}
-                    value={form.price}
-                    onChange={(e) => handleChange("price", e.target.value)}
-                    placeholder="5999"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="originalPrice">Original Price (₹)</Label>
-                  <Input
-                    id="originalPrice"
-                    type="number"
-                    min={0}
-                    value={form.originalPrice}
-                    onChange={(e) => handleChange("originalPrice", e.target.value)}
-                    placeholder="8999"
-                  />
-                </div>
+              <div className="space-y-2">
+                <Label>Collection</Label>
+                <Select
+                  value={form.targetGender || undefined}
+                  onValueChange={(v) => handleGenderChange(v as GenderOption)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Mens or Womens" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="mens">Mens</SelectItem>
+                    <SelectItem value="womens">Womens</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">
                 <Label>Category</Label>
                 <Select
-                  value={form.category}
-                  onValueChange={(v) => handleChange("category", v as any)}
+                  value={form.category || undefined}
+                  onValueChange={(v) => handleChange("category", v)}
+                  disabled={!form.targetGender}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a category" />
+                    <SelectValue
+                      placeholder={form.targetGender ? "Select a category" : "Select Mens or Womens first"}
+                    />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="goggles">Goggles</SelectItem>
-                    <SelectItem value="watches">Watches</SelectItem>
-                    <SelectItem value="belts">Belts</SelectItem>
-                    <SelectItem value="gift box">Gift Box</SelectItem>
+                    {(form.targetGender ? CATEGORY_OPTIONS_BY_GENDER[form.targetGender] : []).map((value) => (
+                      <SelectItem key={value} value={value}>
+                        {CATEGORY_LABELS[value]}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -627,10 +655,11 @@ export default function ProductManager({ onBack }: ProductManagerProps) {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Categories</SelectItem>
-                  <SelectItem value="goggles">Goggles</SelectItem>
-                  <SelectItem value="watches">Watches</SelectItem>
-                  <SelectItem value="belts">Belts</SelectItem>
-                  <SelectItem value="gift box">Gift Box</SelectItem>
+                  {ALL_CATEGORY_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -698,10 +727,11 @@ export default function ProductManager({ onBack }: ProductManagerProps) {
                   <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="goggles">Goggles</SelectItem>
-                  <SelectItem value="watches">Watches</SelectItem>
-                  <SelectItem value="belts">Belts</SelectItem>
-                  <SelectItem value="gift box">Gift Box</SelectItem>
+                  {ALL_CATEGORY_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
