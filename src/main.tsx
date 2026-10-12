@@ -27,20 +27,27 @@ import Checkout from "@/pages/Checkout.tsx";
 import SearchResults from "./pages/SearchResults.tsx";
 import "./types/global.d.ts";
 import MetaPixel from "@/components/MetaPixel";
+import RouteErrorBoundary from "@/components/RouteErrorBoundary";
 import { Outlet } from "react-router";
 
-// Use environment variable or fallback to the correct deployment URL
-const convexUrl = import.meta.env.VITE_CONVEX_URL || "https://neat-falcon-155.convex.cloud";
+// Use environment variable or fallback to the owner's production deployment URL
+const convexUrl = import.meta.env.VITE_CONVEX_URL || "https://clear-dragon-472.convex.cloud";
 
 console.log("[CONVEX] Using Convex URL:", convexUrl);
 
 const convex = new ConvexReactClient(convexUrl);
 
 function Layout() {
+  const location = useLocation();
   return (
     <>
       <MetaPixel />
-      <Outlet />
+      {/* Per-route boundary: a failed query on one page shows an in-page
+          retry UI instead of crashing the entire storefront. Keyed by
+          pathname so navigating away clears the error state. */}
+      <RouteErrorBoundary key={location.pathname}>
+        <Outlet />
+      </RouteErrorBoundary>
     </>
   );
 }
