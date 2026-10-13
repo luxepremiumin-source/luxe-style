@@ -24,7 +24,8 @@ function downloadProductsJson() {
   }
 
   // Prefer the platform file picker when available.
-  if ("showSaveFilePicker" in window) {    (window as unknown as {
+  if ("showSaveFilePicker" in window) {
+    (window as unknown as {
       showSaveFilePicker: (
         opts: { fileName: string; suggestedStartPath: string }
       ) => Promise<unknown>;
@@ -109,7 +110,8 @@ export default function Landing() {
         <CategorySection />
         <FeaturedProducts />
         <WhatsAppNewArrivals />
-      </main>        <Footer />
+      </main>
+      <Footer />
       <motion.footer className="border-t border-white/10 px-4 py-8 text-sm text-white/70">
         <div className="mx-auto max-w-3xl text-center">
           <p className="mb-3">
@@ -127,4 +129,3 @@ export default function Landing() {
     </div>
   );
 }
-
