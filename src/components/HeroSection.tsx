@@ -1,3 +1,5 @@
+
+import { useEffect, useRef } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Link } from "react-router";
@@ -5,29 +7,88 @@ import { Link } from "react-router";
 export default function HeroSection() {
   const fallbackBg =
     "https://harmless-tapir-303.convex.cloud/api/storage/9c7a0c50-e4a8-4cc2-b631-f5a35f277a9a";
+
   const heroSections = useQuery(api.heroSections.getHeroSections);
   const dynamicBg =
     heroSections?.find((section) => section.slug === "hero-one")?.images?.[0] ??
     null;
-  const backgroundImage = dynamicBg ?? fallbackBg;
+  const backgroundImage = "/luxe-hero.png.jpeg";
+
+  const sectionRef = useRef<HTMLElement>(null);
+  const imageRef = useRef<HTMLImageElement>(null);
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    const image = imageRef.current;
+    if (!section || !image) return;
+
+    const reducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    );
+
+    let frame = 0;
+
+    const updateZoom = () => {
+      cancelAnimationFrame(frame);
+
+      frame = requestAnimationFrame(() => {
+        if (reducedMotion.matches) {
+          image.style.transform = "scale(1)";
+          return;
+        }
+
+        const rect = section.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+
+        // Progress increases as the visitor scrolls through the hero.
+        const progress = Math.min(
+          1,
+          Math.max(0, (viewportHeight - rect.top) / (viewportHeight + rect.height))
+        );
+
+        const scale = 1 + progress * 0.4;
+        image.style.transform = `scale(${scale})`;
+      });
+    };
+
+    updateZoom();
+    window.addEventListener("scroll", updateZoom, { passive: true });
+    window.addEventListener("resize", updateZoom);
+    reducedMotion.addEventListener("change", updateZoom);
+
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", updateZoom);
+      window.removeEventListener("resize", updateZoom);
+      reducedMotion.removeEventListener("change", updateZoom);
+    };
+  }, []);
 
   return (
-    <section className="relative w-full overflow-hidden bg-black">
+    <section
+      ref={sectionRef}
+      className="relative w-full overflow-hidden bg-black"
+    >
       <div className="relative h-[70vh] sm:h-[78vh] md:h-[86vh] lg:h-[88vh]">
-        <div className="absolute inset-0 h-full w-full">
+        <div className="absolute inset-0 overflow-hidden">
           <img
+            ref={imageRef}
             src={backgroundImage}
             alt="LUXE flagship visual"
-            className="h-full w-full object-cover animate-hero-zoom"
+            className="h-full w-full object-cover"
             loading="eager"
-            decoding="sync"
+            decoding="async"
             fetchPriority="high"
-            style={{ 
+            style={{
               objectPosition: "50% 38%",
+              transform: "scale(1)",
+              transformOrigin: "center center",
+              willChange: "transform",
             }}
           />
         </div>
-        <div className="absolute inset-0 bg-black/40" />
+
+        <div className="absolute inset-0 bg-black/40 pointer-events-none" />
 
         <div className="absolute inset-0 flex items-end justify-center pb-32 sm:pb-40 md:pb-44 pointer-events-none">
           <div
@@ -40,6 +101,7 @@ export default function HeroSection() {
             >
               Mens
             </Link>
+
             <Link
               to="/category/womens"
               className="pointer-events-auto rounded-full bg-white text-black px-4 py-2 sm:px-5 sm:py-2.5 md:px-6 md:py-3 text-xs sm:text-sm font-bold ring-2 ring-black/10 hover:bg-gray-100 active:bg-gray-200 transition-colors duration-200 touch-manipulation min-h-[44px] flex items-center justify-center shadow-lg"
@@ -49,22 +111,6 @@ export default function HeroSection() {
           </div>
         </div>
       </div>
-      <style>{`
-        @keyframes hero-zoom {
-          0% { transform: scale(1); }
-          50% { transform: scale(1.05); }
-          100% { transform: scale(1); }
-        }
-        .animate-hero-zoom {
-          animation: hero-zoom 20s ease-in-out infinite;
-          will-change: transform;
-        }
-        @media (max-width: 768px) {
-          .animate-hero-zoom {
-            animation: none;
-          }
-        }
-      `}</style>
     </section>
   );
 }

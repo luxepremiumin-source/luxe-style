@@ -29,7 +29,6 @@ import "./types/global.d.ts";
 import MetaPixel from "@/components/MetaPixel";
 import RouteErrorBoundary from "@/components/RouteErrorBoundary";
 import { Outlet } from "react-router";
-
 // Use environment variable or fallback to the owner's production deployment URL
 const convexUrl = import.meta.env.VITE_CONVEX_URL || "https://clear-dragon-472.convex.cloud";
 
