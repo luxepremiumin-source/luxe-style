@@ -6,6 +6,7 @@ import { ConvexReactClient } from "convex/react";
 import { lazy, StrictMode, Suspense, useEffect } from "react";
 const AuthPage = lazy(() => import("@/pages/Auth.tsx"));
 import { createRoot } from "react-dom/client";
+import StaticCatalogue from "@/pages/StaticCatalogue";
 import { createBrowserRouter, RouterProvider, useLocation } from "react-router";
 import "./index.css";
 const Landing = lazy(() => import("./pages/Landing.tsx"));
@@ -58,9 +59,15 @@ const router = createBrowserRouter([
         path: "/",
         element: <Landing />,
       },
+        
       {
         path: "/auth",
         element: <AuthPage redirectAfterAuth="/" />,
+      },
+
+      {
+        path: "/catalogue",
+        element: <StaticCatalogue />,
       },
       {
         path: "/admin",
