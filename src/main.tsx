@@ -1,37 +1,36 @@
 import { Toaster } from "@/components/ui/sonner";
 import { VlyToolbar } from "../vly-toolbar-readonly.tsx";
 import { InstrumentationProvider } from "@/instrumentation.tsx";
-import AuthPage from "@/pages/Auth.tsx";
 import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import { ConvexReactClient } from "convex/react";
-import { StrictMode, useEffect } from "react";
+import { lazy, StrictMode, Suspense, useEffect } from "react";
+const AuthPage = lazy(() => import("@/pages/Auth.tsx"));
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider, useLocation } from "react-router";
 import "./index.css";
-import Landing from "./pages/Landing.tsx";
-import NotFound from "./pages/NotFound.tsx";
-import Admin from "@/pages/Admin.tsx";
-import CategoryPage from "@/pages/Category.tsx";
-import ProductPage from "@/pages/Product.tsx";
-import Contact from "@/pages/Contact.tsx";
-import AboutUs from "@/pages/AboutUs.tsx";
-import TrackOrder from "@/pages/TrackOrder.tsx";
-import TermsOfService from "@/pages/TermsOfService.tsx";
-import ShippingPolicy from "@/pages/ShippingPolicy.tsx";
-import RefundPolicy from "@/pages/RefundPolicy.tsx";
-import AdminCustomers from "./pages/AdminCustomers";
-import AdminStorageRecovery from "./pages/AdminStorageRecovery";
-import ShopByBrand from "./pages/ShopByBrand.tsx";
-import BrandProducts from "./pages/BrandProducts.tsx";
-import Checkout from "@/pages/Checkout.tsx";
-import SearchResults from "./pages/SearchResults.tsx";
+const Landing = lazy(() => import("./pages/Landing.tsx"));
+const NotFound = lazy(() => import("./pages/NotFound.tsx"));
+const Admin = lazy(() => import("@/pages/Admin.tsx"));
+const CategoryPage = lazy(() => import("@/pages/Category.tsx"));
+const ProductPage = lazy(() => import("@/pages/Product.tsx"));
+const Contact = lazy(() => import("@/pages/Contact.tsx"));
+const AboutUs = lazy(() => import("@/pages/AboutUs.tsx"));
+const TrackOrder = lazy(() => import("@/pages/TrackOrder.tsx"));
+const TermsOfService = lazy(() => import("@/pages/TermsOfService.tsx"));
+const ShippingPolicy = lazy(() => import("@/pages/ShippingPolicy.tsx"));
+const RefundPolicy = lazy(() => import("@/pages/RefundPolicy.tsx"));
+const AdminCustomers = lazy(() => import("./pages/AdminCustomers"));
+const AdminStorageRecovery = lazy(() => import("./pages/AdminStorageRecovery"));
+const ShopByBrand = lazy(() => import("./pages/ShopByBrand.tsx"));
+const BrandProducts = lazy(() => import("./pages/BrandProducts.tsx"));
+const Checkout = lazy(() => import("@/pages/Checkout.tsx"));
+const SearchResults = lazy(() => import("./pages/SearchResults.tsx"));
 import "./types/global.d.ts";
 import MetaPixel from "@/components/MetaPixel";
 import RouteErrorBoundary from "@/components/RouteErrorBoundary";
 import { Outlet } from "react-router";
 // Use environment variable or fallback to the owner's production deployment URL
 const convexUrl = import.meta.env.VITE_CONVEX_URL || "https://clear-dragon-472.convex.cloud";
-
 console.log("[CONVEX] Using Convex URL:", convexUrl);
 
 const convex = new ConvexReactClient(convexUrl);
@@ -161,7 +160,9 @@ createRoot(document.getElementById("root")!).render(
     <VlyToolbar />
     <InstrumentationProvider>
       <ConvexAuthProvider client={convex}>
+        <Suspense fallback={<div className="flex min-h-screen items-center justify-center">Loading...</div>}>
         <RouterProvider router={router} />
+      </Suspense>
         <Toaster />
       </ConvexAuthProvider>
     </InstrumentationProvider>

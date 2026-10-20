@@ -12,6 +12,7 @@ import { Minus, Plus, MessageCircle, Heart, Truck } from "lucide-react";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ProductZoom from "@/components/ProductZoom";
+import { recoveredImageUrl } from "@/lib/recoveredImage";
 import RecentlyViewed from "@/components/RecentlyViewed";
 
 const prettyName: Record<string, string> = {
@@ -207,7 +208,7 @@ export default function ProductPage() {
     );
   }
 
-  const images = product.images ?? [];
+  const images = (product.images ?? []).map(recoveredImageUrl);
   const videos = product.videos ?? [];
   const totalMedia = images.length + videos.length;
   
@@ -237,7 +238,7 @@ export default function ProductPage() {
                       autoPlay={!lowDataMode}
                       muted
                       loop={!lowDataMode}
-                      preload={lowDataMode ? "metadata" : "auto"}
+                      preload="none"
                       playsInline
                     />
                   ) : (
