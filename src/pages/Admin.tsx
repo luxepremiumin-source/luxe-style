@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { GripVertical, Package, LayoutDashboard, Trash2, RefreshCw } from "lucide-react";
 import ProductManager from "@/components/ProductManager";
+import slideshowImageLibrary from "@/data/categorySlideshowImages.json";
 
 const HERO_GROUPS = [
   {
@@ -49,6 +50,8 @@ export default function Admin() {
   const addHeroSectionImage = useMutation(api.heroSections.addHeroImage);
   const removeHeroSectionImage = useMutation(api.heroSections.removeHeroImage);
   const replaceHeroSectionImage = useMutation(api.heroSections.replaceHeroImage);
+  const categorySlideshowSettings = useQuery(api.categorySlideshows.getSettings);
+  const saveCategorySlideshow = useMutation(api.categorySlideshows.saveSettings);
 
   // Auth logic
   const allowedEmails = new Set<string>(["luxe.premium.in@gmail.com"]);
@@ -64,6 +67,9 @@ export default function Admin() {
   // Hero image management state
   const [heroUploading, setHeroUploading] = useState<Record<string, boolean>>({});
   const [replacingImage, setReplacingImage] = useState<{ slug: string; oldUrl: string } | null>(null);
+
+  const [selectedSlideshowImages, setSelectedSlideshowImages] = useState<Record<string, string[]>>({});
+  const [savingSlideshow, setSavingSlideshow] = useState<Record<string, boolean>>({});
 
   // Convex storage actions
   const generateUploadUrl = useAction((api as any).storage.generateUploadUrl);
@@ -480,6 +486,93 @@ export default function Admin() {
               Tip: The first image in "Hero Section 1" is used as the primary landing hero
               background. Reorder by removing and re-uploading images in the desired order.
             </p>
+          </CardContent>
+        </Card>
+
+        <Card className="border border-gray-200 mb-8">
+          <CardHeader>
+            <CardTitle>Collection Slideshow</CardTitle>
+            <CardDescription>
+              Select 2–3 existing product images for each rotating collection card. These selections will be saved for the storefront.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-8">
+            {([
+              { category: "goggles", title: "Premium Goggles" },
+              { category: "watches", title: "Designer Watches" },
+              { category: "belts", title: "Luxury Belts" },
+            ] as const).map(({ category, title }) => {
+              const library = slideshowImageLibrary[category];
+              const saved = categorySlideshowSettings?.find((item) => item.category === category)?.images ?? [];
+              const selected = selectedSlideshowImages[category] ?? saved;
+              return (
+                <section key={category} className="rounded-lg border border-gray-200 p-4">
+                  <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <h3 className="font-semibold text-gray-900">{title}</h3>
+                      <p className="text-sm text-gray-500">
+                        {selected.length} selected · Choose 2 or 3 images
+                      </p>
+                    </div>
+                    <Button
+                      type="button"
+                      disabled={selected.length < 2 || selected.length > 3 || !!savingSlideshow[category]}
+                      onClick={async () => {
+                        setSavingSlideshow((prev) => ({ ...prev, [category]: true }));
+                        try {
+                          await saveCategorySlideshow({ category, images: selected });
+                          toast.success(`${title} slideshow saved.`);
+                          setSelectedSlideshowImages((prev) => {
+                            const next = { ...prev };
+                            delete next[category];
+                            return next;
+                          });
+                        } catch (error) {
+                          console.error(error);
+                          toast.error(`Could not save ${title} slideshow.`);
+                        } finally {
+                          setSavingSlideshow((prev) => ({ ...prev, [category]: false }));
+                        }
+                      }}
+                    >
+                      {savingSlideshow[category] ? "Saving..." : "Save Selection"}
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+                    {library.map((image, index) => {
+                      const isSelected = selected.includes(image);
+                      return (
+                        <button
+                          type="button"
+                          key={image}
+                          onClick={() => setSelectedSlideshowImages((prev) => {
+                            const current = prev[category] ?? saved;
+                            if (current.includes(image)) {
+                              return { ...prev, [category]: current.filter((item) => item !== image) };
+                            }
+                            if (current.length >= 3) {
+                              toast.error("Choose no more than 3 images.");
+                              return prev;
+                            }
+                            return { ...prev, [category]: [...current, image] };
+                          })}
+                          className={`overflow-hidden rounded-lg border-2 text-left ${
+                            isSelected ? "border-blue-600 ring-2 ring-blue-200" : "border-gray-200 hover:border-gray-400"
+                          }`}
+                          aria-pressed={isSelected}
+                          title={`Image ${index + 1}${isSelected ? " (selected)" : ""}`}
+                        >
+                          <img src={image} alt={`${title} option ${index + 1}`} className="aspect-square w-full object-cover" loading="lazy" />
+                          <span className="block px-2 py-1 text-xs text-gray-600">
+                            {isSelected ? "✓ Selected" : `Image ${index + 1}`}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </section>
+              );
+            })}
           </CardContent>
         </Card>
       </div>

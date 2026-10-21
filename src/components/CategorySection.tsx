@@ -3,16 +3,18 @@ import { Card } from "@/components/ui/card";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
 const categories = [
   {
     name: "Premium Goggles",
     description: "Fashion Eyewear for Every Mood",
     images: [
-      "https://harmless-tapir-303.convex.cloud/api/storage/1a7551ea-0394-4354-b7ed-fc2497132148",
-      "https://harmless-tapir-303.convex.cloud/api/storage/adc0df0b-62a0-4fdb-87fd-507cb9c5ab6a",
-      "https://harmless-tapir-303.convex.cloud/api/storage/2c1304f0-375a-441b-952b-70ebc9753d88"
+      "/recovered-product-images/a1d5e5f0-a24d-4626-9ac6-514dee87325d.webp",
+      "/recovered-product-images/715c0d0a-3d3a-4805-9840-c736fc8d4b44.webp",
+      "/recovered-product-images/66256f11-71e8-421c-be7b-10edbf08f59c.webp"
     ],
     href: "/category/goggles",
     color: "from-blue-500 to-purple-600"
@@ -21,8 +23,8 @@ const categories = [
     name: "Designer Watches",
     description: "Luxury-Inspired Watches, Everyday Wear",
     images: [
-      "https://harmless-tapir-303.convex.cloud/api/storage/0df7a66e-c4cd-4165-8eb8-eb91d8b079b1",
-      "https://harmless-tapir-303.convex.cloud/api/storage/882e40ac-661b-4f0a-87f2-48744b7ddf77"
+      "/recovered-product-images/71c5f25c-5429-4c64-8180-89f08f1c8f1f.webp",
+      "/recovered-product-images/61e2c6ed-339b-45bf-9266-bf5c83cc1086.webp"
     ],
     href: "/category/watches",
     color: "from-amber-500 to-orange-600"
@@ -31,9 +33,9 @@ const categories = [
     name: "Luxury Belts",
     description: "Essential Belts, Iconic Style Upgrade",
     images: [
-      "https://harmless-tapir-303.convex.cloud/api/storage/5d06c704-4d0d-4c4b-bd9c-b4a42c7e2d96",
-      "https://harmless-tapir-303.convex.cloud/api/storage/8b8a5a4e-e0dd-45b8-885f-dae0013cf643",
-      "https://harmless-tapir-303.convex.cloud/api/storage/d598cf55-8bc8-43ac-9151-f4187d918545"
+      "/recovered-product-images/434c9e7a-fe5e-4a5d-8fd4-e89d5d31a29e.webp",
+      "/recovered-product-images/95bcf1d9-798e-423e-8f16-c00f37d27cfe.webp",
+      "/recovered-product-images/29e8c62f-a551-4164-880e-9cc4f2ff2322.webp"
     ],
     href: "/category/belts",
     color: "from-emerald-500 to-teal-600"
@@ -110,6 +112,14 @@ const beltTransitionVariants = [
 
 export default function CategorySection() {
   const navigate = useNavigate();
+  const savedSlideshowSettings = useQuery(api.categorySlideshows.getSettings);
+  const displayedCategories = useMemo(() => categories.map((category) => {
+    const categoryKey = category.href.split("/").pop() as "goggles" | "watches" | "belts";
+    const saved = savedSlideshowSettings?.find((item) => item.category === categoryKey)?.images;
+    return saved && saved.length >= 2 && saved.length <= 3
+      ? { ...category, images: saved }
+      : category;
+  }), [savedSlideshowSettings]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [currentWatchIndex, setCurrentWatchIndex] = useState(0);
   const [currentBeltIndex, setCurrentBeltIndex] = useState(0);
@@ -136,7 +146,7 @@ export default function CategorySection() {
       return;
     }
 
-    const allImages = categories.flatMap((c) => c.images || []);
+    const allImages = displayedCategories.flatMap((c) => c.images || []);
     const createdLinks: Array<HTMLLinkElement> = [];
 
     allImages.forEach((url) => {
@@ -162,9 +172,9 @@ export default function CategorySection() {
       );
 
     Promise.all([
-      loadImages(categories[0]?.images),
-      loadImages(categories[1]?.images),
-      loadImages(categories[2]?.images),
+      loadImages(displayedCategories[0]?.images),
+      loadImages(displayedCategories[1]?.images),
+      loadImages(displayedCategories[2]?.images),
     ]).finally(() => {
       setImagesLoaded(true);
       setWatchesLoaded(true);
@@ -174,18 +184,18 @@ export default function CategorySection() {
     return () => {
       createdLinks.forEach((link) => link.remove());
     };
-  }, []);
+  }, [displayedCategories]);
 
   // Auto-slide effect for Premium Goggles - only start after images are loaded
   useEffect(() => {
     if (!imagesLoaded) return;
     
     const interval = setInterval(() => {
-      setCurrentImageIndex((prev) => (prev + 1) % 3);
+      setCurrentImageIndex((prev) => (prev + 1) % (displayedCategories[0]?.images.length || 3));
     }, 2000);
 
     return () => clearInterval(interval);
-  }, [imagesLoaded]);
+  }, [imagesLoaded, displayedCategories[0]?.images.length]);
 
   // Auto-slide effect for Designer Watches - start with 1000ms delay, then transition every 2000ms (separate from goggles/belts)
   useEffect(() => {
@@ -193,10 +203,10 @@ export default function CategorySection() {
 
     let interval: ReturnType<typeof setInterval> | undefined;
     const timeout = setTimeout(() => {
-      setCurrentWatchIndex((prev) => (prev + 1) % 2);
+      setCurrentWatchIndex((prev) => (prev + 1) % (displayedCategories[1]?.images.length || 2));
 
       interval = setInterval(() => {
-        setCurrentWatchIndex((prev) => (prev + 1) % 2);
+        setCurrentWatchIndex((prev) => (prev + 1) % (displayedCategories[1]?.images.length || 2));
       }, 2000);
     }, 1000);
 
@@ -206,7 +216,7 @@ export default function CategorySection() {
         clearInterval(interval);
       }
     };
-  }, [watchesLoaded]);
+  }, [watchesLoaded, displayedCategories[1]?.images.length]);
 
   // Auto-slide effect for Luxury Belts - sync with goggles (no delay, same timing)
   useEffect(() => {
@@ -214,11 +224,11 @@ export default function CategorySection() {
     
     // No delay - transitions at the same time as goggles
     const interval = setInterval(() => {
-      setCurrentBeltIndex((prev) => (prev + 1) % 3);
+      setCurrentBeltIndex((prev) => (prev + 1) % (displayedCategories[2]?.images.length || 3));
     }, 2000);
 
     return () => clearInterval(interval);
-  }, [beltsLoaded]);
+  }, [beltsLoaded, displayedCategories[2]?.images.length]);
 
   return (
     <section className="py-12 sm:py-16 md:py-24 bg-black">
@@ -233,7 +243,7 @@ export default function CategorySection() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-          {categories.map((category, index) => (
+          {displayedCategories.map((category, index) => (
             <div key={category.name}>
               <Card
                 className="group cursor-pointer overflow-hidden ring-1 ring-white/10 active:ring-white/30 hover:ring-white/20 bg-transparent transition-all duration-200 touch-manipulation"

@@ -130,6 +130,14 @@ const schema = defineSchema(
       title: v.string(),
       images: v.array(v.string()),
     }).index("by_slug", ["slug"]),
+    categorySlideshows: defineTable({
+      category: v.union(
+        v.literal("goggles"),
+        v.literal("watches"),
+        v.literal("belts"),
+      ),
+      images: v.array(v.string()),
+    }).index("by_category", ["category"]),
   },
   {
     schemaValidation: false,

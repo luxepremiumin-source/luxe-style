@@ -15,6 +15,7 @@ import { useParams } from "react-router";
 import { useNavigate } from "react-router";
 import { useState, useEffect } from "react";
 import staticProductsData from "@/data/staticProducts.json";
+import CategorySection from "@/components/CategorySection";
 
 const staticProducts = staticProductsData as Array<{ id: string; images?: string[] }>;
 const localImagesById = new Map(staticProducts.map((p) => [p.id, p.images ?? []]));
@@ -288,62 +289,9 @@ export default function CategoryPage() {
               <p className="text-gray-300 mt-2">{headerSubtitle}</p>
             </div>
 
-            {curatedContent && (
-              <div className="mb-12">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {curatedContent.cards.map((card, index) => (
-                    <motion.div
-                      key={card.title}
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: index * 0.05, duration: 0.4 }}
-                      whileHover={{ y: -6 }}
-                      className="group rounded-[32px] border border-white/15 bg-gradient-to-b from-white/5 to-transparent overflow-hidden flex flex-col cursor-pointer transition-shadow duration-300 hover:shadow-[0_25px_80px_rgba(0,0,0,0.45)]"
-                      onClick={() => navigate(card.href)}
-                      role="button"
-                      tabIndex={0}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter" || event.key === " ") {
-                          event.preventDefault();
-                          navigate(card.href);
-                        }
-                      }}
-                    >
-                      <div className="relative h-64 w-full overflow-hidden">
-                        <img
-                          src={card.image}
-                          alt={card.title}
-                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                          loading="lazy"
-                          decoding="async"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
-                      </div>
-                      <div className="p-6 flex flex-col gap-4 flex-1">
-                        <span className="text-xs font-semibold uppercase tracking-[0.3em] text-white/60">
-                          {card.label}
-                        </span>
-                        <div>
-                          <h3 className="text-2xl font-semibold text-white">
-                            {card.title}
-                          </h3>
-                          <p className="mt-2 text-sm text-white/70">
-                            {card.description}
-                          </p>
-                        </div>
-                        <div className="mt-auto">
-                          <span className="inline-flex items-center gap-2 text-sm font-semibold text-white">
-                            Shop Now
-                            <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
-                          </span>
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
-            )}
+            <div className="mb-12">
+              <CategorySection />
+            </div>
 
             <div>
               {/* Products Grid */}

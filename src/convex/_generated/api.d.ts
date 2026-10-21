@@ -12,6 +12,7 @@ import type * as ai from "../ai.js";
 import type * as auth from "../auth.js";
 import type * as auth_emailOtp from "../auth/emailOtp.js";
 import type * as cart from "../cart.js";
+import type * as categorySlideshows from "../categorySlideshows.js";
 import type * as customerProfiles from "../customerProfiles.js";
 import type * as debug from "../debug.js";
 import type * as emails from "../emails.js";
@@ -40,6 +41,7 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   "auth/emailOtp": typeof auth_emailOtp;
   cart: typeof cart;
+  categorySlideshows: typeof categorySlideshows;
   customerProfiles: typeof customerProfiles;
   debug: typeof debug;
   emails: typeof emails;
