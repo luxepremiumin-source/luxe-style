@@ -14,6 +14,10 @@ import { MessageCircle, Heart, ChevronLeft, ChevronRight, X, ChevronDown, ArrowR
 import { useParams } from "react-router";
 import { useNavigate } from "react-router";
 import { useState, useEffect } from "react";
+import staticProductsData from "@/data/staticProducts.json";
+
+const staticProducts = staticProductsData as Array<{ id: string; images?: string[] }>;
+const localImagesById = new Map(staticProducts.map((p) => [p.id, p.images ?? []]));
 
 const prettyName: Record<string, string> = {
   goggles: "Goggles",
@@ -367,7 +371,7 @@ export default function CategoryPage() {
                   <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
                     {products.map((product, index) => {
                       const isInWishlist = wishlistProductIds.has(product._id);
-                      const images = product.images ?? [];
+                      const images = localImagesById.get(product._id) ?? product.images ?? [];
                       const activeIndex = activeImageIndices[product._id] ?? 0;
                       const currentImage = images[activeIndex] ?? images[0];
                       const hasMultipleImages = images.length > 1;
