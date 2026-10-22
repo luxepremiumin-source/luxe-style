@@ -120,7 +120,6 @@ export default function CategoryPage() {
         ? "products"
         : displayCategoryName.toLowerCase()
     }.`;
-  const allProducts = useQuery(api.products.getProductsByCategory, { category });
   const { isAuthenticated, user, signIn } = useAuth();
   const addToCart = useMutation(api.cart.addToCart);
   const addToWishlist = useMutation(api.wishlist.addToWishlist);
@@ -135,39 +134,6 @@ export default function CategoryPage() {
   // Track active image index for each product
   const [activeImageIndices, setActiveImageIndices] = useState<Record<string, number>>({});
   const [hoverIntervals, setHoverIntervals] = useState<Record<string, NodeJS.Timeout>>({});
-
-  // Aggressively preload all product images for instant display
-  useEffect(() => {
-    if (!products || products.length === 0) return;
-    
-    const imageUrls = products.flatMap(p => p.images ?? []);
-    
-    // Create link preload tags for critical images
-    const fragment = document.createDocumentFragment();
-    imageUrls.slice(0, 12).forEach(url => {
-      const link = document.createElement('link');
-      link.rel = 'preload';
-      link.as = 'image';
-      link.href = url;
-      fragment.appendChild(link);
-    });
-    document.head.appendChild(fragment);
-    
-    // Preload remaining images
-    imageUrls.forEach(url => {
-      const img = new Image();
-      img.src = url;
-    });
-    
-    return () => {
-      // Cleanup preload links on unmount
-      document.querySelectorAll('link[rel="preload"][as="image"]').forEach(link => {
-        if (imageUrls.includes(link.getAttribute('href') || '')) {
-          link.remove();
-        }
-      });
-    };
-  }, [allProducts]);
 
   // Cleanup intervals on unmount
   useEffect(() => {
