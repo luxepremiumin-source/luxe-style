@@ -297,7 +297,6 @@ const BRAND_LOGOS: Record<string, { name: string; logo: string }> = {
 };
 
 export default function ShopByBrand() {
-  const allBrands = useQuery(api.products.getAllBrands);
   const allProducts = useQuery(api.products.getAllProducts);
 
   // Extract brands from product names if brand field is not set
