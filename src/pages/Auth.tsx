@@ -25,7 +25,7 @@ interface AuthProps {
 }
 
 const AUTH_BG_IMAGE =
-  "https://harmless-tapir-303.convex.cloud/api/storage/d4b06ad4-1ee6-4cd0-9013-44a43d35922b";
+  "/optimized-images/d4b06ad4-1ee6-4cd0-9013-44a43d35922b.webp";
 
 function Auth({ redirectAfterAuth }: AuthProps = {}) {
   const { isLoading: authLoading, isAuthenticated, signIn } = useAuth();

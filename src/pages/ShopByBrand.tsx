@@ -52,7 +52,7 @@ const BRAND_LOGOS: Record<string, { name: string; logo: string }> = {
   },
   "marc jacobs": {
     name: "Marc Jacobs",
-    logo: "https://harmless-tapir-303.convex.cloud/api/storage/d753e1e7-b724-43a8-8507-bcc7b554eb42"
+    logo: "/optimized-images/d753e1e7-b724-43a8-8507-bcc7b554eb42.webp"
   },
   "prada": {
     name: "Prada",
@@ -92,7 +92,7 @@ const BRAND_LOGOS: Record<string, { name: string; logo: string }> = {
   },
   "emporio armani": {
     name: "Emporio Armani",
-    logo: "https://harmless-tapir-303.convex.cloud/api/storage/3844305f-2e95-4107-9a9f-6752730f6faa"
+    logo: "/optimized-images/3844305f-2e95-4107-9a9f-6752730f6faa.webp"
   },
   "giorgio armani": {
     name: "Giorgio Armani",
@@ -136,7 +136,7 @@ const BRAND_LOGOS: Record<string, { name: string; logo: string }> = {
   },
   "fossil": {
     name: "Fossil",
-    logo: "https://harmless-tapir-303.convex.cloud/api/storage/fdfb121a-5d4f-46a0-88cb-2d75dd99c0e4"
+    logo: "/optimized-images/fdfb121a-5d4f-46a0-88cb-2d75dd99c0e4.webp"
   },
   "audemars piguet": {
     name: "Audemars Piguet",
@@ -208,7 +208,7 @@ const BRAND_LOGOS: Record<string, { name: string; logo: string }> = {
   },
   "omega": {
     name: "Omega",
-    logo: "https://harmless-tapir-303.convex.cloud/api/storage/9fb34354-0cf8-4838-946e-27ddb152f833"
+    logo: "/optimized-images/9fb34354-0cf8-4838-946e-27ddb152f833.webp"
   },
   "tag heuer": {
     name: "TAG Heuer",
@@ -264,7 +264,7 @@ const BRAND_LOGOS: Record<string, { name: string; logo: string }> = {
   },
   "carrera": {
     name: "Carrera",
-    logo: "https://harmless-tapir-303.convex.cloud/api/storage/11902880-6775-482a-b3a1-92c4c097c0ba"
+    logo: "/optimized-images/11902880-6775-482a-b3a1-92c4c097c0ba.webp"
   },
   "rado": {
     name: "Rado",

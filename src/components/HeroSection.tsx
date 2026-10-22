@@ -1,17 +1,8 @@
 
 import { useEffect, useRef } from "react";
-import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
 import { Link } from "react-router";
 
 export default function HeroSection() {
-  const fallbackBg =
-    "https://harmless-tapir-303.convex.cloud/api/storage/9c7a0c50-e4a8-4cc2-b631-f5a35f277a9a";
-
-  const heroSections = useQuery(api.heroSections.getHeroSections);
-  const dynamicBg =
-    heroSections?.find((section) => section.slug === "hero-one")?.images?.[0] ??
-    null;
   const backgroundImage = "/luxe-hero.png.jpeg";
 
   const sectionRef = useRef<HTMLElement>(null);
